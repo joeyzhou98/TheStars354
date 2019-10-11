@@ -1,5 +1,5 @@
 <template>
-  <div id="bot_bar">
+  <div id="footer">
     <nav>
       <router-link v-for="route in links" v-bind:key="route.id"
                    :to="`${route.page}`">{{route.text}}</router-link>
@@ -30,6 +30,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#footer{
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
 nav {
   padding: 30px;
   a {

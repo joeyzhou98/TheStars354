@@ -1,11 +1,6 @@
 <template>
   <div id="app">
-    <div id="header">
-      <NavigationTop></NavigationTop>
-      <div id="logo">
-        <img src="@/assets/temp-logo.png">
-      </div>
-    </div>
+    <NavigationTop></NavigationTop>
     <router-view/>
     <NavigationBottom></NavigationBottom>
   </div>
@@ -32,11 +27,4 @@ export default {
   text-align: center;
   color: #2c3e50;
 }
-#logo {
-  img {
-    width: 20%;
-    height: 20%
-  }
-}
-
 </style>
