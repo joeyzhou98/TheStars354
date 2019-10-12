@@ -36,15 +36,16 @@ export default {
   left: 0;
   bottom: 0;
   width: 100%;
+  background-color: #e0f6ff;
 }
 nav {
-  padding: 30px;
+  padding: 15px;
   a {
     margin: 10px;
     font-weight: bold;
     color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
+    &:hover {
+      color: #9c9fa0;
     }
   }
 }
