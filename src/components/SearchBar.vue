@@ -1,7 +1,16 @@
 <template>
 <div>
-    <input id="bar" v-model="searchText" />
-     <b-button id="submit" type="is-info">SEARCH</b-button>
+    <b-field>
+      <b-select id="filter" placeholder="All">
+        <option
+            v-for="category in categories"
+            :key="category.id">
+            {{ category.name }}
+        </option>
+      </b-select>
+      <b-input id="bar" v-model="searchText" placeholder="Search..." expanded></b-input>
+      <b-button id="submit" type="is-primary">SEARCH</b-button>
+    </b-field>
 </div>
 </template>
 
@@ -10,7 +19,21 @@ export default {
   name: 'SearchBar',
   data () {
     return {
-      searchText: ''
+      searchText: '',
+      categories: [
+        {
+          id: 0,
+          name: 'All'
+        },
+        {
+          id: 1,
+          name: 'Category 1'
+        },
+        {
+          id: 2,
+          name: 'Category 2'
+        }
+      ]
     }
   }
 }
@@ -18,21 +41,15 @@ export default {
 
 <style lang="scss">
 #bar {
-  display: inline-block;
-  margin: 0px 8px;
-  padding: 6px;
-  border-radius: 5px;
-  border: solid lightgray;
-  color: $black;
-  font-size: 17px;
+  color: $blueblack;
   outline: none;
   width: 50vw;
-  &:focus {
-    border-color: $lightblue;
-  }
+  padding: 0px 10px;
 }
 #submit {
   background-color: $mainblue;
+  border-top-left-radius: 0%;
+  border-bottom-left-radius: 0%;
   &:active {
     position:relative;
     top:1px;

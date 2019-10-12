@@ -43,7 +43,7 @@ nav {
   a {
     margin: 10px;
     font-weight: bold;
-    color: $black;
+    color: $blueblack;
     &:hover {
       color: $mainblue;
     }

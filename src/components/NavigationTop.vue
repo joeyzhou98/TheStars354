@@ -69,7 +69,7 @@ export default {
     font-weight: bold;
     color: white;
     &:hover {
-      color: $black;
+      color: $blueblack;
     }
   }
 }
