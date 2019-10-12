@@ -90,7 +90,7 @@ Before getting started, you should have the following installed and running:
 * Clone this repository:
 
 	```
-	$ git clone https://github.com/gtalarico/flask-vuejs-template.git
+	$ git clone https://github.com/joeyzhou98/COMP354.git
 	```
 
 * Setup virtual environment, install dependencies, and activate it:
