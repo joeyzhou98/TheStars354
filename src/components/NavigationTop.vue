@@ -49,7 +49,7 @@ export default {
 }
 #top {
   display: inline-block;
-  background-color: #00a2e8;
+  background-color: $mainblue;
   color: white;
   width: 100%;
   vertical-align: middle;
@@ -69,7 +69,7 @@ export default {
     font-weight: bold;
     color: white;
     &:hover {
-      color: #2c3e50;
+      color: $black;
     }
   }
 }
@@ -105,8 +105,7 @@ export default {
   cursor: pointer;
   outline: none;
   &:hover {
-    color: #00a2e8;
-    border-color: darkgray;
+    color: $mainblue;
   }
   &:active {
     position:relative;
