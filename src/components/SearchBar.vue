@@ -8,7 +8,10 @@
             {{ category.name }}
         </option>
       </b-select>
-      <b-input id="bar" v-model="searchText" placeholder="Search..." expanded></b-input>
+      <b-input id="bar" v-model="searchText"
+               icon="search fa-flip-horizontal icon-color"
+               placeholder="Search..." expanded>
+      </b-input>
       <b-button id="submit" type="is-primary">SEARCH</b-button>
     </b-field>
 </div>
@@ -39,12 +42,14 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 #bar {
   color: $blueblack;
   outline: none;
-  width: 50vw;
-  padding: 0px 10px;
+  padding: 0px 40px;
+}
+.icon-color {
+  color: lightgray;
 }
 #submit {
   background-color: $mainblue;

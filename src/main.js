@@ -7,7 +7,7 @@ import store from './store'
 import './filters'
 
 Vue.config.productionTip = false
-Vue.use(Buefy)
+Vue.use(Buefy, {defaultIconPack: 'fa'})
 
 new Vue({
   router,

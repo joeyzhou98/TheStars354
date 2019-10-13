@@ -16,15 +16,25 @@
         </nav>
       </div>
     </div>
-    <div id="logo">
-      <router-link to="/"><img src="@/assets/temp-logo.png"></router-link>
-    </div>
-    <div id="search">
-      <SearchBar></SearchBar>
-    </div>
-    <div id=buttons>
-      <button class="iconbutton">ACC.</button>
-      <button class="iconbutton">CART</button>
+    <div class="level">
+      <div class="level-left">
+        <div id="logo">
+          <router-link to="/"><img src="@/assets/temp-logo.png"></router-link>
+        </div>
+        <div id="search">
+          <SearchBar></SearchBar>
+        </div>
+      </div>
+      <div class="level-right">
+        <div id="buttons">
+          <b-button class="icon-button" type="is-link"
+                    size="is-medium"
+                    icon-right="user icon-color" />
+          <b-button class="icon-button" type="is-link"
+                    size="is-medium"
+                    icon-right="shopping-cart icon-color" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -85,25 +95,20 @@ export default {
 }
 #search {
   margin: 32px 0px;
+  width: 50vw;
   display: inline-block;
 }
 #buttons {
-  float: right;
-  margin: 15px;
+  margin: 0px 30px;
 }
-.iconbutton {
-  display: inline-block;
-  margin: 0px 15px;
-  background-color: white;
+.icon-button {
   border: none;
-  color: darkgray;
-  padding: 20px;
   text-align: center;
-  text-decoration: none;
-  font-size: 16px;
-  margin: 4px 2px;
+  margin: 4px 3px;
+  padding: 0px 20px;
   cursor: pointer;
   outline: none;
+  color: lightgray;
   &:hover {
     color: $mainblue;
   }
