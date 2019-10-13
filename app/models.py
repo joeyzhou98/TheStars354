@@ -1,8 +1,8 @@
 from . import db
 
 
-class UserModel(db.Model):
-    __tablename__ = 'users'
+class UserAuthModel(db.Model):
+    __tablename__ = 'userAuthInfo'
 
     uid = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)
@@ -15,11 +15,8 @@ class UserModel(db.Model):
 
     @classmethod
     def find_by_username(cls, username):
-        return cls.query.filter_by(username= username).first()
-
+        return cls.query.filter_by(username=username).first()
 
     @classmethod
     def find_by_useremail(cls, email):
         return cls.query.filter_by(useremail=email).first()
-
-

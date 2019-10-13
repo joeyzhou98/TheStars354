@@ -8,8 +8,17 @@ from .client import client_bp
 app = Flask(__name__, static_folder='../dist/static')
 app.register_blueprint(api_bp)
 # app.register_blueprint(client_bp)
-# using SQLAlchemy database for code setup
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://comp354:Ll88050517@comp354.cha9oynmedpn.us-east-2.rds.amazonaws.com:3306/comp354'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+    print('DB CREATED')
+    print(db.metadata.tables)
+
 
 from .config import Config
 
@@ -33,15 +42,15 @@ def user_registration():
         mail = request.form['mail']
         passw = request.form['passw']
 
-        if UserModel.find_by_username(uname):
+        if UserAuthModel.find_by_username(uname):
             return {'message': 'User name exists.'}
 
-        if UserModel.find_by_useremail(mail):
-            return {'message': 'User esmail exists.'}
+        if UserAuthModel.find_by_useremail(mail):
+            return {'message': 'User email exists.'}
 
-        new_user = UserModel(username=uname, useremail=mail, password=passw)
+        new_user = UserAuthModel(username=uname, useremail=mail, password=passw)
         new_user.save_to_db()
-        return redirect('/')
+        return {'message': 'saved to database'}
     return {'message': 'Hit the user registration endpoint, show the registration page.'}
 
 
@@ -51,7 +60,7 @@ def user_login():
         uemail = request.form['uname']
         passw = request.form['passw']
 
-        login = UserModel.query.filter_by(uemail=UserModel.username, passw=UserModel.password).first()
+        login = UserAuthModel.query.filter_by(uemail=UserAuthModel.username, passw=UserAuthModel.password).first()
         if login is not None:
             return redirect('/')
     return {'message': 'Hit the user login endpoint with GET, show the login page'}
