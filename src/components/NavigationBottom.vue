@@ -36,16 +36,16 @@ export default {
   left: 0;
   bottom: 0;
   width: 100%;
-  background-color: #e0f6ff;
+  background-color: $lightblue;
 }
 nav {
   padding: 15px;
   a {
     margin: 10px;
     font-weight: bold;
-    color: #2c3e50;
+    color: $blueblack;
     &:hover {
-      color: #9c9fa0;
+      color: $mainblue;
     }
   }
 }
