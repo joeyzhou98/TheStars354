@@ -32,7 +32,7 @@ export default {
 <style scoped lang="scss">
 #footer{
   display: inline-block;
-  position: absolute;
+  position: relative;
   left: 0;
   bottom: 0;
   width: 100%;
