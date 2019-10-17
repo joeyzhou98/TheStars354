@@ -30,7 +30,11 @@ class BuyerModel(UserAuthModel):
     address = db.relationship("address", back_populates="buyer")
     order_history = db.relationship("order", back_populates="orderNumber")
     review_history = db.relationship("review", back_populates="review")
-    wish_list = db.relationship("wishList", back_populates="buyer")
+    wish_list = db.relationship("itemInfo", back_populates="buyer")
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
 
     @classmethod
     def get_address(cls, uid):
@@ -39,6 +43,17 @@ class BuyerModel(UserAuthModel):
     @classmethod
     def get_order_history(cls, uid):
         return cls.query.filter_by(uid=uid)
+
+
+class SellerModel(UserAuthModel):
+    __tablename__ = "sellerInfo"
+
+    membership_date = db.Column(db.Date, nullable=False)
+    offered_products = db.relationship("itemInfo")
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
 
 
 class Address(db.Model):
@@ -62,8 +77,6 @@ class Order(db.Model):
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
 
-    buyer = db.relationship("buyerInfo", back_populates="uid")
-    seller = db.relationship("sellerInfo", back_populates="uid")
     item = db.relationship("itemInfo", back_populates="itemId")
 
     def save_to_db(self):
@@ -77,7 +90,6 @@ class ShoppingCart(db.Model):
     uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
 
-    buyer = db.relationship("buyerInfo", back_populates="address")
     item = db.relationship("itemInfo")
 
     def save_to_db(self):
@@ -91,7 +103,6 @@ class Review(db.Model):
     uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
 
-    buyer = db.relationship("buyerInfo", back_populates="address")
     item = db.relationship("itemInfo")
 
     def save_to_db(self):
@@ -105,7 +116,6 @@ class WishList(db.Model):
     uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
 
-    buyer = db.relationship("buyerInfo", back_populates="address")
     item = db.relationship("itemInfo")
 
     def save_to_db(self):
@@ -122,6 +132,7 @@ class ItemModel(db.Model):
     category = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(512), nullable=True)
+    seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=False)
 
     def save_to_db(self):
         db.session.add(self)
