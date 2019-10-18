@@ -1,18 +1,50 @@
 <template>
-  <div>
-    <h2>Login Page</h2>
-    <p>This is the login page. Insert form...</p>
-    First time here?<br>
-    <router-link to="/register">Create New Account</router-link>
+  <div id="loginSection" class="column is-one-third">
+    <div class="box">
+      <h1 class="title">Login</h1>
+      <b-field label="Email Address" type="is-danger" message="Please enter a valid email address.">
+        <b-input placeholder="Email" type="email" icon-pack="fas" icon="envelope" maxlength="30">{{email}}</b-input>
+      </b-field>
+
+      <b-field label="Password"  type="is-warning" :message="['Password is too short', 'Password must have at least 8 characters']">
+        <b-input type="password" value="iwantmytreasure" password-reveal>{{password}}</b-input>
+      </b-field>
+      <router-link to="/findPasswords">Forget your password?</router-link>
+      <br/>
+      <b-button v-on:click="login" tag="router-link" to="/account" type="is-link is-dark">Login</b-button>
+    </div>
+    <div class="box">
+      <h1 class="subtitle">New to 354 STARS</h1>
+      <router-link to="/register">Create New Account</router-link>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Login'
+  data () {
+    return {
+      email: 'Login'
+    }
+  },
+  method: {
+    login () {
+      ;
+    }
+  }
 }
 </script>
 
-<style lang="scss">
-
+<style scoped lang="scss">
+#loginSection {
+  display: inline-block;
+}
+.column{
+    background-color: yellowgreen;
+}
+/*@media screen{
+  .column{
+    background-color: yellowgreen;
+  }
+}*/
 </style>
