@@ -44,7 +44,7 @@ export default {
 
 <style scoped lang="scss">
 #bar {
-  color: $blueblack;
+  color: $darkblue;
   outline: none;
   padding: 0px 40px;
 }

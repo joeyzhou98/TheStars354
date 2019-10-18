@@ -19,11 +19,6 @@
     <div class="level">
       <div class="level-left">
         <div id="categories">
-          <!-- <b-button class="icon-button" type="is-link"
-                    size="is-size-5"
-                    icon-left="bars icon-color"
-                    v-on:click="openMenu">
-                    </b-button> -->
           <CategoriesMenu></CategoriesMenu>
         </div>
         <div id="logo">
@@ -34,21 +29,13 @@
         </div>
       </div>
       <div class="level-right">
-        <div id="buttons">
-          <div v-if="loggedin"> <!--login or account-->
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium" tag="router-link" icon-right="user icon-color" to="/account" />
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="shopping-cart icon-color" />
-          </div>
-          <div v-else>
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium" tag="router-link" icon-right="user icon-color" to="/login" />
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="shopping-cart icon-color" />
-          </div>
+        <div id="buttons"> <!-- Add event listener to login and logout events-->
+          <b-button class="icon-button" type="is-link"
+                  tag="router-link" icon-right="user icon-color" :to="`${toAccount}`">
+                  ACCOUNT</b-button>
+          <b-button class="icon-button" type="is-link" :to="`${toCart}`"
+                  icon-right="shopping-cart icon-color">
+                  CART</b-button>
         </div>
       </div>
     </div>
@@ -63,6 +50,20 @@ export default {
   components: {
     'SearchBar': SearchBar,
     'CategoriesMenu': CategoriesMenu
+  },
+  data () {
+    return {
+      toAccount: '/login', // by default, Account brings to Login page
+      toCart: '/cart' // user is able to add to cart without being logged in
+    }
+  },
+  methods: {
+    onLogin () {
+      this.toAccount = '/account'
+    },
+    onLogout () {
+      this.toAccount = '/login'
+    }
   }
 }
 </script>
@@ -72,6 +73,7 @@ export default {
   display: inline-block;
   text-align: left;
   margin-left: calc(50% - 50vw);
+  margin-bottom: 30px;
   width: 100vw;
   box-shadow: 0px 3px 2px lightgray;
 }
@@ -97,12 +99,13 @@ export default {
     font-weight: bold;
     color: white;
     &:hover {
-      color: $blueblack;
+      color: $darkblue;
     }
   }
 }
 #categories {
   display: inline-block;
+  margin: 0 30px;
 }
 #logo {
   text-align: left;
@@ -129,7 +132,7 @@ export default {
   padding: 0px 20px;
   cursor: pointer;
   outline: none;
-  color: $bluegray;
+  color: $darkblue;
   &:hover {
     color: $mainblue;
   }

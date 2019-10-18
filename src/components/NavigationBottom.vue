@@ -36,14 +36,15 @@ export default {
   left: 0;
   bottom: 0;
   width: 100%;
-  background-color: $lightblue;
+  background-color: $lightgray;
+  margin-top: 30px;
 }
 nav {
   padding: 15px;
   a {
     margin: 10px;
     font-weight: bold;
-    color: $blueblack;
+    color: $darkgray;
     &:hover {
       color: $mainblue;
     }

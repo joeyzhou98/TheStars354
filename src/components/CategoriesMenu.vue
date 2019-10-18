@@ -1,6 +1,11 @@
 <template>
   <div>
-    <Slide noOverlay>
+    <b-button class="category-button" type="is-link"
+              icon-left="bars icon-color"
+              @click="openMenu">
+              SHOP
+    </b-button>
+    <Slide noOverlay :isOpen="this.open" @closeMenu="closeMenu">
       <a id="home" href="#">
         <span>Home</span>
       </a>
@@ -28,26 +33,39 @@ export default {
   methods: {
     openMenu () {
       this.open = true
+    },
+    closeMenu () {
+      this.open = false
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
-
+.category-button {
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: $darkblue;
+  &:hover {
+    color: $mainblue;
+  }
+  &:active {
+    position:relative;
+    top:1px;
+  }
+}
 </style>
 
 <style lang="scss"> // Unscoped section! These classes are defined in the Slide component
 Slide {
   width: 250px;
 }
-.bm-burger-button { // TODO: probably change this for our own icon
-  width: 26px;
-  height: 20px;
-  cursor: pointer;
+.bm-burger-button {
+  display: none;
 }
 .bm-burger-bars {
-  background-color:$bluegray;
+  background-color:$darkgray;
 }
 .line-style {
   position: absolute;
@@ -75,7 +93,7 @@ Slide {
   z-index: 1000; /* Stay on top */
   top: 0;
   left: 0;
-  background-color: $blueblack;
+  background-color: $darkblue;
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 60px; /* Place content 60px from the top */
   transition: 0.5s; /*0.5 second transition effect to slide in the sidenav*/
