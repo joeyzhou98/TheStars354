@@ -28,8 +28,8 @@
       <div class="level-right">
         <div id="buttons">
           <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="user icon-color" />
+                    size="is-medium" tag="router-link"
+                to="/account" icon-right="user icon-color" />
           <b-button class="icon-button" type="is-link"
                     size="is-medium"
                     icon-right="shopping-cart icon-color" />

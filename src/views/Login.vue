@@ -1,8 +1,8 @@
 <template>
-  <div>
-  <div id="loginPage">
-    <h2>Login Page</h2>
-    <b-field label="Email"
+  <div id="loginSection" class="column is-one-third">
+    <div class="box">
+    <h1 class="title">Login</h1>
+    <b-field label="Email Address"
       type="is-danger"
       message="This email is invalid">
       <b-input placeholder="Email"
@@ -20,13 +20,14 @@
         password-reveal>
       </b-input>
     </b-field>
-    <button v-on:click="login">Login</button>
+    <router-link to="/findPasswords">Forget your password?</router-link>
+    <br/>
+    <b-button v-on:click="login" tag="router-link"
+                to="/account"
+                type="is-link is-dark">Login</b-button>
   </div>
-  <div>
-    <p>By continuing, you agree to 354 STARS's Conditions of Use and Privacy Notice. </p>
-    <br/>
-    <p>New to 354 STARS</p>
-    <br/>
+  <div class="box">
+    <h1 class="subtitle">New to 354 STARS</h1>
     <router-link to="/register">Create New Account</router-link>
   </div>
   </div>
@@ -48,9 +49,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-#loginPage {
-  margin: 32px 0px;
-  width: 25vw;
+#loginSection {
   display: inline-block;
 }
 </style>

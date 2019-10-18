@@ -1,7 +1,7 @@
 <template>
   <div id="registerSection" class="column is-one-third">
     <div class="box">
-    <h1 class="title">Create account</h1>
+    <h1 class="title">Account page!!!</h1>
     <b-field label="Your name"
       type="is-success"
       message="This username is available">
