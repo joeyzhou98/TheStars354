@@ -76,7 +76,7 @@ class Order(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=False)
 
-    items = db.relationship("itemInfo", back_populates="itemId")
+    items = db.relationship("itemInfo")
 
     def save_to_db(self):
         db.session.add(self)
@@ -84,11 +84,9 @@ class Order(db.Model):
 
 
 class ShoppingCart(db.Model):
-    __tablename__ = "order"
+    __tablename__ = "shoppingCart"
 
-    uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
-
+    uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False, primary_key=True)
     items = db.relationship("itemInfo")
 
     def save_to_db(self):
@@ -99,9 +97,7 @@ class ShoppingCart(db.Model):
 class Review(db.Model):
     __tablename__ = "review"
 
-    uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
-
+    uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False, primary_key=True)
     items = db.relationship("itemInfo")
 
     def save_to_db(self):
@@ -112,9 +108,7 @@ class Review(db.Model):
 class WishList(db.Model):
     __tablename__ = "wishList"
 
-    uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey("itemInfo.itemId"), nullable=False)
-
+    uid = db.Column(db.Integer, db.ForeignKey(BuyerModel.uid), nullable=False, primary_key=True)
     items = db.relationship("itemInfo")
 
     def save_to_db(self):
