@@ -25,6 +25,7 @@ class UserAuthModel(db.Model):
 class BuyerModel(UserAuthModel):
     __tablename__ = "buyerInfo"
 
+    uid = db.Column(db.Integer, db.ForeignKey(UserAuthModel.uid), primary_key=True)
     paypal = db.Column(db.String(20), nullable=False)
     order_history = db.relationship("order", back_populates="orderNumber")
 
@@ -56,6 +57,7 @@ class BuyerModel(UserAuthModel):
 class SellerModel(UserAuthModel):
     __tablename__ = "sellerInfo"
 
+    uid = db.Column(db.Integer, db.ForeignKey(UserAuthModel.uid), primary_key=True)
     membership_date = db.Column(db.Date, nullable=False)
     offered_products = db.relationship("itemInfo")
 
@@ -72,9 +74,9 @@ class Address(db.Model):
     __tablename__ = "address"
 
     uid = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), primary_key=True)
-    address1 = db.Column(db.String)
-    address2 = db.Column(db.String)
-    address3 = db.Column(db.String)
+    address1 = db.Column(db.String(120))
+    address2 = db.Column(db.String(120))
+    address3 = db.Column(db.String(120))
 
     def save_to_db(self):
         db.session.add(self)
