@@ -33,16 +33,24 @@ class BuyerModel(UserAuthModel):
         db.session.commit()
 
     @classmethod
-    def get_address(cls, uid):
+    def get_address(cls):
         return cls.query.join(Address, BuyerModel)
 
     @classmethod
-    def get_order_history(cls, uid):
+    def get_order_history(cls):
         return cls.query.join(Order, BuyerModel)
 
     @classmethod
-    def get_wish_list(cls, uid):
-        return cls.query.join(Order, BuyerModel)
+    def get_wish_list(cls):
+        return cls.query.join(WishList, BuyerModel)
+
+    @classmethod
+    def get_shopping_cart(cls):
+        return cls.query.join(ShoppingCart, BuyerModel)
+
+    @classmethod
+    def get_reviews(cls):
+        return cls.query.join(BuyerModel, Review).second
 
 
 class SellerModel(UserAuthModel):
@@ -54,6 +62,10 @@ class SellerModel(UserAuthModel):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+
+    @classmethod
+    def get_offered_products(cls):
+        return cls.query.join(SellerModel, ItemModel)
 
 
 class Address(db.Model):
