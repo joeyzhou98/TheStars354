@@ -64,4 +64,7 @@ export default {
 #registerSection {
   display: inline-block;
 }
+.column{
+    background-color: yellowgreen;
+}
 </style>

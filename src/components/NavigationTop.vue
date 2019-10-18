@@ -27,12 +27,20 @@
       </div>
       <div class="level-right">
         <div id="buttons">
-          <b-button class="icon-button" type="is-link"
-                    size="is-medium" tag="router-link"
-                to="/account" icon-right="user icon-color" />
-          <b-button class="icon-button" type="is-link"
+          <div v-if="loggedin"> <!--login or account-->
+            <b-button class="icon-button" type="is-link"
+                    size="is-medium" tag="router-link" icon-right="user icon-color" to="/account" />
+            <b-button class="icon-button" type="is-link"
                     size="is-medium"
                     icon-right="shopping-cart icon-color" />
+          </div>
+          <div v-else>
+            <b-button class="icon-button" type="is-link"
+                    size="is-medium" tag="router-link" icon-right="user icon-color" to="/login" />
+            <b-button class="icon-button" type="is-link"
+                    size="is-medium"
+                    icon-right="shopping-cart icon-color" />
+          </div>
         </div>
       </div>
     </div>
