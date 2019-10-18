@@ -20,6 +20,11 @@ $colors: (
 
 // Overwrite other properties.
 // Note: Refer to https://github.com/jgthms/bulma/issues/2385 (emkajeej's post) to find the right variables
+$button-focus-box-shadow-size: 0;
+$button-focus-color: $bluegray;
+
+$input-focus-box-shadow-size: 0 0 0 0.08em;
+
 $link: $primary;
 $link-invert: $primary-invert;
 $link-focus-border: none;

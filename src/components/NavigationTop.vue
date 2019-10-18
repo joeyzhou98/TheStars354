@@ -18,6 +18,14 @@
     </div>
     <div class="level">
       <div class="level-left">
+        <div id="categories">
+          <!-- <b-button class="icon-button" type="is-link"
+                    size="is-size-5"
+                    icon-left="bars icon-color"
+                    v-on:click="openMenu">
+                    </b-button> -->
+          <CategoriesMenu></CategoriesMenu>
+        </div>
         <div id="logo">
           <router-link to="/"><img src="@/assets/temp-logo.png"></router-link>
         </div>
@@ -28,11 +36,11 @@
       <div class="level-right">
         <div id="buttons">
           <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="user icon-color" />
+                    icon-left="user icon-color">
+                    ACCOUNT</b-button>
           <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="shopping-cart icon-color" />
+                    icon-left="shopping-cart icon-color">
+                    CART</b-button>
         </div>
       </div>
     </div>
@@ -40,11 +48,13 @@
 </template>
 
 <script>
+import CategoriesMenu from '@/components/CategoriesMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
 export default {
   name: 'NavigationTop',
   components: {
-    'SearchBar': SearchBar
+    'SearchBar': SearchBar,
+    'CategoriesMenu': CategoriesMenu
   }
 }
 </script>
@@ -83,9 +93,11 @@ export default {
     }
   }
 }
+#categories {
+  display: inline-block;
+}
 #logo {
   text-align: left;
-  float: left;
   width: 250px;
   img {
     width: 100%;
@@ -103,12 +115,13 @@ export default {
 }
 .icon-button {
   border: none;
+  size: "is-size-6";
   text-align: center;
   margin: 4px 3px;
   padding: 0px 20px;
   cursor: pointer;
   outline: none;
-  color: lightgray;
+  color: $bluegray;
   &:hover {
     color: $mainblue;
   }
