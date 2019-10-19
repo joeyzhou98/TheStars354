@@ -18,6 +18,9 @@
     </div>
     <div class="level">
       <div class="level-left">
+        <div id="categories">
+          <CategoriesMenu></CategoriesMenu>
+        </div>
         <div id="logo">
           <router-link to="/"><img src="@/assets/temp-logo.png"></router-link>
         </div>
@@ -26,21 +29,13 @@
         </div>
       </div>
       <div class="level-right">
-        <div id="buttons">
-          <div v-if="loggedin"> <!--login or account-->
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium" tag="router-link" icon-right="user icon-color" to="/account" />
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="shopping-cart icon-color" />
-          </div>
-          <div v-else>
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium" tag="router-link" icon-right="user icon-color" to="/login" />
-            <b-button class="icon-button" type="is-link"
-                    size="is-medium"
-                    icon-right="shopping-cart icon-color" />
-          </div>
+        <div id="buttons"> <!-- Add event listener to login and logout events-->
+          <b-button class="icon-button" type="is-link"
+                  tag="router-link" icon-right="user icon-color" :to="`${toAccount}`">
+                  ACCOUNT</b-button>
+          <b-button class="icon-button" type="is-link" :to="`${toCart}`"
+                  icon-right="shopping-cart icon-color">
+                  CART</b-button>
         </div>
       </div>
     </div>
@@ -48,11 +43,27 @@
 </template>
 
 <script>
+import CategoriesMenu from '@/components/CategoriesMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
 export default {
   name: 'NavigationTop',
   components: {
-    'SearchBar': SearchBar
+    'SearchBar': SearchBar,
+    'CategoriesMenu': CategoriesMenu
+  },
+  data () {
+    return {
+      toAccount: '/login', // by default, Account brings to Login page
+      toCart: '/cart' // user is able to add to cart without being logged in
+    }
+  },
+  methods: {
+    onLogin () {
+      this.toAccount = '/account'
+    },
+    onLogout () {
+      this.toAccount = '/login'
+    }
   }
 }
 </script>
@@ -62,6 +73,7 @@ export default {
   display: inline-block;
   text-align: left;
   margin-left: calc(50% - 50vw);
+  margin-bottom: 30px;
   width: 100vw;
   box-shadow: 0px 3px 2px lightgray;
 }
@@ -87,22 +99,20 @@ export default {
     font-weight: bold;
     color: white;
     &:hover {
-      color: $blueblack;
+      color: $darkblue;
     }
   }
 }
+#categories {
+  display: inline-block;
+  margin-left: 30px
+}
 #logo {
+  margin: 0px 15px;
   text-align: left;
-  float: left;
-  width: 250px;
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain
-  }
+  width: 200px;
 }
 #search {
-  margin: 32px 0px;
   width: 50vw;
   display: inline-block;
 }
@@ -111,12 +121,13 @@ export default {
 }
 .icon-button {
   border: none;
+  size: "is-size-6";
   text-align: center;
   margin: 4px 3px;
   padding: 0px 20px;
   cursor: pointer;
   outline: none;
-  color: lightgray;
+  color: $darkblue;
   &:hover {
     color: $mainblue;
   }

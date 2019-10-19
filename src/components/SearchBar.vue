@@ -30,11 +30,27 @@ export default {
         },
         {
           id: 1,
-          name: 'Category 1'
+          name: 'Automotives & Electronics'
         },
         {
           id: 2,
-          name: 'Category 2'
+          name: 'Books'
+        },
+        {
+          id: 3,
+          name: 'Clothing, Shoes & Accessories'
+        },
+        {
+          id: 4,
+          name: 'Health & Beauty'
+        },
+        {
+          id: 5,
+          name: 'Home Supplies'
+        },
+        {
+          id: 6,
+          name: 'Jewellery & Watches'
         }
       ]
     }
@@ -43,8 +59,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#filter {
+  width: 50px;
+}
 #bar {
-  color: $blueblack;
+  color: $darkblue;
   outline: none;
   padding: 0px 40px;
 }
