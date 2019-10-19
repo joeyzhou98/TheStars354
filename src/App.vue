@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <NavigationTop></NavigationTop>
-    <div id="content">
+    <div id="content" :style="style">
       <router-view/>
     </div>
     <NavigationBottom></NavigationBottom>
@@ -19,12 +19,25 @@ export default {
     'NavigationTop': NavigationTop,
     'NavigationBottom': NavigationBottom
   },
+  data () {
+    return {
+      headerOffset: 30,
+      isSticky: false
+    }
+  },
+  computed: {
+    style () {
+      return 'padding-top: ' + this.headerOffset + 'px; padding-bottom: 30px;'
+    }
+  },
   created () {
-    bus.$on('doStickyHeader', () => {
-      document.getElementById('content').className = 'sticky'
+    bus.$on('doStickyHeader', (offset) => {
+      this.isSticky = true
+      this.headerOffset = 2 * offset
     })
     bus.$on('undoStickyHeader', () => {
-      document.getElementById('content').className = ''
+      this.isSticky = false
+      this.headerOffset = 30
     })
   }
 }
@@ -41,11 +54,5 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: $black;
-}
-#content {
-  padding: 30px 0px;
-}
-.sticky#content {
-  padding-top: 80px;
 }
 </style>

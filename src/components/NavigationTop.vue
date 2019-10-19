@@ -71,9 +71,9 @@ export default {
       try {
         if (window.pageYOffset >= this.headerOffset) {
           document.getElementById('main-header').className = 'level navbar is-fixed-top'
-          bus.$emit('doStickyHeader')
+          bus.$emit('doStickyHeader', this.headerOffset)
         } else {
-          document.getElementById('main-header').className = 'level'
+          document.getElementById('main-header', this.headerOffset).className = 'level'
           bus.$emit('undoStickyHeader')
         }
       } catch (e) {
