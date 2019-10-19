@@ -2,7 +2,7 @@
   <div id="footer">
     <nav>
       <router-link v-for="route in links" v-bind:key="route.id"
-                   :to="`${route.page}`">{{route.text}}</router-link>
+                   :to="route.page">{{route.text}}</router-link>
     </nav>
   </div>
 </template>
@@ -37,7 +37,6 @@ export default {
   bottom: 0;
   width: 100%;
   background-color: $mainblue;
-  margin-top: 30px;
 }
 nav {
   padding: 8px;

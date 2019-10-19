@@ -9,6 +9,8 @@ import './filters'
 Vue.config.productionTip = false
 Vue.use(Buefy, {defaultIconPack: 'fa'})
 
+export const bus = new Vue()
+
 new Vue({
   router,
   store,
