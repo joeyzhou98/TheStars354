@@ -6,9 +6,15 @@
               SHOP
     </b-button>
     <Slide noOverlay :isOpen="this.open" @closeMenu="closeMenu">
-      <a id="home" href="#">
-        <span>Home</span>
-      </a>
+      <!-- <span class="title">SHOP BY CATEGORY</span> -->
+      <div id="category-block" v-for="category in categories" :key="category.id">
+        <router-link class="main-category" :to="`${category.route}`">
+          <span class=main-category-name>{{category.name}}</span>
+          <div v-for="subcategory in category.subcategories" :key="subcategory.id">
+            <router-link class="subcategory" :to="`${subcategory.route}`">{{subcategory.name}}</router-link>
+          </div>
+        </router-link>
+      </div>
     </Slide>
   </div>
 </template>>
@@ -27,7 +33,80 @@ export default {
   },
   data () {
     return {
-      open: false
+      open: false,
+      categories: [
+        {
+          id: 0,
+          name: 'Bestsellers',
+          route: '/bestsellers',
+          active: false,
+          subcategories: []
+        },
+        {
+          id: 1,
+          name: 'Automotives & Electronics',
+          route: '/automotives-electronics',
+          active: true,
+          subcategories: [
+            { id: 0, name: 'Cellphones, Computers & Tablets', route: '/cellphones-computers-tablets' },
+            { id: 1, name: 'Cameras & Video Games', route: '/cameras-videogames' },
+            { id: 2, name: 'Motos & Car Supplies', route: '/motos-cars' }
+          ]
+        },
+        {
+          id: 2,
+          name: 'Books',
+          route: '/books',
+          active: false,
+          subcategories: []
+        },
+        {
+          id: 3,
+          name: 'Clothing, Shoes & Accessories',
+          route: '/clothing-shoes-accessories',
+          active: false,
+          subcategories: [
+            { id: 0, name: 'Women', route: '/womens-clothing' },
+            { id: 1, name: 'Men', route: '/mens-clothing' },
+            { id: 2, name: 'Children', route: '/childrens-clothing' },
+            { id: 3, name: 'Shoes', route: '/shoes' },
+            { id: 4, name: 'Bags & Accessories', route: '/bags-accessories' }
+          ]
+        },
+        {
+          id: 4,
+          name: 'Health & Beauty',
+          route: '/health-beauty',
+          active: false,
+          subcategories: [
+            { id: 0, name: 'Makeup', route: '/makeup' },
+            { id: 1, name: 'Creams', route: '/creams' },
+            { id: 2, name: 'Sports', route: '/sports' }
+          ]
+        },
+        {
+          id: 5,
+          name: 'Home Supplies',
+          route: '/home-supplies',
+          active: false,
+          subcategories: [
+            { id: 0, name: 'Appliances', route: '/appliances' },
+            { id: 1, name: 'Furniture & Accessories', route: '/furniture-accessories' },
+            { id: 2, name: 'Garden Supplies', route: '/garden-supplies' },
+            { id: 3, name: 'Pet Supplies', route: '/pet-supplies' }
+          ]
+        },
+        {
+          id: 6,
+          name: 'Jewellery & Watches',
+          route: 'jewellery-watches',
+          active: false,
+          subcategories: [
+            { id: 0, name: 'Women', route: '/womens-jewellery-watches' },
+            { id: 1, name: 'Men', route: '/mens-jewellery-watches' }
+          ]
+        }
+      ]
     }
   },
   methods: {
@@ -59,19 +138,10 @@ export default {
 
 <style lang="scss"> // Unscoped section! These classes are defined in the Slide component
 Slide {
-  width: 250px;
+  width: 300px;
 }
 .bm-burger-button {
   display: none;
-}
-.bm-burger-bars {
-  background-color:$darkgray;
-}
-.line-style {
-  position: absolute;
-  height: 20%;
-  left: 0;
-  right: 0;
 }
 .cross-style {
   position: absolute;
@@ -80,7 +150,7 @@ Slide {
   cursor: pointer;
 }
 .bm-cross {
-  background: #bdc3c7;
+  background: $darkgray;
 }
 .bm-cross-button {
   height: 24px;
@@ -93,24 +163,38 @@ Slide {
   z-index: 1000; /* Stay on top */
   top: 0;
   left: 0;
-  background-color: $darkblue;
+  background-color: $lightgray;
   overflow-x: hidden; /* Disable horizontal scroll */
-  padding-top: 60px; /* Place content 60px from the top */
+  padding-top: 20px; /* Place content from the top */
   transition: 0.5s; /*0.5 second transition effect to slide in the sidenav*/
-}
-.bm-item-list {
-  color: #b8b7ad;
-  margin-left: 10%;
-  font-size: 20px;
+  #category-block {
+    display: block;
+  }
+  .main-category {
+    font-size: 16px;
+    font-weight: 300;
+    color: $mainblue;
+  }
+  .main-category-name {
+    &:hover {
+      text-decoration: underline;
+      color: $darkblue;
+    }
+  }
+  .subcategory {
+    font-size: 13px;
+    color: $darkgray;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .title {
+    font-size: small;
+    color: $darkgray;
+  }
 }
 .bm-item-list > * {
-  display: flex;
-  text-decoration: none;
-  padding: 0.7em;
-}
-.bm-item-list > * > span {
-  margin-left: 10px;
-  font-weight: 700;
-  color: white;
+  padding: 0.3em 0;
+  display: inline-block;
 }
 </style>

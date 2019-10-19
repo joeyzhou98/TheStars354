@@ -105,19 +105,14 @@ export default {
 }
 #categories {
   display: inline-block;
-  margin: 0 30px;
+  margin-left: 30px
 }
 #logo {
+  margin: 0px 15px;
   text-align: left;
-  width: 250px;
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain
-  }
+  width: 200px;
 }
 #search {
-  margin: 32px 0px;
   width: 50vw;
   display: inline-block;
 }
