@@ -5,8 +5,10 @@
         <div id="filter-menu">Filter menu here.</div>
       </div>
       <div class="level-left column">
-        <div id="page-title">
-          <h2>{{$route.name}}</h2>
+        <div id="page-title" class="hero">
+          <div class="hero-body">
+              <h1 class="title">{{$route.name}}</h1>
+          </div>
         </div>
         <div id="item-info" class="level">
           <div id="item-count" class="level-left">
@@ -99,8 +101,10 @@ export default {
   width: 100%;
 }
 #page-title {
-  display: block;
-  margin: 10px 0px 30px 0px;
+  background-color:$brightblue;
+}
+.title {
+  color:white
 }
 #grid {
   display: block;
