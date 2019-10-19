@@ -37,7 +37,6 @@ export default {
   bottom: 0;
   width: 100%;
   background-color: $mainblue;
-  margin-top: 30px;
 }
 nav {
   padding: 8px;

@@ -1,5 +1,5 @@
 <template>
-  <div id="header">
+  <div id="full-header">
     <div id="top">
       <div id="promo">
         FREE WORLDWIDE SHIPPING ON EVERY ORDER!
@@ -16,7 +16,7 @@
         </nav>
       </div>
     </div>
-    <div class="level">
+    <div id="main-header" class="level">
       <div class="level-left">
         <div id="categories">
           <CategoriesMenu></CategoriesMenu>
@@ -45,6 +45,8 @@
 <script>
 import CategoriesMenu from '@/components/CategoriesMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
+import { bus } from '@/main'
+
 export default {
   name: 'NavigationTop',
   components: {
@@ -54,7 +56,8 @@ export default {
   data () {
     return {
       toAccount: '/login', // by default, Account brings to Login page
-      toCart: '/cart' // user is able to add to cart without being logged in
+      toCart: '/cart', // user is able to add to cart without being logged in
+      headerOffset: 40 // hardcoded :( otherwise won't work after refreshing page
     }
   },
   methods: {
@@ -63,19 +66,43 @@ export default {
     },
     onLogout () {
       this.toAccount = '/login'
+    },
+    onScroll () {
+      try {
+        if (window.pageYOffset >= this.headerOffset) {
+          document.getElementById('main-header').className = 'level navbar is-fixed-top'
+          bus.$emit('doStickyHeader')
+        } else {
+          document.getElementById('main-header').className = 'level'
+          bus.$emit('undoStickyHeader')
+        }
+      } catch (e) {
+        alert(e)
+      }
     }
+  },
+  mounted () {
+    window.addEventListener('scroll', this.onScroll)
+  },
+  destroyed () {
+    window.removeEventListener('scroll', this.onScroll)
   }
 }
 </script>
 
 <style scoped lang="scss">
-#header {
+#full-header {
   display: inline-block;
   text-align: left;
   margin-left: calc(50% - 50vw);
-  margin-bottom: 30px;
   width: 100vw;
+}
+#main-header {
   box-shadow: 0px 3px 2px lightgray;
+}
+.is-fixed-top {
+  margin-left: calc(50% - 50vw);
+  width: 100vw;
 }
 #top {
   display: inline-block;
@@ -88,7 +115,7 @@ export default {
   display: inline-block;
   margin-left: 5em;
   padding-top: 10px;
-  font-size: 90%;
+  font-size: 80%;
   font-weight: 600;
 }
 #login {
