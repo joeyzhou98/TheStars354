@@ -6,6 +6,7 @@ import Register from './views/Register.vue'
 import FAQ from './views/FAQ.vue'
 import About from './views/About.vue'
 import Account from './views/Account.vue'
+import Category from './views/Category.vue'
 
 Vue.use(Router)
 
@@ -40,6 +41,21 @@ export default new Router({
       path: '/account',
       name: 'Account',
       component: Account
+    },
+    {
+      path: '/bestsellers',
+      name: 'Bestsellers',
+      component: Category
+    },
+    {
+      path: '/automotives-electronics',
+      name: 'Automotives & Electronics',
+      component: Category
+    },
+    {
+      path: '/books',
+      name: 'Books',
+      component: Category
     }
   ]
 })

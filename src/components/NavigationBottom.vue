@@ -2,7 +2,7 @@
   <div id="footer">
     <nav>
       <router-link v-for="route in links" v-bind:key="route.id"
-                   :to="`${route.page}`">{{route.text}}</router-link>
+                   :to="route.page">{{route.text}}</router-link>
     </nav>
   </div>
 </template>

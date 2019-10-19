@@ -31,9 +31,9 @@
       <div class="level-right">
         <div id="buttons"> <!-- Add event listener to login and logout events-->
           <b-button class="icon-button" type="is-link"
-                  tag="router-link" icon-right="user icon-color" :to="`${toAccount}`">
+                  tag="router-link" icon-right="user icon-color" :to="toAccount">
                   ACCOUNT</b-button>
-          <b-button class="icon-button" type="is-link" :to="`${toCart}`"
+          <b-button class="icon-button" type="is-link" :to="toCart"
                   icon-right="shopping-cart icon-color">
                   CART</b-button>
         </div>

@@ -6,7 +6,6 @@
               SHOP
     </b-button>
     <Slide noOverlay :isOpen="this.open" @closeMenu="closeMenu">
-      <!-- <span class="title">SHOP BY CATEGORY</span> -->
       <div id="category-block" v-for="category in categories" :key="category.id">
         <router-link class="main-category" :to="`${category.route}`">
           <span class=main-category-name>{{category.name}}</span>
