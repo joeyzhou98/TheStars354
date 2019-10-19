@@ -26,7 +26,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.column {
-  background-color: $lightgray;
-}
 </style>

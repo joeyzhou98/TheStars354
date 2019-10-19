@@ -32,7 +32,7 @@
           <ItemGrid :items="paginatedData"></ItemGrid>
         </div>
         <div class="pagination">
-          <Pagination :pageNumber="pageNumber" :pageCount="pageCount"></Pagination>
+          <Pagination :pageNumber="pageNumber" :pageCount="pageCount" :needScrollTop="true"></Pagination>
         </div>
       </div>
     </div>
@@ -101,7 +101,7 @@ export default {
   width: 100%;
 }
 #page-title {
-  background-color:$brightblue;
+background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%, rgba(123,215,255,1) 100%);
 }
 .title {
   color:white

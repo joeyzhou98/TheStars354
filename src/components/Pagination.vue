@@ -19,7 +19,7 @@
               @click="goToPage(page-1)">
               {{page}}
             </b-dropdown-item>
-        </b-dropdown>
+    </b-dropdown>
     <b-button class="page-button" type="is-link" title="Go to Next Page"
               @click="nextPage" :disabled="pageNumber >= pageCount - 1"
               icon-right="angle-right icon-color">
@@ -38,28 +38,39 @@ export default {
   name: 'Pagination',
   props: {
     pageNumber: { type: Number, required: true },
-    pageCount: { type: Number, required: true }
+    pageCount: { type: Number, required: true },
+    needScrollTop: { type: Boolean, required: false, default: false }
   },
   methods: {
     nextPage () {
       bus.$emit('page:next')
-      window.scrollTo(0, 0)
+      if (this.needScrollTop) {
+        window.scrollTo(0, 0)
+      }
     },
     previousPage () {
       bus.$emit('page:previous')
-      window.scrollTo(0, 0)
+      if (this.needScrollTop) {
+        window.scrollTo(0, 0)
+      }
     },
     firstPage () {
       bus.$emit('page:first')
-      window.scrollTo(0, 0)
+      if (this.needScrollTop) {
+        window.scrollTo(0, 0)
+      }
     },
     lastPage () {
       bus.$emit('page:last')
-      window.scrollTo(0, 0)
+      if (this.needScrollTop) {
+        window.scrollTo(0, 0)
+      }
     },
     goToPage (page) {
       bus.$emit('page:number', page)
-      window.scrollTo(0, 0)
+      if (this.needScrollTop) {
+        window.scrollTo(0, 0)
+      }
     }
   }
 }
