@@ -18,6 +18,12 @@ shoppingListItem = db.Table(
     db.Column("item_id", db.Integer, db.ForeignKey("item.item_id"))
 )
 
+orderSeller = db.Table(
+    "orderSeller",
+    db.Column('order_id', db.Integer, db.ForeignKey("order.order_id")),
+    db.Column("seller_id", db.Integer, db.ForeignKey("sellerInfo.uid"))
+)
+
 
 class UserAuthModel(db.Model):
     __tablename__ = 'userAuthInfo'
@@ -28,8 +34,29 @@ class UserAuthModel(db.Model):
     password = db.Column(db.String(120), nullable=False)
 
     def save_to_db(self):
+        buyer = BuyerModel(uid=self.uid)
+        seller = SellerModel(uid=self.uid, membership_date=db.func.current_date())
         db.session.add(self)
         db.session.commit()
+        db.session.add(buyer)
+        db.session.add(seller)
+        db.session.commit()
+
+    def set_paypal(self, paypal):
+        BuyerModel.query.filter_by(uid=self.uid).first().paypal = paypal
+        db.session.commit()
+
+    def add_to_wish_list(self, item):
+        buyer = BuyerModel.query.filter_by(uid=self.uid).first()
+        buyer.add_to_wish_list(item)
+
+    def add_to_shopping_list(self, item):
+        buyer = BuyerModel.query.filter_by(uid=self.uid).first()
+        buyer.add_to_shopping_list(item)
+
+    def add_offered_products(self, item):
+        seller = SellerModel.query.filter_by(uid=self.uid).first()
+        seller.add_offered_products(item)
 
     @classmethod
     def find_by_username(cls, username):
@@ -40,14 +67,14 @@ class UserAuthModel(db.Model):
         return cls.query.filter_by(useremail=email).first()
 
 
-class BuyerModel(UserAuthModel):
+class BuyerModel(db.Model):
     __tablename__ = "buyerInfo"
 
     uid = db.Column(db.Integer, db.ForeignKey(UserAuthModel.uid), primary_key=True)
     address1 = db.Column(db.String(120))
     address2 = db.Column(db.String(120))
     address3 = db.Column(db.String(120))
-    paypal = db.Column(db.String(20), nullable=False)
+    paypal = db.Column(db.String(20))
     order_history = db.relationship("Order")
     wish_list = db.relationship("Item", secondary=wishListItem)
     shopping_list = db.relationship("Item", secondary=shoppingListItem)
@@ -73,12 +100,13 @@ class BuyerModel(UserAuthModel):
             return True
 
 
-class SellerModel(UserAuthModel):
+class SellerModel(db.Model):
     __tablename__ = "sellerInfo"
 
     uid = db.Column(db.Integer, db.ForeignKey(UserAuthModel.uid), primary_key=True)
     membership_date = db.Column(db.Date, nullable=False)
     offered_products = db.relationship("Item")
+    orders = db.relationship("Order", secondary=orderSeller)
 
     def save_to_db(self):
         db.session.add(self)
@@ -105,7 +133,7 @@ class Order(db.Model):
 
     order_id = db.Column(db.Integer, primary_key=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
-    items = db.relationship("Item", secondary="orderItem")
+    items = db.relationship("Item", secondary=orderItem)
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
@@ -115,6 +143,7 @@ class Order(db.Model):
             print("No such buyer.")
 
     def add_item(self, item):
+        db.engine.execute(orderSeller.insert(), order_id=self.order_id, seller_id=item.seller_id)
         self.items.append(item)
         db.session.commit()
 
@@ -126,6 +155,11 @@ class Review(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
     content = db.Column(db.String(512), nullable=True)
+    image1 = db.Column(db.String(1000))
+    image2 = db.Column(db.String(1000))
+    image3 = db.Column(db.String(1000))
+    image4 = db.Column(db.String(1000))
+    image5 = db.Column(db.String(1000))
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
@@ -141,12 +175,14 @@ class Item(db.Model):
     __tablename__ = 'item'
 
     item_id = db.Column(db.Integer, primary_key=True)
-    itemName = db.Column(db.String(120), unique=True, nullable=False)
+    item_name = db.Column(db.String(120), unique=True, nullable=False)
     price = db.Column(db.Float, unique=True, nullable=False)
     category = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.String(512), nullable=True)
+    description = db.Column(db.String(1000), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=False)
+    image = db.Column(db.String)
     reviews = db.relationship("Review")
 
     def save_to_db(self):
