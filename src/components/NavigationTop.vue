@@ -55,7 +55,7 @@ export default {
   },
   data () {
     return {
-      toAccount: '/login', // by default, Account brings to Login page
+      toAccount: '/Account', // by default, Account brings to Login page
       toCart: '/cart', // user is able to add to cart without being logged in
       headerOffset: 40 // hardcoded :( otherwise won't work after refreshing page
     }
