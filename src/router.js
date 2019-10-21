@@ -7,6 +7,7 @@ import FAQ from './views/FAQ.vue'
 import About from './views/About.vue'
 import Account from './views/Account.vue'
 import Category from './views/Category.vue'
+import Cart from './views/Cart.vue'
 
 Vue.use(Router)
 
@@ -41,6 +42,11 @@ export default new Router({
       path: '/account',
       name: 'Account',
       component: Account
+    },
+    {
+      path: '/cart',
+      name: 'Cart',
+      component: Cart
     },
     {
       path: '/bestsellers',

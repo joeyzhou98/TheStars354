@@ -2,7 +2,9 @@
   <div>
     <div class="level columns">
       <div class="level-right column is-one-fifth">
-        <div id="filter-menu">Filter menu here.</div>
+        <div id="filter-menu">
+          <FilterNav></FilterNav>
+        </div>
       </div>
       <div class="level-left column">
         <div id="page-title" class="hero">
@@ -42,13 +44,15 @@
 <script>
 import ItemGrid from '@/components/ItemGrid.vue'
 import Pagination from '@/components/Pagination.vue'
+import FilterNav from '@/components/FilterNav.vue'
 import { bus } from '../main'
 
 export default {
   name: 'Category',
   components: {
     ItemGrid,
-    Pagination
+    Pagination,
+    FilterNav
   },
   data () {
     return {
