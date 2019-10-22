@@ -91,7 +91,7 @@ export default {
           title: 'Home Suppiles',
           src: 'https://picsum.photos/300/300/?image=41',
           text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-          cardLink: '#/home-suppiles'
+          cardLink: '#/home-supplies'
         },
         {
           id: 5,
