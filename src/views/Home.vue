@@ -70,7 +70,7 @@ export default {
           title: 'Books',
           src: 'https://picsum.photos/300/300/?image=41',
           text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-          cardLink: '"#/books'
+          cardLink: '#/books'
         },
         {
           id: 2,

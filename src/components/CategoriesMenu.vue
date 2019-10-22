@@ -1,16 +1,16 @@
 <template>
   <div>
-    <b-button class="category-button" type="is-link"
-              icon-left="bars icon-color"
+    <b-button class="category-button shadow-none" variant="outline"
               @click="openMenu">
               SHOP
     </b-button>
     <Slide noOverlay :isOpen="this.open" @closeMenu="closeMenu">
       <div id="category-block" v-for="category in categories" :key="category.id">
-        <router-link class="main-category" :to="`${category.route}`">
+        <router-link class="main-category text-decoration-none" :to="category.route">
           <span class=main-category-name>{{category.name}}</span>
           <div v-for="subcategory in category.subcategories" :key="subcategory.id">
-            <router-link class="subcategory" :to="`${subcategory.route}`">{{subcategory.name}}</router-link>
+            <router-link class="subcategory text-decoration-none" :to="subcategory.route">
+            <span class=subcategory-name>{{subcategory.name}}</span></router-link>
           </div>
         </router-link>
       </div>
@@ -121,12 +121,16 @@ export default {
 
 <style scoped lang="scss">
 .category-button {
+  background: none;
   text-align: center;
   cursor: pointer;
   outline: none;
   color: $darkblue;
+  border-color: $darkblue;
   &:hover {
+    background: none;
     color: $mainblue;
+    border-color: $mainblue;
   }
   &:active {
     position:relative;
@@ -180,7 +184,7 @@ Slide {
       color: $darkblue;
     }
   }
-  .subcategory {
+  .subcategory-name {
     font-size: 13px;
     color: $darkgray;
     &:hover {
