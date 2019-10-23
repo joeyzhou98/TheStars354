@@ -5,7 +5,7 @@
         <CategoriesMenu></CategoriesMenu>
       </div>
       <div class="mx-auto" style="width: 200px;">
-        <b-navbar-brand><router-link to="/#">354 THE STARS</router-link></b-navbar-brand>
+        <b-navbar-brand><router-link to="/">354 THE STARS</router-link></b-navbar-brand>
       </div>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
