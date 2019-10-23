@@ -20,3 +20,29 @@ class UserAuthModel(db.Model):
     @classmethod
     def find_by_useremail(cls, email):
         return cls.query.filter_by(useremail=email).first()
+
+
+class Item(db.Model):
+    __tablename__ = 'item'
+
+    item_id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String(300), unique=True, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(120), nullable=False)
+    brand = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    images = db.Column(db.String(1000), nullable=False)
+
+    @property
+    def serialize(self):
+        return {
+            "item_id": self.item_id,
+            "item_name": self.item_name,
+            "price": self.price,
+            "category": self.category,
+            "brand": self.brand,
+            "description": self.description,
+            "quantity": self.quantity,
+            "images": self.images
+        }
