@@ -84,7 +84,6 @@ export default {
 .icon-button {
   background: none;
   border: none;
-  size: "is-size-6";
   text-align: center;
   margin: 0px 3px;
   cursor: pointer;

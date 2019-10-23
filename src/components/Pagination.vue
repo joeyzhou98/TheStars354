@@ -1,33 +1,34 @@
 <template>
   <div>
-    <b-button class="page-button" type="is-link" title="Go to First Page"
-    @click="firstPage" :disabled="pageNumber==0"
-    icon-left="angle-double-left icon-color">
+    <b-button class="page-button shadow-none" size="sm" variant="outline"
+              title="Go to First Page"
+              @click="firstPage" :disabled="pageNumber==0">
+              <icon name="angle-double-left"></icon>
     </b-button>
-    <b-button class="page-button" type="is-link" title="Go to Previous Page"
-              @click="previousPage" :disabled="pageNumber==0"
-              icon-left="angle-left icon-color">
-              Prev
+    <b-button class="page-button shadow-none" size="sm" variant="outline"
+              title="Go to Previous Page"
+              @click="previousPage" :disabled="pageNumber==0">
+              <icon name="angle-left"></icon>
+              <span class="button-text">Prev</span>
     </b-button>
-    <b-dropdown aria-role="list">
-            <b-button id="pageNumber" class="page-button" type="is-link" title="Go to Page #" slot="trigger"
-              icon-right="angle-down icon-color">
-              <span>{{pageNumber+1}}</span><br>
-            </b-button>
+    <b-dropdown aria-role="list" size="sm" variant="outline-primary"
+                :text="pageNumber+1">
             <b-dropdown-item aria-role="listitem"
               v-for="page in pageCount" :key="page"
               @click="goToPage(page-1)">
               {{page}}
             </b-dropdown-item>
     </b-dropdown>
-    <b-button class="page-button" type="is-link" title="Go to Next Page"
-              @click="nextPage" :disabled="pageNumber >= pageCount - 1"
-              icon-right="angle-right icon-color">
-              Next
+    <b-button class="page-button shadow-none" size="sm" variant="outline"
+              title="Go to Next Page"
+              @click="nextPage" :disabled="pageNumber >= pageCount - 1">
+              <span class="button-text">Next</span>
+              <icon name="angle-right"></icon>
     </b-button>
-    <b-button class="page-button" type="is-link" title="Go to Last Page"
-              @click="lastPage" :disabled="pageNumber >= pageCount - 1"
-              icon-right="angle-double-right icon-color">
+    <b-button class="page-button shadow-none" size="sm" variant="outline"
+              title="Go to Last Page"
+              @click="lastPage" :disabled="pageNumber >= pageCount - 1">
+              <icon name="angle-double-right"></icon>
     </b-button>
   </div>
 </template>
@@ -68,9 +69,6 @@ export default {
     },
     goToPage (page) {
       bus.$emit('page:number', page)
-      if (this.needScrollTop) {
-        window.scrollTo(0, 0)
-      }
     }
   }
 }
@@ -78,8 +76,6 @@ export default {
 
 <style scoped lang="scss">
 .page-button {
-  border-color: transparent;
-  size: "is-size-6";
   text-align: center;
   margin: 4px 3px;
   cursor: pointer;
@@ -87,10 +83,14 @@ export default {
   color: $darkblue;
   &:hover {
     color: $mainblue;
+    background-color: $lightgray;
   }
   &:active {
     position:relative;
     top:1px;
+  }
+  &:disabled {
+    color: $lightblue;
   }
 }
 #pageNumber {
@@ -98,5 +98,8 @@ export default {
   &:hover {
     border-color: darkgray;
   }
+}
+.button-text {
+  margin: 10px;
 }
 </style>
