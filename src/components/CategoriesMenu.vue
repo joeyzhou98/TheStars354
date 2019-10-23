@@ -92,7 +92,7 @@ export default {
           subcategories: [
             { id: 0, name: 'Appliances', route: '/home-supplies/appliances' },
             { id: 1, name: 'Furniture & Accessories', route: '/home-supplies/furniture-accessories' },
-            { id: 2, name: 'Garden Supplies', route: '/home-supplies/gardonsupplies' },
+            { id: 2, name: 'Garden Supplies', route: '/home-supplies/gardensupplies' },
             { id: 3, name: 'Pet Supplies', route: '/home-supplies/petsupplies' }
           ]
         },
