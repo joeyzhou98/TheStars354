@@ -6,7 +6,6 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 from flask import request, redirect, jsonify, abort
 from flask_restplus import Resource, fields
-import random
 
 from .security import require_auth
 from . import api_rest
@@ -142,13 +141,14 @@ create_item_payload = api_rest.model('ItemModel', {
     'item_name': fields.String(description='Item name', required=True),
     'price': fields.Float(description='Item price', min=0.05, required=True),
     'category': fields.String(description='Item category', required=True),
+    'subcategory': fields.String(description='Item subcategory', required=True),
     'brand': fields.String(description='Item brand', required=True),
     'description': fields.String(description='Item description, maximum 1000 characters', required=True),
     'quantity': fields.Integer(description='Number of items in stock', min=1, required=True),
     'discount': fields.Float(description='Discount on the price', min=0.0, max=1.0, required=True),
     'images': fields.String(description='Comma separated item image urls', required=True)
 })
-item_keys = ("item_name", "price", "category", "brand", "description", "quantity", "discount", "images")
+item_keys = ("item_name", "price", "category", "subcategory", "brand", "description", "quantity", "discount", "images")
 
 
 @resource.route('/item/<int:item_id>', doc={"description": "Manipulate (get, update or delete) a specific item"})
@@ -172,6 +172,7 @@ class ItemRoutes(Resource):
         item.item_name = payload["item_name"]
         item.price = payload["price"]
         item.category = payload["category"]
+        item.subcategory = payload["subcategory"]
         item.brand = payload["brand"]
         item.description = payload["description"]
         item.quantity = payload["quantity"]
@@ -204,6 +205,7 @@ class CreateItem(Resource):
             db.session.add(Item(item_name=payload["item_name"],
                                 price=payload["price"],
                                 category=payload["category"],
+                                subcategory=payload["subcategory"],
                                 brand=payload["brand"],
                                 description=payload["description"],
                                 quantity=payload["quantity"],
