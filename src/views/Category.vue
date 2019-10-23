@@ -2,9 +2,14 @@
   <b-container fluid>
     <b-row>
       <b-col>
-        <div id="filter-menu">
+        <b-row>
+          <div id="filter-info">
+            Refine by...
+          </div>
+        </b-row>
+        <b-row>
           <FilterNav></FilterNav>
-        </div>
+        </b-row>
       </b-col>
       <b-col cols="10">
         <b-row id="page-title" class="text-center">
@@ -101,6 +106,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#filter-info {
+  padding-top: 170px;
+  padding-bottom: 10px;
+}
 #filter-menu {
   position: top;
 }

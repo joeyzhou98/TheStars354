@@ -2,9 +2,12 @@
   <div role="tablist">
     <b-card no-body v-for="tab in tabs" :key="tab.id">
       <b-card-header header-tag="header" class="p-0 m-0" role="tab">
-        <b-button class="p-0 m-0" block v-b-toggle="'accordion-'+(tab.id+1)" variant="info">{{tab.tabName}}</b-button>
+        <b-button class="p-0 m-0 shadow-none"
+                  block v-b-toggle="'accordion-'+(tab.id+1)" variant="outline">
+          {{tab.tabName}}
+        </b-button>
       </b-card-header>
-      <b-collapse :id="tab.accordion" role="tabpanel">
+      <b-collapse visible :id="tab.accordion" role="tabpanel">
         <b-card-body class="p-0 m-0">
           <b-form-group align="left" class="p-0 m-0">
             <b-form-checkbox-group
@@ -123,6 +126,5 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
 </style>

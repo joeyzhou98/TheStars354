@@ -21,7 +21,7 @@ export default {
 
 <style scoped lang="scss">
 .tile {
-  background-color:darkturquoise;
+  background-color: lightslategray;
   color: white;
   height: 200px;
 }
