@@ -80,7 +80,7 @@ export default {
           active: false,
           subcategories: [
             { id: 0, name: 'Makeup', route: '/health-beauty/makeup' },
-            { id: 1, name: 'Creams', route: '//health-beauty/creams' },
+            { id: 1, name: 'Creams', route: '/health-beauty/creams' },
             { id: 2, name: 'Sports', route: '/health-beauty/sports' }
           ]
         },
@@ -99,7 +99,7 @@ export default {
         {
           id: 6,
           name: 'Jewellery & Watches',
-          route: 'jewellery-watches',
+          route: '/jewellery-watches',
           active: false,
           subcategories: [
             { id: 0, name: 'Women', route: '/jewellery-watches/women' },
