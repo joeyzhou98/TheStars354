@@ -84,8 +84,9 @@ export default new Router({
       name: 'Jewellery & Watches',
       component: Category
     },
+    // Subcategories
     {
-      path: '/automotives-electronics/cellphones-computers-tablets', // subcatgories
+      path: '/automotives-electronics/cellphones-computers-tablets',
       name: 'Cellphones, Computers & Tablets',
       component: Category
     },
@@ -101,72 +102,72 @@ export default new Router({
     },
     {
       path: '/clothing-shoes-accessories/women',
-      name: 'Clothing, Shoes & Accessories - Women',
+      name: 'Women\'s Clothing',
       component: Category
     },
     {
       path: '/clothing-shoes-accessories/men',
-      name: 'Clothing, Shoes & Accessories - Men',
+      name: 'Men\'s Clothing',
       component: Category
     },
     {
       path: '/clothing-shoes-accessories/children',
-      name: 'Clothing, Shoes & Accessories - Children',
+      name: 'Children\'s Clothing',
       component: Category
     },
     {
       path: '/clothing-shoes-accessories/shoes',
-      name: 'Clothing, Shoes & Accessories - Shoes',
+      name: 'Shoes',
       component: Category
     },
     {
       path: '/clothing-shoes-accessories/bags-accessories',
-      name: 'Clothing, Shoes & Accessories - Bags & Accessories',
+      name: 'Bags & Accessories',
       component: Category
     },
     {
       path: '/health-beauty/makeup',
-      name: 'Health & Beauty -- Makeup',
+      name: 'Makeup',
       component: Category
     },
     {
       path: '/health-beauty/creams',
-      name: 'Health & Beauty - Creams',
+      name: 'Creams',
       component: Category
     },
     {
       path: '/health-beauty/sports',
-      name: 'Health & Beauty - Sports',
+      name: 'Sports',
       component: Category
     },
     {
       path: '/home-supplies/appliances',
-      name: 'Home Supplies - Appliances',
+      name: 'Appliances',
       component: Category
     },
     {
       path: '/home-supplies/furniture-accessories',
-      name: 'Home Supplies - Furniture & Accessories',
+      name: 'Furniture & Accessories',
       component: Category
     },
     {
-      path: '/home-supplies/gardonsupplies',
-      name: 'Home Supplies - Garden Supplies',
+      path: '/home-supplies/gardensupplies',
+      name: 'Garden Supplies',
       component: Category
     },
     {
       path: '/home-supplies/petsupplies',
-      name: 'Home Supplies - Pet Supplies',
+      name: 'Pet Supplies',
       component: Category
     },
     {
       path: '/jewellery-watches/women',
-      name: 'Jewellery & Watches - Women',
+      name: 'Women\'s Jewellery & Watches',
       component: Category
     },
     {
       path: '/jewellery-watches/men',
-      name: 'Jewellery & Watches - Men',
+      name: 'Men\'s Jewellery & Watches',
       component: Category
     }
   ]
