@@ -29,9 +29,12 @@ class Item(db.Model):
     item_name = db.Column(db.String(300), unique=True, nullable=False)
     price = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(120), nullable=False)
+    subcategory = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(1000), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    quantity_sold = db.Column(db.Integer, nullable=False, default=0)
+    discount = db.Column(db.Float, nullable=False, default=0.0)
     images = db.Column(db.String(1000), nullable=False)
 
     @property
@@ -41,8 +44,11 @@ class Item(db.Model):
             "item_name": self.item_name,
             "price": self.price,
             "category": self.category,
+            "subcategory": self.subcategory,
             "brand": self.brand,
             "description": self.description,
             "quantity": self.quantity,
+            "quantity_sold": self.quantity_sold,
+            "discount": self.discount,
             "images": self.images
         }

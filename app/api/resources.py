@@ -121,11 +121,20 @@ class Search(Resource):
 
 
 @resource.route('/category', doc={"description": "Get all items in a certain category"})
-@resource.doc(params={'category': "Category query"})
+@resource.doc(params={'category': "Category query, one of {'Health & Beauty', 'Jewellery & Watches', 'Automotives & Electronics', 'Clothing, Shoes & Accessories', 'Books', 'Home Supplies'}"})
 class Category(Resource):
     def get(self):
         query = request.args.get('category')
         data = Item.query.filter(Item.category == query).all()
+        return jsonify([i.serialize for i in data])
+
+
+@resource.route('/subcategory', doc={"description": "Get all items in a certain subcategory"})
+@resource.doc(params={'subcategory': "Subcategory query, one of {'Men's Clothing', 'Children's Clothing', 'Pet Supplies', 'Women's Clothing', 'Cameras & Video Games', 'Women's Jewellery & Watches', 'Appliances', 'Creams', 'Garden Supplies', 'Shoes', 'Furniture & Accessories', 'Motos & Car Supplies', 'Men's Jewellery & Watches', 'Makeup', 'Books', 'Bags & Accessories', 'Sports', 'Cellphones, Computers & Tablets'}"})
+class Subcategory(Resource):
+    def get(self):
+        query = request.args.get('subcategory')
+        data = Item.query.filter(Item.subcategory == query).all()
         return jsonify([i.serialize for i in data])
 
 
@@ -136,9 +145,10 @@ create_item_payload = api_rest.model('ItemModel', {
     'brand': fields.String(description='Item brand', required=True),
     'description': fields.String(description='Item description, maximum 1000 characters', required=True),
     'quantity': fields.Integer(description='Number of items in stock', min=1, required=True),
+    'discount': fields.Float(description='Discount on the price', min=0.0, max=1.0, required=True),
     'images': fields.String(description='Comma separated item image urls', required=True)
 })
-item_keys = ("item_name", "price", "category", "brand", "description", "quantity", "images")
+item_keys = ("item_name", "price", "category", "brand", "description", "quantity", "discount", "images")
 
 
 @resource.route('/item/<int:item_id>', doc={"description": "Manipulate (get, update or delete) a specific item"})
@@ -165,6 +175,7 @@ class ItemRoutes(Resource):
         item.brand = payload["brand"]
         item.description = payload["description"]
         item.quantity = payload["quantity"]
+        item.discount = payload["discount"]
         item.images = payload["images"]
 
         try:
@@ -196,6 +207,7 @@ class CreateItem(Resource):
                                 brand=payload["brand"],
                                 description=payload["description"],
                                 quantity=payload["quantity"],
+                                discount=payload["discount"],
                                 images=payload["images"]))
         except KeyError as e:
             abort(400, "Missing attribute " + str(e))
@@ -206,8 +218,8 @@ class CreateItem(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/item/best', doc={"description": "Return all best seller items, for now returns randomly 20 items"})
+@resource.route('/item/best', doc={"description": "Return top 20 most sold items"})
 class BestSellers(Resource):
     def get(self):
-        items = random.sample(Item.query.all(), 20)
+        items = Item.query.order_by(Item.quantity_sold.desc()).limit(20).all()
         return jsonify([i.serialize for i in items])
