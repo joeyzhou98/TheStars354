@@ -1,5 +1,5 @@
 <template>
-  <div role="tablist">
+  <div id="filter-menu" role="tablist">
     <b-card no-body v-for="tab in tabs" :key="tab.id">
       <b-card-header header-tag="header" class="p-0 m-0" role="tab">
         <b-button class="p-0 m-0 shadow-none"
@@ -127,4 +127,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#filter-menu {
+  width: 90%;
+}
 </style>

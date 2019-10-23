@@ -88,87 +88,104 @@ export default new Router({
     {
       path: '/automotives-electronics/cellphones-computers-tablets',
       name: 'Cellphones, Computers & Tablets',
-      component: Category
+      component: Category,
+      meta: { parent: 'Automotives & Electronics' }
     },
     {
       path: '/automotives-electronics/cameras-videogames',
       name: 'Cameras & Video Games',
-      component: Category
+      component: Category,
+      meta: { parent: 'Automotives & Electronics' }
     },
     {
       path: '/automotives-electronics/motos-carsupplies',
       name: 'Motos & Car Supplies',
-      component: Category
+      component: Category,
+      meta: { parent: 'Automotives & Electronics' }
     },
     {
       path: '/clothing-shoes-accessories/women',
       name: 'Women\'s Clothing',
-      component: Category
+      component: Category,
+      meta: { parent: 'Clothing, Shoes & Accessories' }
     },
     {
       path: '/clothing-shoes-accessories/men',
       name: 'Men\'s Clothing',
-      component: Category
+      component: Category,
+      meta: { parent: 'Clothing, Shoes & Accessories' }
     },
     {
       path: '/clothing-shoes-accessories/children',
       name: 'Children\'s Clothing',
-      component: Category
+      component: Category,
+      meta: { parent: 'Clothing, Shoes & Accessories' }
     },
     {
       path: '/clothing-shoes-accessories/shoes',
       name: 'Shoes',
-      component: Category
+      component: Category,
+      meta: { parent: 'Clothing, Shoes & Accessories' }
     },
     {
       path: '/clothing-shoes-accessories/bags-accessories',
       name: 'Bags & Accessories',
-      component: Category
+      component: Category,
+      meta: { parent: 'Clothing, Shoes & Accessories' }
     },
     {
       path: '/health-beauty/makeup',
       name: 'Makeup',
-      component: Category
+      component: Category,
+      meta: { parent: 'Health & Beauty' }
     },
     {
       path: '/health-beauty/creams',
       name: 'Creams',
-      component: Category
+      component: Category,
+      meta: { parent: 'Health & Beauty' }
     },
     {
       path: '/health-beauty/sports',
       name: 'Sports',
-      component: Category
+      component: Category,
+      meta: { parent: 'Health & Beauty' }
     },
     {
       path: '/home-supplies/appliances',
       name: 'Appliances',
-      component: Category
+      component: Category,
+      meta: { parent: 'Home Supplies' }
     },
     {
       path: '/home-supplies/furniture-accessories',
       name: 'Furniture & Accessories',
-      component: Category
+      component: Category,
+      meta: { parent: 'Home Supplies' }
     },
     {
       path: '/home-supplies/gardensupplies',
       name: 'Garden Supplies',
-      component: Category
+      component: Category,
+      meta: { parent: 'Home Supplies' }
     },
     {
       path: '/home-supplies/petsupplies',
       name: 'Pet Supplies',
-      component: Category
+      component: Category,
+      meta: { parent: 'Home Supplies' }
     },
     {
       path: '/jewellery-watches/women',
       name: 'Women\'s Jewellery & Watches',
-      component: Category
+      component: Category,
+      meta: { parent: 'Jewellery & Watches' }
     },
     {
       path: '/jewellery-watches/men',
       name: 'Men\'s Jewellery & Watches',
-      component: Category
+      component: Category,
+      meta: { parent: 'Jewellery & Watches' }
     }
   ]
 })

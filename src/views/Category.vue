@@ -14,6 +14,7 @@
       <b-col cols="10">
         <b-row id="page-title" class="text-center">
           <b-col>
+          <span :v-if="isSubcategory">{{$route.meta.parent}}</span>
           <h1>{{$route.name}}</h1>
           </b-col>
         </b-row>
@@ -83,6 +84,9 @@ export default {
     },
     paginatedData () {
       return this.itemData.slice(this.itemStart, this.itemEnd)
+    },
+    isSubcategory () {
+      return this.$route.meta.parent != null
     }
   },
   methods: {
@@ -130,7 +134,7 @@ background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
   display: block;
 }
 #category {
-  color: $mainblue;
+  color: $darkblue;
   font-weight: bold;
   margin-left: 3px;
 }
