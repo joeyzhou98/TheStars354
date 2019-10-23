@@ -48,9 +48,9 @@ export default {
           route: '/automotives-electronics',
           active: true,
           subcategories: [
-            { id: 0, name: 'Cellphones, Computers & Tablets', route: '/cellphones-computers-tablets' },
-            { id: 1, name: 'Cameras & Video Games', route: '/cameras-videogames' },
-            { id: 2, name: 'Motos & Car Supplies', route: '/motos-cars' }
+            { id: 0, name: 'Cellphones, Computers & Tablets', route: '/automotives-electronics/cellphones-computers-tablets' },
+            { id: 1, name: 'Cameras & Video Games', route: '/automotives-electronics/cameras-videogames' },
+            { id: 2, name: 'Motos & Car Supplies', route: '/automotives-electronics/motos-carsupplies' }
           ]
         },
         {
@@ -66,11 +66,11 @@ export default {
           route: '/clothing-shoes-accessories',
           active: false,
           subcategories: [
-            { id: 0, name: 'Women', route: '/womens-clothing' },
-            { id: 1, name: 'Men', route: '/mens-clothing' },
-            { id: 2, name: 'Children', route: '/childrens-clothing' },
-            { id: 3, name: 'Shoes', route: '/shoes' },
-            { id: 4, name: 'Bags & Accessories', route: '/bags-accessories' }
+            { id: 0, name: 'Women', route: '/clothing-shoes-accessories/women' },
+            { id: 1, name: 'Men', route: '/clothing-shoes-accessories/men' },
+            { id: 2, name: 'Children', route: '/clothing-shoes-accessories/children' },
+            { id: 3, name: 'Shoes', route: '/clothing-shoes-accessories/shoes' },
+            { id: 4, name: 'Bags & Accessories', route: '/clothing-shoes-accessories/bags-accessories' }
           ]
         },
         {
@@ -79,9 +79,9 @@ export default {
           route: '/health-beauty',
           active: false,
           subcategories: [
-            { id: 0, name: 'Makeup', route: '/makeup' },
-            { id: 1, name: 'Creams', route: '/creams' },
-            { id: 2, name: 'Sports', route: '/sports' }
+            { id: 0, name: 'Makeup', route: '/health-beauty/makeup' },
+            { id: 1, name: 'Creams', route: '//health-beauty/creams' },
+            { id: 2, name: 'Sports', route: '/health-beauty/sports' }
           ]
         },
         {
@@ -90,10 +90,10 @@ export default {
           route: '/home-supplies',
           active: false,
           subcategories: [
-            { id: 0, name: 'Appliances', route: '/appliances' },
-            { id: 1, name: 'Furniture & Accessories', route: '/furniture-accessories' },
-            { id: 2, name: 'Garden Supplies', route: '/garden-supplies' },
-            { id: 3, name: 'Pet Supplies', route: '/pet-supplies' }
+            { id: 0, name: 'Appliances', route: '/home-supplies/appliances' },
+            { id: 1, name: 'Furniture & Accessories', route: '/home-supplies/furniture-accessories' },
+            { id: 2, name: 'Garden Supplies', route: '/home-supplies/gardonsupplies' },
+            { id: 3, name: 'Pet Supplies', route: '/home-supplies/petsupplies' }
           ]
         },
         {
@@ -102,8 +102,8 @@ export default {
           route: 'jewellery-watches',
           active: false,
           subcategories: [
-            { id: 0, name: 'Women', route: '/womens-jewellery-watches' },
-            { id: 1, name: 'Men', route: '/mens-jewellery-watches' }
+            { id: 0, name: 'Women', route: '/jewellery-watches/women' },
+            { id: 1, name: 'Men', route: '/jewellery-watches/men' }
           ]
         }
       ]
