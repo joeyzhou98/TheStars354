@@ -7,6 +7,7 @@ import FAQ from './views/FAQ.vue'
 import About from './views/About.vue'
 import Account from './views/Account.vue'
 import Category from './views/Category.vue'
+import Cart from './views/Cart.vue'
 
 Vue.use(Router)
 
@@ -43,6 +44,12 @@ export default new Router({
       component: Account
     },
     {
+      path: '/cart',
+      name: 'Cart',
+      component: Cart
+    },
+    // Categories
+    {
       path: '/bestsellers',
       name: 'Bestsellers',
       component: Category
@@ -55,6 +62,111 @@ export default new Router({
     {
       path: '/books',
       name: 'Books',
+      component: Category
+    },
+    {
+      path: '/clothing-shoes-accessories',
+      name: 'Clothing, Shoes & Accessories',
+      component: Category
+    },
+    {
+      path: '/health-beauty',
+      name: 'Health & Beauty',
+      component: Category
+    },
+    {
+      path: '/home-supplies',
+      name: 'Home Supplies',
+      component: Category
+    },
+    {
+      path: '/jewellery-watches',
+      name: 'Jewellery & Watches',
+      component: Category
+    },
+    {
+      path: '/automotives-electronics/cellphones-computers-tablets', // subcatgories
+      name: 'Cellphones, Computers & Tablets',
+      component: Category
+    },
+    {
+      path: '/automotives-electronics/cameras-videogames',
+      name: 'Cameras & Video Games',
+      component: Category
+    },
+    {
+      path: '/automotives-electronics/motos-carsupplies',
+      name: 'Motos & Car Supplies',
+      component: Category
+    },
+    {
+      path: '/clothing-shoes-accessories/women',
+      name: 'Clothing, Shoes & Accessories - Women',
+      component: Category
+    },
+    {
+      path: '/clothing-shoes-accessories/men',
+      name: 'Clothing, Shoes & Accessories - Men',
+      component: Category
+    },
+    {
+      path: '/clothing-shoes-accessories/children',
+      name: 'Clothing, Shoes & Accessories - Children',
+      component: Category
+    },
+    {
+      path: '/clothing-shoes-accessories/shoes',
+      name: 'Clothing, Shoes & Accessories - Shoes',
+      component: Category
+    },
+    {
+      path: '/clothing-shoes-accessories/bags-accessories',
+      name: 'Clothing, Shoes & Accessories - Bags & Accessories',
+      component: Category
+    },
+    {
+      path: '/health-beauty/makeup',
+      name: 'Health & Beauty -- Makeup',
+      component: Category
+    },
+    {
+      path: '/health-beauty/creams',
+      name: 'Health & Beauty - Creams',
+      component: Category
+    },
+    {
+      path: '/health-beauty/sports',
+      name: 'Health & Beauty - Sports',
+      component: Category
+    },
+    {
+      path: '/home-supplies/appliances',
+      name: 'Home Supplies - Appliances',
+      component: Category
+    },
+    {
+      path: '/home-supplies/furniture-accessories',
+      name: 'Home Supplies - Furniture & Accessories',
+      component: Category
+    },
+    {
+      path: '/home-supplies/gardonsupplies',
+      name: 'Home Supplies - Garden Supplies',
+      component: Category
+    },
+    {
+      path: '/home-supplies/petsupplies',
+      name: 'Home Supplies - Pet Supplies',
+      component: Category
+    },
+    {
+      path: '/jewellery-watches/women',
+      name: 'Jewellery & Watches - Women',
+      component: Category
+    },
+    {
+      path: '/jewellery-watches/men',
+      name: 'Jewellery & Watches - Men',
       component: Category
     }
   ]
