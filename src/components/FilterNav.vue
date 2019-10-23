@@ -1,12 +1,12 @@
 <template>
   <div role="tablist">
-    <b-card no-body class="mb-1" v-for="tab in tabs" :key="tab.id">
-      <b-card-header header-tag="header" class="p-1" role="tab">
-        <b-button block href="#" v-b-toggle="'accordion-'+(tab.id+1)" variant="info">{{tab.tabName}}</b-button>
+    <b-card no-body v-for="tab in tabs" :key="tab.id">
+      <b-card-header header-tag="header" class="p-0 m-0" role="tab">
+        <b-button class="p-0 m-0" block href="#" v-b-toggle.accordion-1 variant="info">{{tab.tabName}}</b-button>
       </b-card-header>
-      <b-collapse :id="tab.accordion" accordion="my-accordion" role="tabpanel">
-        <b-card-body>
-          <b-form-group align="left">
+      <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
+        <b-card-body class="p-0 m-0">
+          <b-form-group align="left" class="p-0 m-0">
             <b-form-checkbox-group
               v-model="selected"
               :options="tab.options"

@@ -9,7 +9,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 Vue.config.productionTip = false
-Vue.use(Buefy, {defaultIconPack: 'fa'})
+Vue.use(Buefy)
 Vue.use(BootstrapVue)
 
 export const bus = new Vue()
