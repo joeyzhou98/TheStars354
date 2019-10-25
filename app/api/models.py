@@ -31,7 +31,7 @@ class UserAuthModel(db.Model):
     uid = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)
     useremail = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(300), nullable=False)
 
     def save_to_db(self):
         buyer = BuyerModel(uid=self.uid)
@@ -93,6 +93,7 @@ class SellerModel(db.Model):
 
     uid = db.Column(db.Integer, db.ForeignKey(UserAuthModel.uid), primary_key=True)
     membership_date = db.Column(db.Date, nullable=False)
+    total_commission = db.Column(db.Float, nullable=False, default=0.0)
     offered_products = db.relationship("Item")
     orders = db.relationship("Order", secondary=orderSeller)
 
@@ -121,6 +122,7 @@ class Order(db.Model):
 
     order_id = db.Column(db.Integer, primary_key=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
+    purchase_date = db.Column(db.Date, nullable=False)
     items = db.relationship("Item", secondary=orderItem)
 
     def save_to_db(self):
@@ -159,16 +161,35 @@ class Item(db.Model):
     __tablename__ = 'item'
 
     item_id = db.Column(db.Integer, primary_key=True)
-    item_name = db.Column(db.String(120), unique=True, nullable=False)
+    item_name = db.Column(db.String(300), unique=True, nullable=False)
     price = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(120), nullable=False)
     subcategory = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(1000), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=False)
+    quantity_sold = db.Column(db.Integer, nullable=False, default=0)
+    discount = db.Column(db.Float, nullable=False, default=0.0)
     images = db.Column(db.String(1000), nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=True)
     reviews = db.relationship("Review")
+
+    @property
+    def serialize(self):
+        return {
+            "item_id": self.item_id,
+            "item_name": self.item_name,
+            "price": self.price,
+            "category": self.category,
+            "subcategory": self.subcategory,
+            "brand": self.brand,
+            "description": self.description,
+            "quantity": self.quantity,
+            "quantity_sold": self.quantity_sold,
+            "discount": self.discount,
+            "images": self.images,
+            "seller_id": self.seller_id
+        }
 
     def save_to_db(self):
         db.session.add(self)
