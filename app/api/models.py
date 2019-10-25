@@ -172,7 +172,7 @@ class Item(db.Model):
     images = db.Column(db.String(1000), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=True)
     reviews = db.relationship("Review")
-    
+
     @property
     def serialize(self):
         return {
@@ -187,7 +187,7 @@ class Item(db.Model):
             "quantity_sold": self.quantity_sold,
             "discount": self.discount,
             "images": self.images,
-            "seller_id": self.seller.id
+            "seller_id": self.seller_id
         }
 
 
