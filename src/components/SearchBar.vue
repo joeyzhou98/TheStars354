@@ -1,19 +1,11 @@
 <template>
 <div>
-    <b-field>
-      <b-select id="filter" placeholder="All">
-        <option
-            v-for="category in categories"
-            :key="category.id">
-            {{ category.name }}
-        </option>
-      </b-select>
-      <b-input id="bar" v-model="searchText"
-               icon="search fa-flip-horizontal icon-color"
-               placeholder="Search..." expanded>
-      </b-input>
-      <b-button id="submit" type="is-primary">SEARCH</b-button>
-    </b-field>
+  <b-nav-form>
+    <b-input-group>
+      <b-form-input id="bar" class="mr-sm-2"  size="sm" placeholder="Search" v-model="searchText"></b-form-input>
+      <b-button id="submit" variant="outline-primary" class="shadow-none" size="sm" type="submit">Search</b-button>
+    </b-input-group>
+  </b-nav-form>
 </div>
 </template>
 
@@ -22,64 +14,28 @@ export default {
   name: 'SearchBar',
   data () {
     return {
-      searchText: '',
-      categories: [
-        {
-          id: 0,
-          name: 'All'
-        },
-        {
-          id: 1,
-          name: 'Automotives & Electronics'
-        },
-        {
-          id: 2,
-          name: 'Books'
-        },
-        {
-          id: 3,
-          name: 'Clothing, Shoes & Accessories'
-        },
-        {
-          id: 4,
-          name: 'Health & Beauty'
-        },
-        {
-          id: 5,
-          name: 'Home Supplies'
-        },
-        {
-          id: 6,
-          name: 'Jewellery & Watches'
-        }
-      ]
+      filterSelection: 0,
+      searchText: null
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
-#filter {
-  width: 50px;
-}
 #bar {
   color: $darkblue;
   outline: none;
-  padding: 0px 40px;
+  padding: 0px 10px;
 }
 .icon-color {
   color: lightgray;
 }
 #submit {
-  background-color: $mainblue;
   border-top-left-radius: 0%;
   border-bottom-left-radius: 0%;
   &:active {
     position:relative;
     top:1px;
-  }
-  &:hover {
-    background-color:$darkblue;
   }
 }
 </style>

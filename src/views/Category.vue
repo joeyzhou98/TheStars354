@@ -1,59 +1,73 @@
 <template>
-  <div>
-    <div class="level columns">
-      <div class="level-right column is-one-fifth">
-        <div id="filter-menu">Filter menu here.</div>
-      </div>
-      <div class="level-left column">
-        <div id="page-title" class="hero">
-          <div class="hero-body">
-              <h1 class="title">{{$route.name}}</h1>
+  <b-container fluid>
+    <b-row>
+      <b-col>
+        <b-row>
+          <div id="filter-info">
+            Refine by...
           </div>
-        </div>
-        <div id="item-info" class="level">
-          <div id="item-count" class="level-left">
+        </b-row>
+        <b-row>
+          <FilterNav></FilterNav>
+        </b-row>
+      </b-col>
+      <b-col cols="10">
+        <b-row id="page-title" class="text-center">
+          <b-col>
+          <h1>{{$route.name}}</h1>
+          </b-col>
+        </b-row>
+        <b-row id="item-info" align-v="center">
+          <b-col id="item-count">
             {{itemStart}} - {{itemEnd}} of {{itemData.length}} items in
             <span id="category">{{$route.name}}</span>
-          </div>
-          <div class="pagination">
+          </b-col>
+          <b-col class="pagination">
             <Pagination :pageNumber="pageNumber" :pageCount="pageCount"></Pagination>
-          </div>
-          <div id="sort" class="level-right">
-            <span id="sort-text">Sort by:</span>
-            <b-select placeholder="Bestselling">
-              <option>Bestselling</option>
-              <option>Newest</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-            </b-select>
-          </div>
-        </div>
-        <div id="grid">
+          </b-col>
+          <b-col>
+            <div id="sort">
+              <span id="sort-text">Sort by:</span>
+              <b-select id="sort-menu" size="sm" :v-model="selectedSort" :options="sortOptions">
+              </b-select>
+            </div>
+          </b-col>
+        </b-row>
+        <b-row id="grid">
           <ItemGrid :items="paginatedData"></ItemGrid>
-        </div>
-        <div class="pagination">
+        </b-row>
+        <b-row class="pagination">
           <Pagination :pageNumber="pageNumber" :pageCount="pageCount" :needScrollTop="true"></Pagination>
-        </div>
-      </div>
-    </div>
-    </div>
+        </b-row>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
 import ItemGrid from '@/components/ItemGrid.vue'
 import Pagination from '@/components/Pagination.vue'
+import FilterNav from '@/components/FilterNav.vue'
 import { bus } from '../main'
 
 export default {
   name: 'Category',
   components: {
     ItemGrid,
-    Pagination
+    Pagination,
+    FilterNav
   },
   data () {
     return {
       pageNumber: 0,
       pageSize: 20,
+      selectedSort: 0,
+      sortOptions: [
+        { value: 0, text: 'Bestselling' },
+        { value: 1, text: 'Newest' },
+        { value: 2, text: 'Price: Low to High' },
+        { value: 3, text: 'Price: High to Low' }
+      ],
       itemData: this.createFakeData(80)
     }
   },
@@ -92,19 +106,25 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#filter-info {
+  padding-top: 170px;
+  padding-bottom: 10px;
+}
 #filter-menu {
-  background-color: turquoise;
   position: top;
-  margin: 10px
 }
 .level {
   width: 100%;
 }
 #page-title {
-background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%, rgba(123,215,255,1) 100%);
+color: white;
+padding: 30px;
+background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
+          rgba(123,215,255,1) 100%);
 }
-.title {
-  color:white
+#item-count {
+  font-size: smaller;
+  text-align: left;
 }
 #grid {
   display: block;
@@ -112,10 +132,17 @@ background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
 #category {
   color: $mainblue;
   font-weight: bold;
-  margin-left: 5px;
+  margin-left: 3px;
+}
+#sort {
+  margin-left: 100px;
 }
 #sort-text {
   margin: 0px 5px;
+  font-size: smaller;
+}
+#sort-menu {
+  width: 160px;
 }
 .pagination {
   display: block;
