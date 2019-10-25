@@ -187,5 +187,8 @@ export default new Router({
       component: Category,
       meta: { parent: 'Jewellery & Watches' }
     }
-  ]
+  ],
+  scrollBehavior (to, from, savedPosition) {
+    return { x: 0, y: 0 }
+  }
 })

@@ -8,15 +8,12 @@
       background="#ababab"
       img-width="1024"
       img-height="480"
-      style="text-shadow: 1px 1px 2px #333;"
       @sliding-start="onSlideStart"
       @sliding-end="onSlideEnd"
     >
       <b-carousel-slide
         v-for="slide in slides"
         :key="slide.id"
-        :caption="slide.caption"
-        :text="slide.text"
         :img-src="slide.src"
       >
       </b-carousel-slide>
@@ -24,9 +21,6 @@
     <br/>
     <b-card-group deck>
     <b-card v-for="categoryCard in categoryCards" :key="categoryCard.id" :title="categoryCard.title" :img-src="categoryCard.src" img-alt="Image" img-top>
-      <b-card-text>
-        {{categoryCard.text}}
-      </b-card-text>
       <b-link :href="categoryCard.cardLink">see more products</b-link>
     </b-card>
     </b-card-group>
@@ -40,71 +34,56 @@ export default {
       slides: [
         {
           id: 0,
-          caption: 'Deal of the week',
-          text: 'Save Save Save',
-          src: 'https://picsum.photos/1024/480/?image=52'
+          src: require('@/assets/home-banners/Sale.png')
         },
         {
           id: 1,
-          caption: 'Best Sellers',
-          text: 'Save Save Save',
-          src: 'https://picsum.photos/1024/480/?image=55'
+          src: require('@/assets/home-banners/Shipping.png')
         },
         {
           id: 2,
-          caption: 'Hot New Releases',
-          text: 'Save Save Save',
-          src: 'https://picsum.photos/1024/480/?image=58'
+          src: require('@/assets/home-banners/Shipping.png')
         }
       ],
       categoryCards: [
         {
           id: 0,
           title: 'Automotives & Electronics',
-          src: 'https://picsum.photos/300/300/?image=41',
-          text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+          src: require('@/assets/home-categories/Electronics.png'),
           cardLink: '#/automotives-electronics'
         },
         {
           id: 1,
           title: 'Books',
-          src: 'https://picsum.photos/300/300/?image=41',
-          text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+          src: require('@/assets/home-categories/Books.png'),
           cardLink: '#/books'
         },
         {
           id: 2,
           title: 'Clothing, Shoes & Accessories',
-          src: 'https://picsum.photos/300/300/?image=41',
-          text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+          src: require('@/assets/home-categories/Clothing.png'),
           cardLink: '#/clothing-shoes-accessories'
         },
         {
           id: 3,
           title: 'Health & Beauty',
-          src: 'https://picsum.photos/300/300/?image=41',
-          text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+          src: require('@/assets/home-categories/Beauty.png'),
           cardLink: '#/health-beauty'
         },
         {
           id: 4,
           title: 'Home Supplies',
           src: 'https://picsum.photos/300/300/?image=41',
-          text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
           cardLink: '#/home-supplies'
         },
         {
           id: 5,
           title: 'Jewellery & Watches',
-          src: 'https://picsum.photos/300/300/?image=41',
-          text: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+          src: require('@/assets/home-categories/Jewellery.png'),
           cardLink: '#/jewellery-watches'
         }
       ]
     }
-  },
-  methods: {
-
   }
 }
 </script>
