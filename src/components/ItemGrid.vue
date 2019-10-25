@@ -2,9 +2,7 @@
 <div>
   <b-row v-for="items in chunkedItems" :key="items">
     <b-col v-for="item in items" :key="item.id" lg="3" md="2" s="1" xs="1">
-      <div class="panel">
-        <ItemTile :name="item.name"></ItemTile>
-      </div>
+        <ItemTile :item="item"></ItemTile>
     </b-col>
   </b-row>
 </div>

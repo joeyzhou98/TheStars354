@@ -93,7 +93,11 @@ export default {
     createFakeData (count) { // DELETE THIS LATER
       let data = []
       for (let i = 0; i < count; i++) {
-        data.push({id: i, name: 'Tile ' + (i + 1)})
+        if (i % 2 === 0) {
+          data.push({id: i, name: 'MacBook Pro', image: require('@/assets/item-test.jpg')})
+        } else {
+          data.push({id: i, name: 'Doc Martens', image: require('@/assets/item-test2.jpg')})
+        }
       }
       return data
     }
