@@ -93,6 +93,7 @@ class SellerModel(db.Model):
 
     uid = db.Column(db.Integer, db.ForeignKey(UserAuthModel.uid), primary_key=True)
     membership_date = db.Column(db.Date, nullable=False)
+    total_commission = db.Column(db.Float, nullable=False, default=0.0)
     offered_products = db.relationship("Item")
     orders = db.relationship("Order", secondary=orderSeller)
 
@@ -189,7 +190,6 @@ class Item(db.Model):
             "images": self.images,
             "seller_id": self.seller_id
         }
-
 
     def save_to_db(self):
         db.session.add(self)

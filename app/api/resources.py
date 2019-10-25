@@ -132,7 +132,7 @@ class Category(Resource):
 @resource.doc(params={'subcategory': "Subcategory query, one of {'Men's Clothing', 'Children's Clothing', 'Pet Supplies', 'Women's Clothing', 'Cameras & Video Games', 'Women's Jewellery & Watches', 'Appliances', 'Creams', 'Garden Supplies', 'Shoes', 'Furniture & Accessories', 'Motos & Car Supplies', 'Men's Jewellery & Watches', 'Makeup', 'Books', 'Bags & Accessories', 'Sports', 'Cellphones, Computers & Tablets'}"})
 class Subcategory(Resource):
     def get(self):
-        query = request.args.get('subcategory')
+        query = request.args.get('subcategory').replace("’", "'")
         data = Item.query.filter(Item.subcategory == query).all()
         return jsonify([i.serialize for i in data])
 
@@ -187,10 +187,10 @@ class ItemRoutes(Resource):
         return jsonify(success=True)
 
     def delete(self, item_id):
-        item = Item.query.filter(Item.item_id == item_id).first()
+        item = Item.query.filter(Item.item_id == item_id)
         if item is not None:
             item.delete()
-            db.commit()
+            db.session.commit()
             return jsonify(success=True)
         else:
             abort(404, "Sorry, item with id {} not found".format(item_id))
@@ -224,4 +224,11 @@ class CreateItem(Resource):
 class BestSellers(Resource):
     def get(self):
         items = Item.query.order_by(Item.quantity_sold.desc()).limit(20).all()
+        return jsonify([i.serialize for i in items])
+
+
+@resource.route('/item/deals', doc={"description": "Return top 20 most discounted items"})
+class Deals(Resource):
+    def get(self):
+        items = Item.query.order_by(Item.discount.desc()).limit(20).all()
         return jsonify([i.serialize for i in items])
