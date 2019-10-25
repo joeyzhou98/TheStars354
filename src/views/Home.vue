@@ -42,7 +42,7 @@ export default {
         },
         {
           id: 2,
-          src: require('@/assets/home-banners/Shipping.png')
+          src: require('@/assets/home-banners/Trending.png')
         }
       ],
       categoryCards: [
@@ -73,7 +73,7 @@ export default {
         {
           id: 4,
           title: 'Home Supplies',
-          src: 'https://picsum.photos/300/300/?image=41',
+          src: require('@/assets/home-categories/Home.png'),
           cardLink: '#/home-supplies'
         },
         {
