@@ -29,7 +29,7 @@
           <b-col>
             <div id="sort">
               <span id="sort-text">Sort by:</span>
-              <b-select id="sort-menu" size="sm" :v-model="selectedSort" :options="sortOptions">
+              <b-select id="sort-menu" size="sm" v-model="selectedSort" :options="sortOptions" @change="onSortChanged">
               </b-select>
             </div>
           </b-col>
@@ -63,12 +63,12 @@ export default {
     return {
       pageNumber: 0,
       pageSize: 20,
-      selectedSort: 0,
+      selectedSort: 'Bestselling',
       sortOptions: [
-        { value: 0, text: 'Bestselling' },
-        { value: 1, text: 'Newest' },
-        { value: 2, text: 'Price: Low to High' },
-        { value: 3, text: 'Price: High to Low' }
+        { value: 'Bestselling', text: 'Bestselling' },
+        { value: 'Discount Value', text: 'Discount Value' },
+        { value: 'Price: Low to High', text: 'Price: Low to High' },
+        { value: 'Price: High to Low', text: 'Price: High to Low' }
       ],
       itemData: null
     }
@@ -105,19 +105,36 @@ export default {
     getItemData () {
       var url = null
       if (this.categoryName === 'Bestsellers') {
-        url = 'http://localhost:5000/api/resource/item/best'
+        url = 'http://localhost:8080/api/resource/item/best'
       } else if (this.isSubcategory) {
-        url = 'http://localhost:5000/api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
+        url = 'http://localhost:8080/api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
       } else {
-        url = 'http://localhost:5000/api/resource/category?category=' + encodeURIComponent(this.categoryName)
+        url = 'http://localhost:8080/api/resource/category?category=' + encodeURIComponent(this.categoryName)
       }
 
       axios
         .get(url)
         .then(response => (this.itemData = response.data))
         .catch(error => alert(error))
+    },
+    onSortChanged () {
+      switch (this.selectedSort) {
+        case 'Bestselling':
+          this.itemData = this.itemData.sort((a, b) => { return b.quantity_sold - a.quantity_sold })
+          break
+        case 'Discount Value':
+          this.itemData = this.itemData.sort((a, b) => { return b.discount - a.discount })
+          break
+        case 'Price: Low to High':
+          this.itemData = this.itemData.sort((a, b) => { return a.price - b.price })
+          break
+        case 'Price: High to Low':
+          this.itemData = this.itemData.sort((a, b) => { return b.price - a.price })
+          break
+      }
     }
   },
+  // Lifecycle //
   mounted () {
     this.getItemData()
   },
