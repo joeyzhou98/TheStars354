@@ -17,5 +17,14 @@ module.exports = {
         target: 'http://localhost:5000/'
       }
     }
+  },
+  css: {
+    loaderOptions: {
+      // pass options to sass-loader
+      // @/ is an alias to src/
+      sass: {
+        data: `@import '~@/styles/colors.scss';`
+      }
+    }
   }
 }
