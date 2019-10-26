@@ -49,6 +49,7 @@
 import ItemGrid from '@/components/ItemGrid.vue'
 import Pagination from '@/components/Pagination.vue'
 import FilterNav from '@/components/FilterNav.vue'
+import axios from 'axios'
 import { bus } from '../main'
 
 export default {
@@ -69,7 +70,15 @@ export default {
         { value: 2, text: 'Price: Low to High' },
         { value: 3, text: 'Price: High to Low' }
       ],
-      itemData: this.createFakeData(80)
+      itemData: null
+    }
+  },
+  watch: {
+    // Refresh data when changing categories
+    $route (to, from) {
+      if (to !== from) {
+        this.getItemData()
+      }
     }
   },
   computed: {
@@ -87,20 +96,30 @@ export default {
     },
     isSubcategory () {
       return this.$route.meta.parent != null
+    },
+    categoryName () {
+      return this.$route.name
     }
   },
   methods: {
-    createFakeData (count) { // DELETE THIS LATER
-      let data = []
-      for (let i = 0; i < count; i++) {
-        if (i % 2 === 0) {
-          data.push({id: i, name: 'MacBook Pro', image: require('@/assets/item-test.jpg')})
-        } else {
-          data.push({id: i, name: 'Doc Martens', image: require('@/assets/item-test2.jpg')})
-        }
+    getItemData () {
+      var url = null
+      if (this.categoryName === 'Bestsellers') {
+        url = 'http://localhost:5000/api/resource/item/best'
+      } else if (this.isSubcategory) {
+        url = 'http://localhost:5000/api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
+      } else {
+        url = 'http://localhost:5000/api/resource/category?category=' + encodeURIComponent(this.categoryName)
       }
-      return data
+
+      axios
+        .get(url)
+        .then(response => (this.itemData = response.data))
+        .catch(error => alert(error))
     }
+  },
+  mounted () {
+    this.getItemData()
   },
   created () {
     // Event listeners for page change

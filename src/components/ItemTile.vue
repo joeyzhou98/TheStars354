@@ -1,10 +1,10 @@
 <template>
   <div class="tile">
     <div class="img-container">
-      <img :src="item.image"/>
+      <img :src="item.images"/>
     </div>
     <div class="item-title">
-      {{item.name}}
+      {{item.item_name}}
     </div>
     <div class="item-price">
       1,200.00$
@@ -33,7 +33,7 @@ export default {
 img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: scale-down;
 }
 .item-title {
   padding: 5px;

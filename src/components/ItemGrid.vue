@@ -1,7 +1,7 @@
 <template>
 <div>
   <b-row v-for="items in chunkedItems" :key="items">
-    <b-col v-for="item in items" :key="item.id" lg="3" md="2" s="1" xs="1">
+    <b-col v-for="item in items" :key="item.item_id" lg="3" md="2" s="1" xs="1">
         <ItemTile :item="item"></ItemTile>
     </b-col>
   </b-row>
