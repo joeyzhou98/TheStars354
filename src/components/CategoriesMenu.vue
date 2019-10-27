@@ -36,18 +36,6 @@ export default {
       open: false,
       categories: [
         {
-          name: 'Bestsellers',
-          route: '/bestsellers',
-          active: false,
-          subcategories: []
-        },
-        {
-          name: 'Special Deals',
-          route: '/deals',
-          active: false,
-          subcategories: []
-        },
-        {
           name: 'Automotives & Electronics',
           route: '/automotives-electronics',
           active: true,

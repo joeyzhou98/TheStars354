@@ -12,7 +12,7 @@
               <span class="button-text">Prev</span>
     </b-button>
     <b-dropdown aria-role="list" size="sm" variant="outline-primary"
-                :text="pageNumber+'1'">
+                :text="pageNumber+1">
             <b-dropdown-item aria-role="listitem"
               v-for="page in pageCount" :key="page"
               @click="goToPage(page-1)">
