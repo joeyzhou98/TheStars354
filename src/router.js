@@ -48,6 +48,7 @@ export default new Router({
       name: 'Cart',
       component: Cart
     },
+    // Item display
     {
       path: '/bestsellers',
       name: 'Bestsellers',
@@ -56,6 +57,11 @@ export default new Router({
     {
       path: '/deals',
       name: 'Special Deals',
+      component: Category
+    },
+    {
+      path: '/search',
+      name: 'Search Results',
       component: Category
     },
     // Categories

@@ -35,7 +35,8 @@
           </b-col>
         </b-row>
         <b-row id="grid">
-          <ItemGrid :items="paginatedData"></ItemGrid>
+          <ItemGrid v-if="validItems" :items="paginatedData"></ItemGrid>
+          <div v-if="validItems == false">{{noItemsMsg}}</div>
         </b-row>
         <b-row class="pagination">
           <Pagination :pageNumber="pageNumber" :pageCount="pageCount" :needScrollTop="true"></Pagination>
@@ -70,7 +71,8 @@ export default {
         { value: 'Price: Low to High', text: 'Price: Low to High' },
         { value: 'Price: High to Low', text: 'Price: High to Low' }
       ],
-      itemData: null
+      itemData: null,
+      noItemsMsg: 'Sorry, there are no products to display here :('
     }
   },
   watch: {
@@ -99,9 +101,18 @@ export default {
     },
     categoryName () {
       return this.$route.name
+    },
+    validItems () {
+      return this.itemData != null && this.itemData.length !== 0
     }
   },
   methods: {
+    sendAxiosRequest (url) {
+      axios
+        .get(url)
+        .then(response => (this.itemData = this.getSortedItems(response.data)))
+        .catch(error => alert(error))
+    },
     getItemData () {
       var url = null
       if (this.categoryName === 'Bestsellers') {
@@ -113,13 +124,7 @@ export default {
       } else {
         url = 'api/resource/category?category=' + encodeURIComponent(this.categoryName)
       }
-      axios
-        .get(url)
-        .then(response => (this.itemData = this.getSortedItems(response.data)))
-        .catch(error => alert(error))
-    },
-    onSortChanged () {
-      this.itemData = this.getSortedItems(this.itemData)
+      this.sendAxiosRequest(url)
     },
     getSortedItems (data) {
       switch (this.selectedSort) {
@@ -137,6 +142,13 @@ export default {
     },
     getRealPrice (item) {
       return item.price - item.price * item.discount
+    },
+    onSortChanged () {
+      this.itemData = this.getSortedItems(this.itemData)
+    },
+    onSearch (query) {
+      var url = 'api/resource/search?query=' + encodeURIComponent(query)
+      this.sendAxiosRequest(url)
     }
   },
   // Lifecycle //
@@ -150,6 +162,8 @@ export default {
     bus.$on('page:first', () => { this.pageNumber = 0 })
     bus.$on('page:last', () => { this.pageNumber = this.pageCount - 1 })
     bus.$on('page:number', (page) => { this.pageNumber = page })
+    // Event listener for search
+    bus.$on('search', (query) => { this.onSearch(query) })
   }
 }
 </script>
