@@ -105,13 +105,13 @@ export default {
     getItemData () {
       var url = null
       if (this.categoryName === 'Bestsellers') {
-        url = 'http://localhost:8080/api/resource/item/best'
+        url = 'api/resource/item/best'
       } else if (this.categoryName === 'Special Deals') {
-        url = 'http://localhost:8080/api/resource/item/deals'
+        url = 'api/resource/item/deals'
       } else if (this.isSubcategory) {
-        url = 'http://localhost:8080/api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
+        url = 'api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
       } else {
-        url = 'http://localhost:8080/api/resource/category?category=' + encodeURIComponent(this.categoryName)
+        url = 'api/resource/category?category=' + encodeURIComponent(this.categoryName)
       }
       axios
         .get(url)
