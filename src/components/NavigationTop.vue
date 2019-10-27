@@ -9,6 +9,10 @@
       </div>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+      <b-navbar-nav>
+        <b-nav-item><router-link class="item-link" to="/bestsellers">Bestsellers</router-link></b-nav-item>
+        <b-nav-item><router-link class="item-link">Deals</router-link></b-nav-item>
+      </b-navbar-nav>
 
       <!-- Right aligned nav items -->
       <b-collapse id="nav-collapse" is-nav>
@@ -37,7 +41,6 @@
 <script>
 import CategoriesMenu from '@/components/CategoriesMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
-// import { bus } from '@/main'
 
 export default {
   name: 'NavigationTop',
@@ -99,5 +102,11 @@ export default {
 }
 #search {
   margin: 4px 0px;
+}
+.item-link {
+  margin-right: 4px;
+  &:hover {
+    text-decoration: none;
+  }
 }
 </style>

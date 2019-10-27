@@ -106,6 +106,8 @@ export default {
       var url = null
       if (this.categoryName === 'Bestsellers') {
         url = 'http://localhost:8080/api/resource/item/best'
+      } else if (this.categoryName === 'Special Deals') {
+        url = 'http://localhost:8080/api/resource/item/deals'
       } else if (this.isSubcategory) {
         url = 'http://localhost:8080/api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
       } else {

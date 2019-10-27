@@ -6,7 +6,7 @@
               <span class="icon-text">SHOP</span>
     </b-button>
     <Slide noOverlay :isOpen="this.open" @closeMenu="closeMenu">
-      <div id="category-block" v-for="category in categories" :key="category.id">
+      <div id="category-block" v-for="category in categories" :key="category.name">
         <router-link class="main-category text-decoration-none" :to="category.route">
           <span class=main-category-name>{{category.name}}</span>
           <div v-for="subcategory in category.subcategories" :key="subcategory.id">
@@ -36,14 +36,18 @@ export default {
       open: false,
       categories: [
         {
-          id: 0,
           name: 'Bestsellers',
           route: '/bestsellers',
           active: false,
           subcategories: []
         },
         {
-          id: 1,
+          name: 'Special Deals',
+          route: '/deals',
+          active: false,
+          subcategories: []
+        },
+        {
           name: 'Automotives & Electronics',
           route: '/automotives-electronics',
           active: true,
@@ -54,14 +58,12 @@ export default {
           ]
         },
         {
-          id: 2,
           name: 'Books',
           route: '/books',
           active: false,
           subcategories: []
         },
         {
-          id: 3,
           name: 'Clothing, Shoes & Accessories',
           route: '/clothing-shoes-accessories',
           active: false,
@@ -74,7 +76,6 @@ export default {
           ]
         },
         {
-          id: 4,
           name: 'Health & Beauty',
           route: '/health-beauty',
           active: false,
@@ -85,7 +86,6 @@ export default {
           ]
         },
         {
-          id: 5,
           name: 'Home Supplies',
           route: '/home-supplies',
           active: false,
@@ -97,7 +97,6 @@ export default {
           ]
         },
         {
-          id: 6,
           name: 'Jewellery & Watches',
           route: '/jewellery-watches',
           active: false,

@@ -48,12 +48,17 @@ export default new Router({
       name: 'Cart',
       component: Cart
     },
-    // Categories
     {
       path: '/bestsellers',
       name: 'Bestsellers',
       component: Category
     },
+    {
+      path: '/deals',
+      name: 'Special Deals',
+      component: Category
+    },
+    // Categories
     {
       path: '/automotives-electronics',
       name: 'Automotives & Electronics',
