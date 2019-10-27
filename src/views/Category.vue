@@ -111,27 +111,30 @@ export default {
       } else {
         url = 'http://localhost:8080/api/resource/category?category=' + encodeURIComponent(this.categoryName)
       }
-
       axios
         .get(url)
-        .then(response => (this.itemData = response.data))
+        .then(response => (this.itemData = this.getSortedItems(response.data)))
         .catch(error => alert(error))
     },
     onSortChanged () {
+      this.itemData = this.getSortedItems(this.itemData)
+    },
+    getSortedItems (data) {
       switch (this.selectedSort) {
         case 'Bestselling':
-          this.itemData = this.itemData.sort((a, b) => { return b.quantity_sold - a.quantity_sold })
-          break
+          return data.sort((a, b) => { return b.quantity_sold - a.quantity_sold })
         case 'Discount Value':
-          this.itemData = this.itemData.sort((a, b) => { return b.discount - a.discount })
-          break
+          return data.sort((a, b) => { return b.discount - a.discount })
         case 'Price: Low to High':
-          this.itemData = this.itemData.sort((a, b) => { return a.price - b.price })
-          break
+          return data.sort((a, b) => { return this.getRealPrice(a) - this.getRealPrice(b) })
         case 'Price: High to Low':
-          this.itemData = this.itemData.sort((a, b) => { return b.price - a.price })
-          break
+          return data.sort((a, b) => { return this.getRealPrice(b) - this.getRealPrice(a) })
+        default:
+          return data
       }
+    },
+    getRealPrice (item) {
+      return item.price - item.price * item.discount
     }
   },
   // Lifecycle //
