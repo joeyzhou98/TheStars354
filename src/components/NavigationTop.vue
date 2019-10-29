@@ -47,7 +47,7 @@ export default {
   },
   data () {
     return {
-      toAccount: '/account', // by default, Account brings to Login page
+      toAccount: '/login-register', // by default, Account brings to Login page
       toCart: '/cart' // user is able to add to cart without being logged in
     }
   },
@@ -56,7 +56,7 @@ export default {
       this.toAccount = '/account'
     },
     onLogout () {
-      this.toAccount = '/login'
+      this.toAccount = '/login-register'
     }
   }
 }

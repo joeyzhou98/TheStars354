@@ -2,8 +2,7 @@
   <div id="filter-menu" role="tablist">
     <b-card no-body v-for="tab in tabs" :key="tab.id">
       <b-card-header header-tag="header" class="p-0 m-0" role="tab">
-        <b-button class="p-0 m-0 shadow-none"
-                  block v-b-toggle="'accordion-'+(tab.id+1)" variant="outline">
+        <b-button class="p-0 m-0 shadow-none" block v-b-toggle="'accordion-'+(tab.id+1)" variant="outline">
           {{tab.tabName}}
         </b-button>
       </b-card-header>
@@ -21,10 +20,15 @@
         </b-card-body>
       </b-collapse>
     </b-card>
+    <b-card-header header-tag="header" class="p-0 m-0" role="tab">
+        <b-button type='submit' @click='filter' class="p-0 m-0 shadow-none" block variant="dark">Filter</b-button>
+    </b-card-header>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data () {
     return {
@@ -117,11 +121,24 @@ export default {
           ]
         }
       ],
-      slected: []
+      selected: []
     }
   },
   methods: {
-
+    filter () {
+      let newFilter = {
+        selected: this.selected
+      }
+      console.log(newFilter)
+      axios
+        .post('', newFilter)
+        .then(response => {
+          console.log('Successfully Filter')
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    }
   }
 }
 </script>
