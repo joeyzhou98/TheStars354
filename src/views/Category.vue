@@ -8,7 +8,7 @@
           </div>
         </b-row>
         <b-row>
-          <FilterNav></FilterNav>
+          <FilterNav :items="itemData" :isSubcategory="isSubcategory"></FilterNav>
         </b-row>
       </b-col>
       <b-col cols="10">
