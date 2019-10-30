@@ -44,16 +44,6 @@ export default {
     hasGoodDiscount () {
       return this.item.discount >= 0.15
     }
-  },
-  methods: {
-    truncate () {
-      const itemName = document.getElementById('item-title')
-      var divh = itemName.clientWidth
-      var span = itemName.querySelector('span')
-      while (span.width > divh) {
-        span.textContent = span.textContent.replace(/\W*\s(\S)*$/, '...')
-      }
-    }
   }
 }
 </script>

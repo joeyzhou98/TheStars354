@@ -21,12 +21,8 @@
           </b-col>
         </b-row>
         <b-row id="item-info" align-v="center">
-          <b-col v-if="filteredData === null" class="item-count">
-            {{itemStart}} - {{itemEnd}} of {{itemData.length}} items in
-            <span class="category">{{$route.name}}</span>
-          </b-col>
-          <b-col v-else class="item-count">
-            {{itemStart}} - {{itemEnd}} of {{filteredData.length}} items in
+          <b-col class="item-count">
+            {{itemStart}} - {{itemEnd}} of {{displayedItems.length}} items in
             <span class="category">{{$route.name}}</span>
           </b-col>
           <b-col class="pagination">
