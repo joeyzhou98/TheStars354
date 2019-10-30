@@ -19,7 +19,7 @@ export default {
   data () {
     return {
       filterSelection: 0,
-      query: null
+      query: ''
     }
   },
   methods: {
