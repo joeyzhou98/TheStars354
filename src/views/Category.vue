@@ -3,12 +3,12 @@
     <b-row>
       <b-col>
         <b-row>
-          <div id="filter-info">
-            Refine by...
+          <div id="filter-space">
+            <!-- Intentionally empty -->
           </div>
         </b-row>
         <b-row>
-          <FilterNav :items="itemData" :isSubcategory="isSubcategory"></FilterNav>
+          <FilterNav :items="itemData" :isSubcategory="is"></FilterNav>
         </b-row>
       </b-col>
       <b-col cols="10">
@@ -72,6 +72,7 @@ export default {
         { value: 'Price: High to Low', text: 'Price: High to Low' }
       ],
       itemData: null,
+      filteredData: null,
       noItemsMsg: 'Sorry, there are no products to display here :('
     }
   },
@@ -94,6 +95,9 @@ export default {
       return this.itemStart + this.pageSize
     },
     paginatedData () {
+      if (this.filteredData !== null) {
+        return this.filteredData.slice(this.itemStart, this.itemEnd)
+      }
       return this.itemData.slice(this.itemStart, this.itemEnd)
     },
     isSubcategory () {
@@ -164,12 +168,14 @@ export default {
     bus.$on('page:number', (page) => { this.pageNumber = page })
     // Event listener for search
     bus.$on('search', (query) => { this.onSearch(query) })
+    // Event listener for filters
+    bus.$on('filter_change', (filteredData) => { this.filteredData = filteredData })
   }
 }
 </script>
 
 <style scoped lang="scss">
-#filter-info {
+#filter-space {
   padding-top: 170px;
   padding-bottom: 10px;
 }
