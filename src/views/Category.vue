@@ -77,8 +77,8 @@ export default {
         { value: 'Price: Low to High', text: 'Price: Low to High' },
         { value: 'Price: High to Low', text: 'Price: High to Low' }
       ],
-      itemData: null,
-      filteredData: null,
+      itemData: null, // items fetched from the API request
+      filteredData: null, // items filtered by FilterNav component
       noItemsMsg: 'Sorry, there are no products to display here :('
     }
   },
@@ -91,26 +91,23 @@ export default {
     }
   },
   computed: {
-    pageCount () {
+    displayedItems () {
       if (this.filteredData !== null) {
-        return Math.ceil(this.filteredData.length / this.pageSize)
+        return this.filteredData
       }
-      return Math.ceil(this.itemData.length / this.pageSize)
+      return this.itemData
+    },
+    pageCount () {
+      return Math.ceil(this.displayedItems.length / this.pageSize)
     },
     itemStart () {
       return this.pageNumber * this.pageSize
     },
     itemEnd () {
-      if (this.filteredData !== null) {
-        return Math.min(this.itemStart + this.pageSize, this.filteredData.length)
-      }
-      return Math.min(this.itemStart + this.pageSize, this.itemData.length)
+      return Math.min(this.itemStart + this.pageSize, this.displayedItems.length)
     },
     paginatedData () {
-      if (this.filteredData !== null) {
-        return this.filteredData.slice(this.itemStart, this.itemEnd)
-      }
-      return this.itemData.slice(this.itemStart, this.itemEnd)
+      return this.displayedItems.slice(this.itemStart, this.itemEnd)
     },
     isSubcategory () {
       return this.$route.meta.parent != null
@@ -119,7 +116,7 @@ export default {
       return this.$route.name
     },
     validItems () {
-      return this.itemData != null && this.itemData.length !== 0
+      return this.displayedItems != null && this.displayedItems.length !== 0
     },
     relatedLinks () {
       if (this.isSubcategory) {
@@ -178,11 +175,7 @@ export default {
       return item.price - item.price * item.discount
     },
     onSortChanged () {
-      if (this.filteredData !== null) {
-        this.filteredData = this.getSortedItems(this.filteredData)
-      } else {
-        this.itemData = this.getSortedItems(this.itemData)
-      }
+      this.displayedItems = this.getSortedItems(this.displayedItems)
     },
     onSearch (query) {
       var url = 'api/resource/search?query=' + encodeURIComponent(query)
