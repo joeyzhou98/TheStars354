@@ -52,17 +52,26 @@ export default new Router({
     {
       path: '/bestsellers',
       name: 'Bestsellers',
-      component: Category
+      component: Category,
+      meta: { children: [
+        { name: 'Bestsellers', path: '' }
+      ]}
     },
     {
       path: '/deals',
       name: 'Special Deals',
-      component: Category
+      component: Category,
+      meta: { children: [
+        { name: 'Special Deals', path: '' }
+      ]}
     },
     {
       path: '/search',
       name: 'Search Results',
-      component: Category
+      component: Category,
+      meta: { children: [
+        { name: 'Search Results', path: '' }
+      ]}
     },
     // Categories
     {
