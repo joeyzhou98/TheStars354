@@ -104,7 +104,7 @@ export default {
       if (this.filteredData !== null) {
         return Math.min(this.itemStart + this.pageSize, this.filteredData.length)
       }
-      return this.itemStart + this.pageSize
+      return Math.min(this.itemStart + this.pageSize, this.itemData.length)
     },
     paginatedData () {
       if (this.filteredData !== null) {
