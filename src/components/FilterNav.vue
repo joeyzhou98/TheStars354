@@ -1,17 +1,14 @@
 <template>
-  <div>
-    <div id="title">
-      Filters
-    </div>
+  <div id="content">
     <div class="clear-container">
-      <b-button class="clear-filter shadow-none" size="sm" variant="outline" @click="clear">
-        <icon name="times"></icon> clear filters
+      <b-button class="clear-filter shadow-none" size="sm" variant="outline" @click="clearFilters">
+        clear filters [x]
       </b-button>
-    </div>
+    </div><br>
     <div id="filter-menu" role="tablist">
       <b-card no-body v-for="tab in tabsToDisplay" :key="tab.id">
         <b-card-header header-tag="header" class="p-0 m-0" role="tab">
-          <b-button class="p-0 m-0 shadow-none"
+          <b-button class="p-0 m-0 shadow-none category"
                     block v-b-toggle="'accordion-'+(tab.id+1)" variant="outline">
             {{tab.tabName}}
           </b-button>
@@ -19,7 +16,7 @@
         <b-collapse visible :id="tab.accordion" role="tabpanel">
           <b-card-body class="p-0 m-0">
             <b-form-group align="left" class="p-0 m-0">
-              <b-form-checkbox-group
+              <b-form-checkbox-group class="checkboxes"
                 v-model="tab.selected"
                 :options="tab.options"
                 :name="tab.name"
@@ -33,8 +30,8 @@
       </b-card>
     </div>
     <div class="clear-container">
-      <b-button class="clear-filter shadow-none" size="sm" variant="outline" @click="clear">
-        <icon name="times"></icon> clear filters
+      <b-button class="clear-filter shadow-none" size="sm" variant="outline" @click="clearFilters">
+        clear filters [x]
       </b-button>
     </div>
   </div>
@@ -110,6 +107,7 @@ export default {
   },
   methods: {
     getCategories () {
+      this.tabs[0].options = []
       if (this.isSubcategory) { // Return because subcategories don't have sub-subcategories...
         return
       }
@@ -119,7 +117,6 @@ export default {
           subcategories.push(item.subcategory)
         }
       }
-      this.tabs[0].options = []
       for (var subcategory of subcategories) {
         this.tabs[0].options.push({text: subcategory, value: subcategory})
       }
@@ -141,7 +138,7 @@ export default {
       this.getCategories()
       this.getBrands()
     },
-    clear () {
+    clearFilters () {
       for (var tab of this.tabs) {
         tab.selected = []
       }
@@ -182,6 +179,7 @@ export default {
   watch: {
     // Refresh filters whenever the items list changes
     items () {
+      this.clearFilters()
       this.getFilters()
     }
   },
@@ -193,11 +191,28 @@ export default {
 </script>
 
 <style scoped lang="scss">
-#filter-menu {
+#content {
   width: 90%;
 }
+.clear-container {
+  display: block;
+  margin-bottom: 8px;
+}
 .clear-filter {
-  display: inline-block;
-  text-align: right;
+  position: absolute;
+  right: 20px;
+  color: gray;
+  &:hover {
+    color: red;
+  }
+}
+.checkboxes {
+  margin: 5px;
+  font-size: smaller;
+}
+.category {
+  background-color: $lightblue;
+  font-weight: bold;
+  font-size: smaller;
 }
 </style>

@@ -3,12 +3,14 @@
     <b-row>
       <b-col>
         <b-row>
-          <div id="filter-space">
-            <!-- Intentionally empty -->
+          <div id="navigation-links">
+              <router-link v-for="link in relatedLinks" v-bind:key="link.name"
+                :to="link.path"><span class="navigation-link">{{navBracket}} {{link.name}}</span>
+              </router-link>
           </div>
         </b-row>
         <b-row>
-          <FilterNav :items="itemData" :isSubcategory="is"></FilterNav>
+          <FilterNav :items="itemData" :isSubcategory="isSubcategory"></FilterNav>
         </b-row>
       </b-col>
       <b-col cols="10">
@@ -108,6 +110,24 @@ export default {
     },
     validItems () {
       return this.itemData != null && this.itemData.length !== 0
+    },
+    relatedLinks () {
+      if (this.isSubcategory) {
+        return [{name: this.$route.meta.parent, path: this.$route.meta.path}]
+      } else {
+        var subcategories = []
+        for (var subcategory of this.$route.meta.children) {
+          subcategories.push({name: subcategory.name, path: this.$route.path + subcategory.path})
+        }
+        return subcategories
+      }
+    },
+    navBracket () {
+      if (this.isSubcategory) {
+        return '<'
+      } else {
+        return '>'
+      }
     }
   },
   methods: {
@@ -149,6 +169,9 @@ export default {
     },
     onSortChanged () {
       this.itemData = this.getSortedItems(this.itemData)
+      if (this.filteredData !== 0) {
+        this.filteredData = this.getSortedItems(this.filteredData)
+      }
     },
     onSearch (query) {
       var url = 'api/resource/search?query=' + encodeURIComponent(query)
@@ -216,5 +239,13 @@ background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
 .pagination {
   display: block;
   margin: 20px;
+}
+#navigation-links {
+  padding: 20px;
+}
+.navigation-link {
+  display: block;
+  text-align: left;
+  font-size: smaller;
 }
 </style>
