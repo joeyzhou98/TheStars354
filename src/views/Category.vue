@@ -21,9 +21,13 @@
           </b-col>
         </b-row>
         <b-row id="item-info" align-v="center">
-          <b-col id="item-count">
+          <b-col v-if="filteredData === null" class="item-count">
             {{itemStart}} - {{itemEnd}} of {{itemData.length}} items in
-            <span id="category">{{$route.name}}</span>
+            <span class="category">{{$route.name}}</span>
+          </b-col>
+          <b-col v-else class="item-count">
+            {{itemStart}} - {{itemEnd}} of {{filteredData.length}} items in
+            <span class="category">{{$route.name}}</span>
           </b-col>
           <b-col class="pagination">
             <Pagination :pageNumber="pageNumber" :pageCount="pageCount"></Pagination>
@@ -88,12 +92,18 @@ export default {
   },
   computed: {
     pageCount () {
+      if (this.filteredData !== null) {
+        return Math.ceil(this.filteredData.length / this.pageSize)
+      }
       return Math.ceil(this.itemData.length / this.pageSize)
     },
     itemStart () {
       return this.pageNumber * this.pageSize
     },
     itemEnd () {
+      if (this.filteredData !== null) {
+        return Math.min(this.itemStart + this.pageSize, this.filteredData.length)
+      }
       return this.itemStart + this.pageSize
     },
     paginatedData () {
@@ -168,9 +178,10 @@ export default {
       return item.price - item.price * item.discount
     },
     onSortChanged () {
-      this.itemData = this.getSortedItems(this.itemData)
-      if (this.filteredData !== 0) {
+      if (this.filteredData !== null) {
         this.filteredData = this.getSortedItems(this.filteredData)
+      } else {
+        this.itemData = this.getSortedItems(this.itemData)
       }
     },
     onSearch (query) {
@@ -192,7 +203,10 @@ export default {
     // Event listener for search
     bus.$on('search', (query) => { this.onSearch(query) })
     // Event listener for filters
-    bus.$on('filter_change', (filteredData) => { this.filteredData = filteredData })
+    bus.$on('filter_change', (filteredData) => {
+      this.pageNumber = 0
+      this.filteredData = filteredData
+    })
   }
 }
 </script>
@@ -214,14 +228,14 @@ padding: 30px;
 background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
           rgba(123,215,255,1) 100%);
 }
-#item-count {
+.item-count {
   font-size: smaller;
   text-align: left;
 }
 #grid {
   display: block;
 }
-#category {
+.category {
   color: $darkblue;
   font-weight: bold;
   margin-left: 3px;

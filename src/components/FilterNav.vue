@@ -117,6 +117,7 @@ export default {
           subcategories.push(item.subcategory)
         }
       }
+      subcategories.sort()
       for (var subcategory of subcategories) {
         this.tabs[0].options.push({text: subcategory, value: subcategory})
       }
