@@ -103,12 +103,13 @@ class ResetPassword(SecureResource):
         return {'message': 'Hit the user password reset endpoint.'}
 
 
-@resource.route('/search', doc={"description": "Search and return items that match the search query string"})
+@resource.route('/search', doc={"description": "Search and return items that match the search query string, returns all items if search query is empty"})
 @resource.doc(params={'query': 'Search query'})
 class Search(Resource):
     def get(self):
-        query = "%{}%".format(request.args.get('query'))
+        query = request.args.get('query')
         if query is not None:
+            query = "%{}%".format(query)
             data = Item.query.filter((
                 Item.description.like(query) |
                 Item.item_name.like(query) |
