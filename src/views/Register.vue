@@ -88,6 +88,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data () {
     return {
@@ -103,6 +105,14 @@ export default {
     onSubmit (evt) {
       evt.preventDefault()
       alert(JSON.stringify(this.form))
+      var url = 'api/authentication/registration?username=' + encodeURIComponent(this.form.userName) + '&email=' + encodeURIComponent(this.form.email) + '&password=' + encodeURIComponent(this.form.password)
+      this.sendAxiosRequest(url)
+    },
+    sendAxiosRequest (url) {
+      axios
+        .post(url)
+        .then(response => { alert(JSON.stringify(response.data)) })
+        .catch(error => alert(error))
     }
   },
   computed: {

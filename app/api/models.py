@@ -34,10 +34,10 @@ class UserAuthModel(db.Model):
     password = db.Column(db.String(300), nullable=False)
 
     def save_to_db(self):
-        buyer = BuyerModel(uid=self.uid)
-        seller = SellerModel(uid=self.uid, membership_date=db.func.current_date())
         db.session.add(self)
         db.session.commit()
+        buyer = BuyerModel(uid=self.uid)
+        seller = SellerModel(uid=self.uid, membership_date=db.func.current_date())
         db.session.add(buyer)
         db.session.add(seller)
         db.session.commit()
@@ -49,6 +49,21 @@ class UserAuthModel(db.Model):
     @classmethod
     def find_by_useremail(cls, email):
         return cls.query.filter_by(useremail=email).first()
+
+
+class RevokedTokenModel(db.Model):
+    __tablename__ = 'revokedTokens'
+    id = db.Column(db.Integer, primary_key = True)
+    jti = db.Column(db.String(120))
+
+    def add(self):
+        db.session.add(self)
+        db.session.commit()
+
+        @classmethod
+        def is_in_blacklist(cls, jti):
+            query = cls.query.filter_by(jti=jti).first()
+            return bool(query)
 
 
 class BuyerModel(db.Model):
@@ -87,6 +102,10 @@ class BuyerModel(db.Model):
         else:
             return True
 
+    @classmethod
+    def find_by_uid(cls, uid):
+        return cls.query.filter_by(uid=uid).first()
+
 
 class SellerModel(db.Model):
     __tablename__ = "sellerInfo"
@@ -115,6 +134,10 @@ class SellerModel(db.Model):
             return False
         else:
             return True
+
+    @classmethod
+    def find_by_uid(cls, uid):
+        return cls.query.filter_by(uid=uid).first()
 
 
 class Order(db.Model):
