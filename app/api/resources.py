@@ -232,3 +232,18 @@ class Deals(Resource):
     def get(self):
         items = Item.query.order_by(Item.discount.desc()).limit(20).all()
         return jsonify([i.serialize for i in items])
+
+
+@resource.route('/shopping-cart/<int:user_id>', doc={"description": "Manipulate (get and delete) items in the shopping cart"})
+class ShoppingCart(Resource):
+    def get(self, user_id):
+        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+        return jsonify([i.serialize for i in items])
+
+    def delete(self, user_id):
+        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+        for item in items:
+            item.delete()
+            db.session.commit()
+        return jsonify(success=True)
+
