@@ -29,7 +29,7 @@ export default new Vuex.Store({
       return new Promise((resolve, reject) => {
         axios
           .post('api/authentication/login/', {
-            email: credentials.email,
+            username: credentials.username,
             password: credentials.password
           })
           .then(response => {
@@ -65,8 +65,8 @@ export default new Vuex.Store({
     REGISTER (context, data) {
       return new Promise((resolve, reject) => {
         axios
-          .post('api/authentication/registeration/', {
-            userName: data.userName,
+          .post('api/authentication/registration/', {
+            username: data.username,
             email: data.email,
             password: data.password
           })

@@ -15,7 +15,7 @@
       >
         <b-form-input
           id='input-1'
-          v-model='user.userName'
+          v-model='user.username'
           :state='stateUserName'
           trim
           required
@@ -89,12 +89,14 @@
 </template>
 
 <script>
+import md5 from 'js-md5'
+
 export default {
   name: 'Register',
   data () {
     return {
       user: {
-        userName: '',
+        username: '',
         email: '',
         password: '',
         passwordAgain: '',
@@ -112,7 +114,7 @@ export default {
         this.$store.dispatch('REGISTER', {
           username: this.user.username,
           email: this.user.email,
-          password: this.user.password
+          password: md5(this.user.password)
         })
         // .then(({status}) => {
           .then(response => {
@@ -128,16 +130,16 @@ export default {
   },
   computed: {
     stateUserName () {
-      if (this.user.userName.match(/^[A-Za-z\d]{5,15}$/)) {
+      if (this.user.username.match(/^[A-Za-z\d]{5,15}$/)) {
         return true
-      } else if (this.user.userName === '') {
+      } else if (this.user.username === '') {
         return null
       } else {
         return false
       }
     },
     invalidFeedbackUserName () {
-      if (this.user.userName.match(/^[A-Za-z\d]{5,15}$/) || this.user.userName === '') {
+      if (this.user.username.match(/^[A-Za-z\d]{5,15}$/) || this.user.username === '') {
         return ''
       } else {
         return 'Please enter a valid user name'

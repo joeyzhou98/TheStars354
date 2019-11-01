@@ -4,19 +4,18 @@
       <b-form @submit='onSubmit'>
         <b-form-group
           id='input-group-5'
-          label='Email address:'
+          label='User name:'
           label-for='input-5'
           align='left'
-          :invalid-feedback='invalidFeedbackEmail'
+          :invalid-feedback='invalidFeedbackUserName'
         >
           <b-form-input
             id='input-5'
-            v-model='user.email'
-            :state='stateEmail'
+            v-model='user.username'
+            :state='stateUserName'
             trim
-            type='email'
             required
-            placeholder='Enter email'
+            placeholder='Enter user name'
           ></b-form-input>
         </b-form-group>
 
@@ -48,12 +47,14 @@
 </template>
 
 <script>
+import md5 from 'js-md5'
+
 export default {
   name: 'Login',
   data () {
     return {
       user: {
-        email: '',
+        username: '',
         password: '',
         showDismissibleAlert: false
       }
@@ -66,8 +67,8 @@ export default {
     },
     login () {
       this.$store.dispatch('LOGIN', {
-        email: this.user.email,
-        password: this.user.password
+        username: this.user.username,
+        password: md5(this.user.password)
       })
       // .then(success => {
         .then(response => {
@@ -81,20 +82,20 @@ export default {
     }
   },
   computed: {
-    stateEmail () {
-      if (this.user.email.match(/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/)) {
+    stateUserName () {
+      if (this.user.username.match(/^[A-Za-z\d]{5,15}$/)) {
         return true
-      } else if (this.user.email === '') {
+      } else if (this.user.username === '') {
         return null
       } else {
         return false
       }
     },
-    invalidFeedbackEmail () {
-      if (this.user.email.match(/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/) || this.user.email === '') {
+    invalidFeedbackUserName () {
+      if (this.user.username.match(/^[A-Za-z\d]{5,15}$/) || this.user.username === '') {
         return ''
       } else {
-        return 'Please enter a valid email account'
+        return 'Please enter a valid user name'
       }
     },
     statePassword () {

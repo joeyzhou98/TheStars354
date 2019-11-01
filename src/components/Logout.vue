@@ -8,14 +8,6 @@
 
 export default {
   name: 'Logout',
-  data () {
-    return {
-      user: {
-        email: '',
-        password: ''
-      }
-    }
-  },
   methods: {
     logout () {
       this.$store.dispatch('LOGOUT')
