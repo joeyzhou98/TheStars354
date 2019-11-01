@@ -65,7 +65,7 @@ export default new Vuex.Store({
     REGISTER (context, data) {
       return new Promise((resolve, reject) => {
         axios
-          .post('api/authentication/registration/', {
+          .post('api/authentication/registration', {
             username: data.username,
             email: data.email,
             password: data.password

@@ -43,7 +43,7 @@ class SecureResource(Resource):
 
 
 # TODO add logic after deciding the authentication method
-@authentication.route('/registration/')
+@authentication.route('/registration')
 class UserRegistration(SecureResource):
     def get(self):
         return {'message': 'Hit the user registration endpoint, show the registration page.'}
@@ -66,7 +66,7 @@ class UserRegistration(SecureResource):
 
 
 # TODO add logic after deciding the authentication method
-@authentication.route('/login/')
+@authentication.route('/login')
 class UserLogin(SecureResource):
     def get(self):
         return {'message': 'Hit the user login endpoint with GET, show the login page'}

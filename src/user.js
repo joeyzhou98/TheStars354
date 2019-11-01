@@ -8,7 +8,7 @@ export default {
     LOGIN: ({ commit }, payload) => {
       return new Promise((resolve, reject) => {
         axios
-          .post('api/authentication/login', payload)
+          .post('api/authentication/login/', payload)
           .then(({ data, status }) => {
             if (status === 200) {
               resolve(true)

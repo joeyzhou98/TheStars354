@@ -48,6 +48,7 @@
 
 <script>
 import md5 from 'js-md5'
+import axios from 'axios'
 
 export default {
   name: 'Login',
@@ -64,9 +65,23 @@ export default {
     onSubmit (evt) {
       evt.preventDefault()
       alert(JSON.stringify(this.user))
+      var url = 'api/authentication/login?username=' + encodeURIComponent(this.user.username) + '&password=' + encodeURIComponent(md5(this.user.password))
+      this.sendAxiosRequest(url)
+    },
+    sendAxiosRequest (url) {
+      axios
+        .post(url)
+        .then(response => {
+          this.$router.push('/account')
+          this.user.showDismissibleAlert = false
+        })
+        .catch(error => {
+          this.user.showDismissibleAlert = true
+          console.log(error)
+        })
     },
     login () {
-      this.$store.dispatch('LOGIN', {
+      /* this.$store.dispatch('LOGIN', {
         username: this.user.username,
         password: md5(this.user.password)
       })
@@ -78,7 +93,7 @@ export default {
         .catch(error => {
           this.user.showDismissibleAlert = true
           console.log(error)
-        })
+        }) */
     }
   },
   computed: {
