@@ -21,8 +21,7 @@
                 :options="tab.options"
                 :name="tab.name"
                 stacked
-                @input="onFilterChange"
-              >
+                @input="onFilterChange">
               </b-form-checkbox-group>
               </b-form-group>
           </b-card-body>
