@@ -20,17 +20,32 @@
       <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
     </b-nav>
     <br/>
-    <Logout></Logout>
+    <b-button type="submit" variant="dark" @click='logout' href="#/">Logout</b-button>
     </b-card>
   </div>
 </template>
 
 <script>
-import Logout from '@/components/Logout.vue'
+import axios from 'axios'
 
 export default {
-  components: {
-    Logout
+  methods: {
+    logout (evt) {
+      evt.preventDefault()
+      var url = 'api/authentication/logout/access'
+      this.sendAxiosRequest(url)
+    },
+    sendAxiosRequest (url) {
+      axios
+        .post(url)
+        .then(response => {
+          localStorage.removeItem('token')
+          this.$router.push('/')
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    }
   }
 }
 </script>

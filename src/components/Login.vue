@@ -64,7 +64,6 @@ export default {
   methods: {
     onSubmit (evt) {
       evt.preventDefault()
-      alert(JSON.stringify(this.user))
       var url = 'api/authentication/login?username=' + encodeURIComponent(this.user.username) + '&password=' + encodeURIComponent(md5(this.user.password))
       this.sendAxiosRequest(url)
     },
@@ -72,16 +71,16 @@ export default {
       axios
         .post(url)
         .then(response => {
-          this.$router.push('/account')
+          alert('sucessfully login')
           this.user.showDismissibleAlert = false
         })
         .catch(error => {
           this.user.showDismissibleAlert = true
           console.log(error)
         })
-    },
+    }/* ,
     login () {
-      /* this.$store.dispatch('LOGIN', {
+      this.$store.dispatch('LOGIN', {
         username: this.user.username,
         password: md5(this.user.password)
       })
@@ -93,8 +92,8 @@ export default {
         .catch(error => {
           this.user.showDismissibleAlert = true
           console.log(error)
-        }) */
-    }
+        })
+    } */
   },
   computed: {
     stateUserName () {

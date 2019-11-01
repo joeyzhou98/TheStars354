@@ -1,46 +1,65 @@
 import axios from 'axios'
 
 export default {
-  state: {},
-  getters: {},
-  mutations: {},
+  state: {
+    token: localStorage.getItem('access_token') || null
+  },
+  getters: {
+    loggedIn (state) {
+      return state.token !== null
+    }
+  },
+  mutations: {
+    LOGIN (state, token) {
+      state.token = token
+    },
+    LOGOUT (state) {
+      state.token = null
+    }
+  },
   actions: {
-    LOGIN: ({ commit }, payload) => {
+    LOGIN (context, credentials) {
       return new Promise((resolve, reject) => {
         axios
-          .post('api/authentication/login/', payload)
-          .then(({ data, status }) => {
-            if (status === 200) {
-              resolve(true)
-            }
+          .post('api/authentication/login/', {
+            username: credentials.username,
+            password: credentials.password
+          })
+          .then(response => {
+            const token = response.data.access_token
+            localStorage.setItem('access_token', token)
+            context.commit('LOGIN', token)
+            resolve(response)
           })
           .catch(error => {
             reject(error)
           })
       })
     },
-    REGISTER: ({ commit }, { username, email, password }) => {
-      return new Promise((resolve, reject) => {
-        axios
-          .post('api/authentication/registration/', {
-            username,
-            email,
-            password
-          })
-          .then(({ data, status }) => {
-            if (status === 201) {
-              resolve(true)
-            }
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
+    LOGOUT (context) {
+      if (context.getters.loggedIn) {
+        return new Promise((resolve, reject) => {
+          axios
+            .post('api/authentication/logout/access')
+            .then(response => {
+              localStorage.removeItem('access_token')
+              context.commit('LOGOUT')
+              resolve(response)
+            })
+            .catch(error => {
+              reject(error)
+            })
+        })
+      }
     },
-    REFRESH_TOKEN: () => {
+    REGISTER (context, data) {
       return new Promise((resolve, reject) => {
         axios
-          .post('api/authentication/token/refresh')
+          .post('api/authentication/registration', {
+            username: data.username,
+            email: data.email,
+            password: data.password
+          })
           .then(response => {
             resolve(response)
           })

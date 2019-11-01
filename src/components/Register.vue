@@ -108,18 +108,24 @@ export default {
   methods: {
     onSubmit (evt) {
       evt.preventDefault()
-      alert(JSON.stringify(this.user))
       var url = 'api/authentication/registration?username=' + encodeURIComponent(this.user.username) + '&email=' + encodeURIComponent(this.user.email) + '&password=' + encodeURIComponent(md5(this.user.password))
       this.sendAxiosRequest(url)
     },
     sendAxiosRequest (url) {
       axios
         .post(url)
-        .then(response => { alert(JSON.stringify(response.data)) })
-        .catch(error => alert(error))
-    },
+        .then(response => {
+          this.$router.push('/login-register')
+          alert('sucessfully regisetered')
+          this.user.showDismissibleAlert = false
+        })
+        .catch(error => {
+          this.user.showDismissibleAlert = true
+          console.log(error)
+        })
+    }/* ,
     register () {
-      /* if (this.stateUserName && this.stateEmail && this.statePassword && this.statePasswordAgain) {
+      if (this.stateUserName && this.stateEmail && this.statePassword && this.statePasswordAgain) {
         this.$store.dispatch('REGISTER', {
           username: this.user.username,
           email: this.user.email,
@@ -134,8 +140,8 @@ export default {
             this.user.showDismissibleAlert = true
             console.log(error)
           })
-      } */
-    }
+      }
+    } */
   },
   computed: {
     stateUserName () {
