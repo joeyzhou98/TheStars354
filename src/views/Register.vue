@@ -105,9 +105,11 @@ export default {
     onSubmit (evt) {
       evt.preventDefault()
       alert(JSON.stringify(this.form))
+      // for testing, make sure to pass the MD5 hashed password in the following line
       var url = 'api/authentication/registration?username=' + encodeURIComponent(this.form.userName) + '&email=' + encodeURIComponent(this.form.email) + '&password=' + encodeURIComponent(this.form.password)
       this.sendAxiosRequest(url)
     },
+    // for testing purpose, make sure to add proper logic when the registration is successful (ex.redirect to homepage etc.)
     sendAxiosRequest (url) {
       axios
         .post(url)

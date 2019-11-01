@@ -6,20 +6,22 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 from flask import request, redirect, jsonify, abort
 from flask_restplus import Resource, fields
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
-
+from flask_jwt_extended import (jwt_required, create_access_token,
+                                jwt_refresh_token_required, create_refresh_token,
+                                get_jwt_identity, set_access_cookies,
+                                set_refresh_cookies, get_raw_jwt, unset_access_cookies,
+                                unset_refresh_cookies)
 
 from app import jwt
 from .security import require_auth
 from . import api_rest
 from .models import *
 
-
 resource = api_rest.namespace('resource', description='Resource namespace')
 authentication = api_rest.namespace('authentication', description='Authentication namespace')
 
 
-#class SecureResource(Resource):
+# class SecureResource(Resource):
 #    """ Calls require_auth decorator on all requests """
 #    method_decorators = [require_auth]
 
@@ -29,18 +31,22 @@ def check_if_token_in_blacklist(decrypted_token):
     return RevokedTokenModel.is_in_blacklist(jti)
 
 
-@authentication.route('/registration', doc={"description": "Registration route, will return an access token and a refresh token if registration is successful"})
+@authentication.route('/registration', doc={
+    "description": "Registration route, will return an access token and a refresh token if registration is successful"})
 class UserRegistration(Resource):
     def post(self):
         username = request.args['username']
         email = request.args['email']
         password = request.args['password']
 
+        if username is None or email is None or password is None:
+            abort(400)  # missing arguments
+
         if UserAuthModel.find_by_username(username):
-            return jsonify(success=False)
+            abort(400)  # existing user
 
         if UserAuthModel.find_by_useremail(email):
-            return jsonify(success=False)
+            abort(400)  # existing email
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
@@ -48,16 +54,16 @@ class UserRegistration(Resource):
             new_user.save_to_db()
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
-            return {
-                'status': 'success',
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }
+            resp = jsonify(success=True)
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp,refresh_token)
+            return resp
         except:
             return jsonify(success=False), 500
 
 
-@authentication.route('/login', doc={"description": "Login route, will return an access token and a refresh token if login is successful"})
+@authentication.route('/login', doc={
+    "description": "Login route, will return an access token and a refresh token if login is successful"})
 class UserLogin(Resource):
     def post(self):
         username = request.args['username']
@@ -70,14 +76,15 @@ class UserLogin(Resource):
         if current_user.password == password:
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
-            return {
-                'status': 'success',
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }
+            resp = jsonify(success=True)
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            return resp
         abort(404, "Credential info for user {} is not correct".format(username))
 
-@authentication.route('/logout/access', doc={"description": "access token logout route, will put access token into token blacklist if successfully executed, access token needed in header"})
+
+@authentication.route('/logout/access', doc={
+    "description": "access token logout route, will put access token into token blacklist if successfully executed, access token needed in header"})
 class LogoutAccess(Resource):
     @jwt_required
     def post(self):
@@ -85,12 +92,15 @@ class LogoutAccess(Resource):
         try:
             revoked_token = RevokedTokenModel(jti=jti)
             revoked_token.add()
-            return jsonify(success=True)
+            resp = jsonify(success=True)
+            unset_access_cookies(resp)
+            return resp
         except:
             return jsonify(success=False), 500
 
 
-@authentication.route('/logout/refresh', doc={"description": "refresh token logout route, will put refresh token into token blacklist if successfully executed, refresh token needed in header"})
+@authentication.route('/logout/refresh', doc={
+    "description": "refresh token logout route, will put refresh token into token blacklist if successfully executed, refresh token needed in header"})
 class LogoutRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
@@ -98,29 +108,35 @@ class LogoutRefresh(Resource):
         try:
             revoked_token = RevokedTokenModel(jti=jti)
             revoked_token.add()
-            return jsonify(success=True)
+            resp = jsonify(success=True)
+            unset_refresh_cookies(resp)
+            return resp
         except:
             return jsonify(success=False), 500
 
 
-@authentication.route('/token/refresh', doc={"description": "access token refresh route, will generate a new access token for the user, refresh token needed in header"})
+@authentication.route('/token/refresh', doc={
+    "description": "access token refresh route, will generate a new access token for the user, refresh token needed in header"})
 class TokenRefresh(Resource):
-    # TODO: get refresh token and put in header
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
-        return {'access_token': access_token}
+
+        resp = jsonify(success=True)
+        set_access_cookies(resp, access_token)
+        return resp
 
 
 @authentication.route('/password/reset')
 class ResetPassword(Resource):
     @jwt_required
     def get(self):
-        # TODO: get access token and put in header
         return {'message': 'Hit the user password reset endpoint.'}
 
-@resource.route('/buyerInfo', doc={"description": "Search and return buyer data that match the queried user name, access token needed"})
+
+@resource.route('/buyerInfo', doc={
+    "description": "Search and return buyer data that match the queried user name, access token needed"})
 class BuyerInfo(Resource):
     @jwt_required
     def get(self):
@@ -135,7 +151,8 @@ class BuyerInfo(Resource):
         return jsonify(buyerInfo)
 
 
-@resource.route('/sellerInfo', doc={"description": "Search and return seller data that match the queried user name, access token needed"})
+@resource.route('/sellerInfo', doc={
+    "description": "Search and return seller data that match the queried user name, access token needed"})
 class SellerInfo(Resource):
     @jwt_required
     def get(self):
@@ -146,7 +163,7 @@ class SellerInfo(Resource):
 
         sellerInfo = SellerModel.find_by_uid(current_user.uid)
         if sellerInfo is None:
-            abort(404, "Buyer info for user {} not found".format(username))
+            abort(404, "Seller info for user {} not found".format(username))
         return jsonify(sellerInfo)
 
 
@@ -212,7 +229,6 @@ class ItemRoutes(Resource):
 
     @resource.expect(create_item_payload)
     @jwt_required
-    # TODO: get access token and put in header
     def put(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
         payload = request.json
@@ -240,7 +256,6 @@ class ItemRoutes(Resource):
         return jsonify(success=True)
 
     @jwt_required
-    # TODO: get access token and put in header
     def delete(self, item_id):
         item = Item.query.filter(Item.item_id == item_id)
         if item is not None:
@@ -255,7 +270,6 @@ class ItemRoutes(Resource):
 @resource.expect(create_item_payload)
 class CreateItem(Resource):
     @jwt_required
-    # TODO: get access token and put in header
     def post(self):
         payload = request.json
         try:

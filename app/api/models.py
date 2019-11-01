@@ -60,10 +60,10 @@ class RevokedTokenModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
-        @classmethod
-        def is_in_blacklist(cls, jti):
-            query = cls.query.filter_by(jti=jti).first()
-            return bool(query)
+    @classmethod
+    def is_in_blacklist(cls, jti):
+        query = cls.query.filter_by(jti=jti).first()
+        return bool(query)
 
 
 class BuyerModel(db.Model):
