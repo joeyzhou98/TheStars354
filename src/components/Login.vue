@@ -41,21 +41,21 @@
         <br />
         <br />
         <b-button type='submit' variant='dark' @click='login'>Login</b-button>
+        <b-alert v-model='user.showDismissibleAlert' variant='danger' dismissible>The username or the password are incorrect.</b-alert>
       </b-form>
     </b-card>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
-import md5 from 'md5'
-
 export default {
+  name: 'Login',
   data () {
     return {
       user: {
         email: '',
-        password: ''
+        password: '',
+        showDismissibleAlert: false
       }
     }
   },
@@ -65,16 +65,17 @@ export default {
       alert(JSON.stringify(this.user))
     },
     login () {
-      let newUser = {
+      this.$store.dispatch('LOGIN', {
         email: this.user.email,
-        password: md5(this.user.password)
-      }
-      axios
-        .post('', newUser)
+        password: this.user.password
+      })
+      // .then(success => {
         .then(response => {
-          console.log('Successfully Login')
+          this.$router.push('/account')
+          this.user.showDismissibleAlert = false
         })
         .catch(error => {
+          this.user.showDismissibleAlert = true
           console.log(error)
         })
     }

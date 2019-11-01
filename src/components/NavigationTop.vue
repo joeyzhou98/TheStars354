@@ -23,7 +23,7 @@
           <div id="buttons"> <!-- Add event listener to login and logout events-->
             <b-button class="icon-button shadow-none" variant="outline"
                       title="Account"
-                     :to="toAccount">
+                     :to='toAccount'>
               <icon name="user"></icon>
             </b-button>
             <b-button class="icon-button shadow-none" variant="outline"
@@ -50,16 +50,16 @@ export default {
   },
   data () {
     return {
-      toAccount: '/login-register', // by default, Account brings to Login page
       toCart: '/cart' // user is able to add to cart without being logged in
     }
   },
-  methods: {
-    onLogin () {
-      this.toAccount = '/account'
-    },
-    onLogout () {
-      this.toAccount = '/login-register'
+  computed: {
+    toAccount () {
+      if (this.$store.getters.loggedIn) {
+        return '/account'
+      } else {
+        return '/login-register'
+      }
     }
   }
 }

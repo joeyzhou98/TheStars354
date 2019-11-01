@@ -20,14 +20,18 @@
       <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
     </b-nav>
     <br/>
-    <b-button type="submit" variant="dark" href="#/">Logout</b-button>
+    <Logout></Logout>
     </b-card>
   </div>
 </template>
 
 <script>
-export default {
+import Logout from '@/components/Logout.vue'
 
+export default {
+  components: {
+    Logout
+  }
 }
 </script>
 

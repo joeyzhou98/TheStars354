@@ -20,7 +20,8 @@ export default new Router({
     {
       path: '/login-register',
       name: 'Login & Register',
-      component: LoginRegister
+      component: LoginRegister/* ,
+      meta: {requireVisitor: true} */
     },
     {
       path: '/faq',
@@ -35,7 +36,8 @@ export default new Router({
     {
       path: '/account',
       name: 'Account',
-      component: Account
+      component: Account/* ,
+      meta: {requireVisitor: true} */
     },
     {
       path: '/cart',

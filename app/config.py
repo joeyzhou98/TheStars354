@@ -12,7 +12,7 @@ class Config(object):
     # If not set fall back to production for safety
     FLASK_ENV = os.getenv('FLASK_ENV', 'production')
     # Set FLASK_SECRET on your production Environment
-    DATABASE_PASSWORD = os.getenv('FLASK_SECRET', 'Secret')
+    DATABASE_PASSWORD = os.getenv('FLASK_SECRET', 'LI88050517')
 
     APP_DIR = os.path.dirname(__file__)
     ROOT_DIR = os.path.dirname(APP_DIR)
