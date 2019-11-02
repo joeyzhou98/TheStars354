@@ -154,7 +154,7 @@ class BuyerInfo(Resource):
         buyerInfo = BuyerModel.find_by_uid(current_user.uid)
         if buyerInfo is None:
             abort(404, "Buyer info for user {} not found".format(username))
-        return jsonify(buyerInfo)
+        return jsonify(buyerInfo.serialize)
 
 
 @resource.route('/sellerInfo', doc={
@@ -171,7 +171,7 @@ class SellerInfo(Resource):
         sellerInfo = SellerModel.find_by_uid(current_user.uid)
         if sellerInfo is None:
             abort(404, "Seller info for user {} not found".format(username))
-        return jsonify(sellerInfo)
+        return jsonify(sellerInfo.serialize)
 
 
 @resource.route('/search', doc={

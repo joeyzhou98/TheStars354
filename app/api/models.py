@@ -79,6 +79,19 @@ class BuyerModel(db.Model):
     shopping_list = db.relationship("Item", secondary=shoppingListItem)
     review_list = db.relationship("Review")
 
+    @property
+    def serialize(self):
+        return {
+            "uid": self.uid,
+            "address1": self.address1,
+            "address2": self.address2,
+            "address3": self.address3,
+            "paypal": self.paypal,
+            "order_history": self.order_history,
+            "wish_list": self.wish_list,
+            "shopping_list": self.shopping_list,
+            "review_list": self.review_list}
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
@@ -116,6 +129,15 @@ class SellerModel(db.Model):
     offered_products = db.relationship("Item")
     orders = db.relationship("Order", secondary=orderSeller)
 
+    @property
+    def serialize(self):
+        return {
+            "uid": self.uid,
+            "membership_date": self.membership_date,
+            "total_commission": self.total_commission,
+            "offered_products": self.offered_products,
+            "orders": self.orders}
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
@@ -148,6 +170,14 @@ class Order(db.Model):
     purchase_date = db.Column(db.Date, nullable=False)
     items = db.relationship("Item", secondary=orderItem)
 
+    @property
+    def serialize(self):
+        return {
+            "order_id": self.order_id,
+            "buyer_id": self.buyer_id,
+            "purchase_date": self.purchase_date,
+            "items": self.items}
+
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
             db.session.add(self)
@@ -169,6 +199,15 @@ class Review(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
     content = db.Column(db.String(512), nullable=True)
     images = db.Column(db.String(1000))
+
+    @property
+    def serialize(self):
+        return {
+            "review_id": self.review_id,
+            "buyer_id": self.buyer_id,
+            "item_id": self.item_id,
+            "content": self.content,
+            "images": self.images}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
