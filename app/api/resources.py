@@ -234,16 +234,29 @@ class Deals(Resource):
         return jsonify([i.serialize for i in items])
 
 
-@resource.route('/shopping-cart/<int:user_id>', doc={"description": "Manipulate (get and delete) items in the shopping cart"})
+@resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
 class ShoppingCart(Resource):
     def get(self, user_id):
         items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
         return jsonify([i.serialize for i in items])
 
     def delete(self, user_id):
-        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
-        for item in items:
-            item.delete()
-            db.session.commit()
+        db.engine.execute(db.delete(shoppingListItem)
+                          .where(shoppingListItem.c.buyer_id == user_id))
         return jsonify(success=True)
 
+
+@resource.route('/shopping-cart/<int:user_id>/<int:item_id>', doc={"description": "Add and remove items in the shopping cart"})
+class ShoppingCart(Resource):
+    def post(self, user_id, item_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        item = Item.query.filter_by(item_id=item_id).first()
+        buyer.add_to_shopping_list(item)
+        return jsonify(success=True)
+
+    def delete(self, user_id, item_id):
+        db.engine.execute(db.delete(shoppingListItem)
+                          .where(shoppingListItem.c.buyer_id == user_id and
+                                 shoppingListItem.c.item_id == item_id))
+        db.session.commit()
+        return jsonify(success=True)
