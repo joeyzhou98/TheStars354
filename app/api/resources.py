@@ -32,7 +32,10 @@ def check_if_token_in_blacklist(decrypted_token):
 
 
 @authentication.route('/registration', doc={
-    "description": "Registration route, will return an access token and a refresh token if registration is successful"})
+    "description": "Registration route, will store an access token and a refresh token in cookies if registration is successful"})
+@resource.doc(params={'username': "user name for the new user, will return 400 it already exists in database.",
+                      'email': "email for the new user, will return 400 if it already exists in database.",
+                      'password': "MD5 hashed password for the new user."})
 class UserRegistration(Resource):
     def post(self):
         username = request.args['username']
@@ -56,14 +59,16 @@ class UserRegistration(Resource):
             refresh_token = create_refresh_token(identity=username)
             resp = jsonify(success=True)
             set_access_cookies(resp, access_token)
-            set_refresh_cookies(resp,refresh_token)
+            set_refresh_cookies(resp, refresh_token)
             return resp
         except:
             return jsonify(success=False), 500
 
 
 @authentication.route('/login', doc={
-    "description": "Login route, will return an access token and a refresh token if login is successful"})
+    "description": "Login route, will store an access token and a refresh token in the cookies if login is successful"})
+@resource.doc(params={'username': "user name of the user, will return 404 if it doesn't exist in database.",
+                      'password': "MD5 hashed password of the user, will return 404 if it doesn't match with the password stored in db."})
 class UserLogin(Resource):
     def post(self):
         username = request.args['username']
@@ -84,7 +89,7 @@ class UserLogin(Resource):
 
 
 @authentication.route('/logout/access', doc={
-    "description": "access token logout route, will put access token into token blacklist if successfully executed, access token needed in header"})
+    "description": "access token logout route, will put access token into token blacklist if successfully executed, access token needed."})
 class LogoutAccess(Resource):
     @jwt_required
     def post(self):
@@ -100,7 +105,7 @@ class LogoutAccess(Resource):
 
 
 @authentication.route('/logout/refresh', doc={
-    "description": "refresh token logout route, will put refresh token into token blacklist if successfully executed, refresh token needed in header"})
+    "description": "refresh token logout route, will put refresh token into token blacklist if successfully executed, refresh token needed."})
 class LogoutRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
@@ -116,7 +121,7 @@ class LogoutRefresh(Resource):
 
 
 @authentication.route('/token/refresh', doc={
-    "description": "access token refresh route, will generate a new access token for the user, refresh token needed in header"})
+    "description": "access token refresh route, will generate a new access token for the user, refresh token needed."})
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
@@ -137,6 +142,7 @@ class ResetPassword(Resource):
 
 @resource.route('/buyerInfo', doc={
     "description": "Search and return buyer data that match the queried user name, access token needed"})
+@resource.doc(params={'username': "user name of the user"})
 class BuyerInfo(Resource):
     @jwt_required
     def get(self):
@@ -153,6 +159,7 @@ class BuyerInfo(Resource):
 
 @resource.route('/sellerInfo', doc={
     "description": "Search and return seller data that match the queried user name, access token needed"})
+@resource.doc(params={'username': "user name of the user"})
 class SellerInfo(Resource):
     @jwt_required
     def get(self):
