@@ -142,10 +142,27 @@ class Review(db.Model):
     __tablename__ = "review"
 
     review_id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer.db.ForeignKey("order.order_id"))
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
     content = db.Column(db.String(512), nullable=True)
-    images = db.Column(db.String(1000))
+    images = db.Column(db.String(1000)),
+    rating = db.Column(db.Integer),
+    seller_response = db.Column(db.String(512))
+
+
+    @property
+    def serialize(self):
+        return {
+            "review_id": self.review_id,
+            "order_id": self.order_id,
+            "buyer_id": self.buyer_id,
+            "item_id": self.item_id,
+            "content": self.content,
+            "images": self.images,
+            "rating": self.rating,
+            "seller_response": self.seller_response
+        }
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
@@ -172,7 +189,7 @@ class Item(db.Model):
     discount = db.Column(db.Float, nullable=False, default=0.0)
     images = db.Column(db.String(1000), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=True)
-    reviews = db.relationship("Review")
+    reviews = db.relationship("Review", cascade="all, delete-orphan")
 
     @property
     def serialize(self):
@@ -188,7 +205,8 @@ class Item(db.Model):
             "quantity_sold": self.quantity_sold,
             "discount": self.discount,
             "images": self.images,
-            "seller_id": self.seller_id
+            "seller_id": self.seller_id,
+            "reviews": self.reviews
         }
 
     def save_to_db(self):

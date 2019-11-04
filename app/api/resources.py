@@ -6,6 +6,9 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 from flask import request, redirect, jsonify, abort
 from flask_restplus import Resource, fields
+import boto3
+import boto3.s3
+
 
 from .security import require_auth
 from . import api_rest
@@ -233,3 +236,63 @@ class Deals(Resource):
     def get(self):
         items = Item.query.order_by(Item.discount.desc()).limit(20).all()
         return jsonify([i.serialize for i in items])
+
+
+# the function of getting reviews for an item is achieved by '/item/<int:item_id>' route using get request
+@resource.route('/review/<int:item_id>', doc={"description": "1. post a new review for an item. 2. Delete all reviews for an item."})
+class CreateAndDeleteReview(Resource):
+    @resource.doc(params={'content': "content of the review", 'rating': "rating"},)
+    def post(self, item_id):
+        images = [request.files['image1'],request.files['image2'],request.files['image3'],request.files['image4'],request.files['image5']]
+        image_url = ""
+        image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/reviewPic/"
+        bucket_name = "comp354"
+        s3 = boto3.resource('s3')
+        for image in images:
+            if image is not None:
+                s3.upload_file(image.filename, bucket_name, 'reviewPic/{}'.format(image.filename))
+                image_url += image_prefix+image.filename+"&"
+        content = request.args.get('content')
+        rating = request.args.get('rating')
+
+        item = Item.query.filter(Item.item_id == item_id).first()
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+
+        new_review = Review(content=content, rating=rating, images= image_url)
+        item.reviews.append(new_review)
+        db.session.commit()
+        return jsonify(success=True)
+
+    # TODO: add admin constrain
+    def delete(self, item_id):
+        item = Item.query.filter(Item.item_id == item_id).first()
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        db.engine.execute(db.delete(item.reviews))
+        db.session.commit()
+        return jsonify(success=True)
+
+@resource.route('/review/<int:item_id>/<int:review_id>', doc={"description": "Manipulate (put, delete) a review for an item."})
+class Review(Resource):
+    @resource.doc(params={'response': "seller's response for the review"})
+    def put(self, item_id, review_id):
+        review = db.session.query(Review)\
+            .filter(Review.review_id == review_id and Review.item_id == item_id)
+        seller_response = request.args.get('response')
+        review.seller_response = seller_response
+        db.session.commit()
+        return jsonify(success=True)
+
+
+    def delete(self, item_id, review_id):
+        review = db.session.query(Review) \
+            .filter(Review.review_id == review_id and Review.item_id == item_id)
+        db.delete(review)
+        db.session.commit()
+        return jsonify(success=True)
+
+
+
+
+
