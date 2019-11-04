@@ -142,12 +142,12 @@ class Review(db.Model):
     __tablename__ = "review"
 
     review_id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer.db.ForeignKey("order.order_id"))
+    order_id = db.Column(db.Integer, db.ForeignKey("order.order_id"))
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
     content = db.Column(db.String(512), nullable=True)
     images = db.Column(db.String(1000)),
-    rating = db.Column(db.Integer),
+    rating = db.Column(db.Integer, nullable=True),
     seller_response = db.Column(db.String(512))
 
 
