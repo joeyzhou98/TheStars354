@@ -53,6 +53,7 @@
 
 <script>
 import axios from 'axios'
+import md5 from 'js-md5'
 
 export default {
   data () {
@@ -67,7 +68,7 @@ export default {
     onSubmit (evt) {
       evt.preventDefault()
       alert(JSON.stringify(this.form))
-      var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(this.form.password)
+      var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(md5(this.form.password))
       this.sendAxiosRequest(url)
     },
     sendAxiosRequest (url) {
