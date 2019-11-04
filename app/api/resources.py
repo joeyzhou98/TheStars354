@@ -279,6 +279,8 @@ class Review(Resource):
     def put(self, item_id, review_id):
         review = db.session.query(Review)\
             .filter(Review.review_id == review_id and Review.item_id == item_id)
+        if review is None:
+            abort(404, "Review with id {} not found".format(review_id) + "for item {}".format(item_id))
         seller_response = request.args.get('response')
         review.seller_response = seller_response
         db.session.commit()
@@ -288,6 +290,8 @@ class Review(Resource):
     def delete(self, item_id, review_id):
         review = db.session.query(Review) \
             .filter(Review.review_id == review_id and Review.item_id == item_id)
+        if review is None:
+            abort(404, "Review with id {} not found".format(review_id) + "for item {}".format(item_id))
         db.delete(review)
         db.session.commit()
         return jsonify(success=True)
