@@ -42,14 +42,15 @@ class UserRegistration(Resource):
         email = request.args['email']
         password = request.args['password']
 
+
         if username is None or email is None or password is None:
             abort(400)  # missing arguments
 
         if UserAuthModel.find_by_username(username):
-            abort(400)  # existing user
+            abort(400, "User with username {} aleady exists in db.".format(username))  # existing user
 
         if UserAuthModel.find_by_useremail(email):
-            abort(400)  # existing email
+            abort(400, "User with email {} aleady exists in db.".format(email))  # existing email
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
