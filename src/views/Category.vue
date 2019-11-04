@@ -73,7 +73,7 @@ export default {
         { value: 'Price: Low to High', text: 'Price: Low to High' },
         { value: 'Price: High to Low', text: 'Price: High to Low' }
       ],
-      itemData: null, // items fetched from the API request
+      itemData: [], // items fetched from the API request
       filteredData: null, // items filtered by FilterNav component
       noItemsMsg: 'Sorry, there are no products to display here :('
     }
@@ -135,9 +135,13 @@ export default {
   },
   methods: {
     sendAxiosRequest (url) {
+      this.noItemsMsg = 'Fetching items...'
       axios
         .get(url)
-        .then(response => (this.itemData = this.getSortedItems(response.data)))
+        .then((response) => {
+          this.itemData = this.getSortedItems(response.data)
+          this.noItemsMsg = 'Sorry, there are no products to display here :('
+        })
         .catch(error => alert(error))
     },
     getItemData () {
@@ -178,11 +182,15 @@ export default {
       this.sendAxiosRequest(url)
     }
   },
-  // Lifecycle //
-  mounted () {
-    this.getItemData()
-  },
+  // LIFECYCLE //
+  // Note that Created is only called when transitioning from a non-category view
+  // (not called when switching between categories or doing multiple searches)
   created () {
+    if (this.$route.path === '/search') {
+      this.noItemsMsg = 'Fetching items...' // transitioning from a non-category view to search result takes longer
+    } else {
+      this.getItemData()
+    }
     // Event listeners for page change
     bus.$on('page:next', () => { this.pageNumber++ })
     bus.$on('page:previous', () => { this.pageNumber-- })
