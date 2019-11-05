@@ -41,7 +41,6 @@
 <script>
 import CategoriesMenu from '@/components/CategoriesMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
-import Cookie from 'js-cookie'
 import App from '../App'
 
 export default {
@@ -57,20 +56,8 @@ export default {
     }
   },
   methods: {
-    onLogin () {
-      const accessToken = Cookie.get('access_token')
-      alert(accessToken)
-      if (accessToken !== '') {
-        this.toAccount = '/account'
-      }
-    },
-    onLogout () {
-      const accessToken = Cookie.get('access_token')
-      if (accessToken === '') { this.toAccount = '/login' }
-    },
     VerifyLoginStatus () {
       console.log('loginStatus', App.loginStatus.state)
-      alert(App.loginStatus.state.login)
       if (App.loginStatus.state.login) {
         this.$router.push('/account')
       } else {

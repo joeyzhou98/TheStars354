@@ -20,13 +20,14 @@
       <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
     </b-nav>
     <br/>
-    <b-button type="submit" variant="dark" href="#/">Logout</b-button>
+    <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
+import App from '../App'
 
 export default {
   data () {
@@ -53,9 +54,27 @@ export default {
         .get(url)
         .then(response => { this.username = response.data['username'] })
         .catch(error => alert(error))
+    },
+    userLogout () {
+      let url1 = 'api/authentication/logout/access'
+      let url2 = 'api/authentication/logout/refresh'
+      axios
+        .post(url1)
+        .then(response => {
+          console.log('access token revoke', response.data)
+        })
+        .catch(error => alert(error))
+      axios
+        .post(url2)
+        .then(response => {
+          console.log('refresh token revoke', response.data)
+        })
+        .catch(error => alert(error))
+      App.loginStatus.setLoginStatus(false)
+      console.log('loginStatus', App.loginStatus.state)
+      this.$router.push('/')
     }
   }
-
 }
 </script>
 

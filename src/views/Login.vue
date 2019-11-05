@@ -68,7 +68,8 @@ export default {
     }
   },
   methods: {
-    onSubmit () {
+    onSubmit (evt) {
+      evt.preventDefault()
       alert(JSON.stringify(this.form))
       var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(md5(this.form.password))
       this.sendAxiosRequest(url)

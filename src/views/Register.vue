@@ -90,7 +90,7 @@
 <script>
 import axios from 'axios'
 import md5 from 'js-md5'
-import { bus } from '../main'
+import App from '../App'
 
 export default {
   data () {
@@ -117,7 +117,7 @@ export default {
         .post(url)
         .then((response) => {
           alert(JSON.stringify(response.data))
-          bus.$emit('onLogin')
+          App.loginStatus.setLoginStatus(true)
           this.$router.push('/')
         })
         .catch(error => alert(error))
