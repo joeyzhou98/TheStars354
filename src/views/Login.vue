@@ -8,19 +8,18 @@
     <b-form @submit="onSubmit">
       <b-form-group
         id="input-group-1"
-        label="Email address:"
+        label="User name:"
         label-for="input-1"
         align="left"
-        :invalid-feedback="invalidFeedbackEmail"
+        :invalid-feedback="invalidFeedbackUserName"
       >
         <b-form-input
           id="input-1"
-          v-model="form.email"
-          :state="stateEmail"
+          v-model="form.username"
+          :state="stateUserName"
           trim
-          type="email"
           required
-          placeholder="Enter email"
+          placeholder="Enter user name"
         >
         </b-form-input>
       </b-form-group>
@@ -45,7 +44,7 @@
 
       <b-link href="#/findPassword">Forget your password?</b-link>
       <br/><br/>
-      <b-button type="submit" variant="dark" href="#/Account">Login</b-button>
+      <b-button type="submit" variant="dark">Login</b-button>
 
     </b-form>
   </b-card>
@@ -53,11 +52,13 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data () {
     return {
       form: {
-        email: '',
+        username: '',
         password: ''
       }
     }
@@ -66,23 +67,35 @@ export default {
     onSubmit (evt) {
       evt.preventDefault()
       alert(JSON.stringify(this.form))
+      var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(this.form.password)
+      this.sendAxiosRequest(url)
+    },
+    sendAxiosRequest (url) {
+      axios
+        .post(url)
+        .then(response => { alert(JSON.stringify(response.data)) })
+        .catch(error => {
+          if (error.response.status === 404) {
+            alert(JSON.stringify(error.response.data))
+          }
+        })
     }
   },
   computed: {
-    stateEmail () {
-      if (this.form.email.match(/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/)) {
+    stateUserName () {
+      if (this.form.username.match(/^[A-Za-z\d]{5,15}$/)) {
         return true
-      } else if (this.form.email === '') {
+      } else if (this.form.username === '') {
         return null
       } else {
         return false
       }
     },
-    invalidFeedbackEmail () {
-      if (this.form.email.match(/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/) || this.form.email === '') {
+    invalidFeedbackUserName () {
+      if (this.form.username.match(/^[A-Za-z\d]{5,15}$/) || this.form.username === '') {
         return ''
       } else {
-        return 'Please enter a valid email account'
+        return 'Please enter a valid user name'
       }
     },
     statePassword () {

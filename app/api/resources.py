@@ -6,7 +6,13 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 from flask import request, redirect, jsonify, abort
 from flask_restplus import Resource, fields
+from flask_jwt_extended import (jwt_required, create_access_token,
+                                jwt_refresh_token_required, create_refresh_token,
+                                get_jwt_identity, set_access_cookies,
+                                set_refresh_cookies, get_raw_jwt, unset_access_cookies,
+                                unset_refresh_cookies)
 
+from app import jwt
 from .security import require_auth
 from . import api_rest
 from .models import *
@@ -15,95 +21,162 @@ resource = api_rest.namespace('resource', description='Resource namespace')
 authentication = api_rest.namespace('authentication', description='Authentication namespace')
 
 
-class SecureResource(Resource):
-    """ Calls require_auth decorator on all requests """
-    method_decorators = [require_auth]
+# class SecureResource(Resource):
+#    """ Calls require_auth decorator on all requests """
+#    method_decorators = [require_auth]
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    return RevokedTokenModel.is_in_blacklist(jti)
 
 
-# @resource.route('/resource/<string:resource_id>')
-# class ResourceOne(Resource):
-#     """ Unsecure Resource Class: Inherit from Resource """
-#
-#     def get(self, resource_id):
-#         timestamp = datetime.utcnow().isoformat()
-#         return {'timestamp': timestamp}
-#
-#     def post(self, resource_id):
-#         json_payload = request.json
-#         return {'timestamp': json_payload}, 201
-#
-#
-# @resource.route('/secure-resource/<string:resource_id>')
-# class SecureResourceOne(SecureResource):
-#     """ Secure Resource Class: Inherit from SecureResource """
-#
-#     def get(self, resource_id):
-#         timestamp = datetime.utcnow().isoformat()
-#         return {'timestamp': timestamp}
-
-
-# TODO add logic after deciding the authentication method
-@authentication.route('/registration/')
-class UserRegistration(SecureResource):
-    def get(self):
-        return {'message': 'Hit the user registration endpoint, show the registration page.'}
-
+@authentication.route('/registration', doc={
+    "description": "Registration route, will store an access token and a refresh token in cookies if registration is successful"})
+@resource.doc(params={'username': "user name for the new user, will return 400 it already exists in database.",
+                      'email': "email for the new user, will return 400 if it already exists in database.",
+                      'password': "MD5 hashed password for the new user."})
+class UserRegistration(Resource):
     def post(self):
         username = request.args['username']
         email = request.args['email']
         password = request.args['password']
 
+
+        if username is None or email is None or password is None:
+            abort(400)  # missing arguments
+
         if UserAuthModel.find_by_username(username):
-            return {'message': 'User name exists.'}
+            abort(400, "User with username {} aleady exists in db.".format(username))  # existing user
 
         if UserAuthModel.find_by_useremail(email):
-            return {'message': 'User email exists.'}
+            abort(400, "User with email {} aleady exists in db.".format(email))  # existing email
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
-        new_user.save_to_db()
-        timestamp = datetime.utcnow().isoformat()
-        return {'message': 'saved to database', 'timestamp': timestamp}
+
+        try:
+            new_user.save_to_db()
+            access_token = create_access_token(identity=username)
+            refresh_token = create_refresh_token(identity=username)
+            resp = jsonify(success=True)
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            return resp
+        except:
+            return jsonify(success=False), 500
 
 
-# TODO add logic after deciding the authentication method
-@authentication.route('/login/')
-class UserLogin(SecureResource):
-    def get(self):
-        return {'message': 'Hit the user login endpoint with GET, show the login page'}
-
+@authentication.route('/login', doc={
+    "description": "Login route, will store an access token and a refresh token in the cookies if login is successful"})
+@resource.doc(params={'username': "user name of the user, will return 404 if it doesn't exist in database.",
+                      'password': "MD5 hashed password of the user, will return 404 if it doesn't match with the password stored in db."})
+class UserLogin(Resource):
     def post(self):
         username = request.args['username']
         password = request.args['password']
-        login = UserAuthModel.query.filter_by(username=username, password=password).first()
-        if login is not None:
-            return redirect('/')
+        current_user = UserAuthModel.find_by_username(username)
+
+        if not current_user:
+            abort(404, "User with username {} not found".format(username))
+
+        if current_user.password == password:
+            access_token = create_access_token(identity=username)
+            refresh_token = create_refresh_token(identity=username)
+            resp = jsonify(success=True)
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            return resp
+        abort(404, "Credential info for user {} is not correct".format(username))
 
 
-@authentication.route('/logout/access')
-class LogoutAccess(SecureResource):
+@authentication.route('/logout/access', doc={
+    "description": "access token logout route, will put access token into token blacklist if successfully executed, access token needed."})
+class LogoutAccess(Resource):
+    @jwt_required
     def post(self):
-        return {'message': 'Hit the user logout access endpoint.'}
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedTokenModel(jti=jti)
+            revoked_token.add()
+            resp = jsonify(success=True)
+            unset_access_cookies(resp)
+            return resp
+        except:
+            return jsonify(success=False), 500
 
 
-@authentication.route('/logout/refresh')
-class LogoutRefresh(SecureResource):
+@authentication.route('/logout/refresh', doc={
+    "description": "refresh token logout route, will put refresh token into token blacklist if successfully executed, refresh token needed."})
+class LogoutRefresh(Resource):
+    @jwt_refresh_token_required
     def post(self):
-        return {'message': 'Hit the user logout refresh endpoint.'}
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedTokenModel(jti=jti)
+            revoked_token.add()
+            resp = jsonify(success=True)
+            unset_refresh_cookies(resp)
+            return resp
+        except:
+            return jsonify(success=False), 500
 
 
-@authentication.route('/token/refresh')
-class TokenRefresh(SecureResource):
+@authentication.route('/token/refresh', doc={
+    "description": "access token refresh route, will generate a new access token for the user, refresh token needed."})
+class TokenRefresh(Resource):
+    @jwt_refresh_token_required
     def post(self):
-        return {'message': 'Hit the token refresh endpoint.'}
+        current_user = get_jwt_identity()
+        access_token = create_access_token(identity=current_user)
+
+        resp = jsonify(success=True)
+        set_access_cookies(resp, access_token)
+        return resp
 
 
 @authentication.route('/password/reset')
-class ResetPassword(SecureResource):
-    def post(self):
+class ResetPassword(Resource):
+    @jwt_required
+    def get(self):
         return {'message': 'Hit the user password reset endpoint.'}
 
 
-@resource.route('/search', doc={"description": "Search and return items that match the search query string, returns all items if search query is empty"})
+@resource.route('/buyerInfo', doc={
+    "description": "Search and return buyer data that match the queried user name, access token needed"})
+@resource.doc(params={'username': "user name of the user"})
+class BuyerInfo(Resource):
+    @jwt_required
+    def get(self):
+        username = request.args.get('username')
+        current_user = UserAuthModel.find_by_username(username)
+        if not current_user:
+            return jsonify(success=False)
+
+        buyerInfo = BuyerModel.find_by_uid(current_user.uid)
+        if buyerInfo is None:
+            abort(404, "Buyer info for user {} not found".format(username))
+        return jsonify(buyerInfo.serialize)
+
+
+@resource.route('/sellerInfo', doc={
+    "description": "Search and return seller data that match the queried user name, access token needed"})
+@resource.doc(params={'username': "user name of the user"})
+class SellerInfo(Resource):
+    @jwt_required
+    def get(self):
+        username = request.args.get('username')
+        current_user = UserAuthModel.find_by_username(username)
+        if not current_user:
+            return jsonify(success=False)
+
+        sellerInfo = SellerModel.find_by_uid(current_user.uid)
+        if sellerInfo is None:
+            abort(404, "Seller info for user {} not found".format(username))
+        return jsonify(sellerInfo.serialize)
+
+
+@resource.route('/search', doc={
+    "description": "Search and return items that match the search query string, returns all items if search query is empty"})
 @resource.doc(params={'query': 'Search query'})
 class Search(Resource):
     def get(self):
@@ -111,9 +184,9 @@ class Search(Resource):
         if query is not None:
             query = "%{}%".format(query)
             data = Item.query.filter((
-                Item.description.like(query) |
-                Item.item_name.like(query) |
-                Item.brand.like(query)
+                    Item.description.like(query) |
+                    Item.item_name.like(query) |
+                    Item.brand.like(query)
             )).all()
         else:
             data = Item.query.all()
@@ -121,7 +194,8 @@ class Search(Resource):
 
 
 @resource.route('/category', doc={"description": "Get all items in a certain category"})
-@resource.doc(params={'category': "Category query, one of {'Health & Beauty', 'Jewellery & Watches', 'Automotives & Electronics', 'Clothing, Shoes & Accessories', 'Books', 'Home Supplies'}"})
+@resource.doc(params={
+    'category': "Category query, one of {'Health & Beauty', 'Jewellery & Watches', 'Automotives & Electronics', 'Clothing, Shoes & Accessories', 'Books', 'Home Supplies'}"})
 class Category(Resource):
     def get(self):
         query = request.args.get('category')
@@ -130,7 +204,8 @@ class Category(Resource):
 
 
 @resource.route('/subcategory', doc={"description": "Get all items in a certain subcategory"})
-@resource.doc(params={'subcategory': "Subcategory query, one of {'Men's Clothing', 'Children's Clothing', 'Pet Supplies', 'Women's Clothing', 'Cameras & Video Games', 'Women's Jewellery & Watches', 'Appliances', 'Creams', 'Garden Supplies', 'Shoes', 'Furniture & Accessories', 'Motos & Car Supplies', 'Men's Jewellery & Watches', 'Makeup', 'Books', 'Bags & Accessories', 'Sports', 'Cellphones, Computers & Tablets'}"})
+@resource.doc(params={
+    'subcategory': "Subcategory query, one of {'Men's Clothing', 'Children's Clothing', 'Pet Supplies', 'Women's Clothing', 'Cameras & Video Games', 'Women's Jewellery & Watches', 'Appliances', 'Creams', 'Garden Supplies', 'Shoes', 'Furniture & Accessories', 'Motos & Car Supplies', 'Men's Jewellery & Watches', 'Makeup', 'Books', 'Bags & Accessories', 'Sports', 'Cellphones, Computers & Tablets'}"})
 class Subcategory(Resource):
     def get(self):
         query = request.args.get('subcategory').replace("’", "'")
@@ -161,6 +236,7 @@ class ItemRoutes(Resource):
         return jsonify(item.serialize)
 
     @resource.expect(create_item_payload)
+    @jwt_required
     def put(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
         payload = request.json
@@ -187,6 +263,7 @@ class ItemRoutes(Resource):
 
         return jsonify(success=True)
 
+    @jwt_required
     def delete(self, item_id):
         item = Item.query.filter(Item.item_id == item_id)
         if item is not None:
@@ -200,6 +277,7 @@ class ItemRoutes(Resource):
 @resource.route('/item', doc={"description": "Create new item to be inserted into database"})
 @resource.expect(create_item_payload)
 class CreateItem(Resource):
+    @jwt_required
     def post(self):
         payload = request.json
         try:

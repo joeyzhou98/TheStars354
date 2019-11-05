@@ -10,8 +10,7 @@ def require_auth(func):
     def wrapper(*args, **kwargs):
         # Verify if User is Authenticated
         # Authentication logic goes here
-        #fake condition
-        if 1==1:
+        if request.headers.get('authorization'):
             return func(*args, **kwargs)
         else:
             return abort(401)
