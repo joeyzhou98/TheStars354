@@ -237,8 +237,16 @@ class Deals(Resource):
 @resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
 class ShoppingCart(Resource):
     def get(self, user_id):
-        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
-        return jsonify([i.serialize for i in items])
+        items = db.engine.execute(
+            db.select([Item.item_id, Item.item_name, Item.price, shoppingListItem.c.quantity]).
+            where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
+        )
+        return jsonify([{
+            "item_id": i.item_id,
+            "name": i.item_name,
+            "price": i.price,
+            "quantity": i.quantity,
+        }for i in items])
 
     def delete(self, user_id):
         db.engine.execute(db.delete(shoppingListItem)
@@ -251,12 +259,17 @@ class ShoppingCart(Resource):
     def post(self, user_id, item_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         item = Item.query.filter_by(item_id=item_id).first()
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
         buyer.add_to_shopping_list(item)
         return jsonify(success=True)
 
     def delete(self, user_id, item_id):
-        db.engine.execute(db.delete(shoppingListItem)
-                          .where(shoppingListItem.c.buyer_id == user_id and
-                                 shoppingListItem.c.item_id == item_id))
+        items = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item_id)
+        if items.count() == 0:
+            abort(404, "Item with id {} not in the shopping cart".format(item_id))
+        items.delete(synchronize_session=False)
         db.session.commit()
         return jsonify(success=True)

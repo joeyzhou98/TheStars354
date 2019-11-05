@@ -74,8 +74,7 @@ class BuyerModel(db.Model):
         db.session.commit()
 
     def add_to_shopping_list(self, item):
-        list_item = db.session.query(shoppingListItem)\
-            .filter(shoppingListItem.c.buyer_id == self.uid and shoppingListItem.c.item_id == item.item_id)
+        list_item = db.session.query(shoppingListItem).filter_by(buyer_id=self.uid, item_id=item.item_id)
         if not list_item.count() == 0:
             new_quantity = list_item.first().quantity + 1
             db.engine.execute(db.update(shoppingListItem)
