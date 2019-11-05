@@ -44,6 +44,8 @@
 
       <b-link href="#/findPassword">Forget your password?</b-link>
       <br/><br/>
+      <b-link href="#/register">Create an account</b-link>
+      <br/><br/>
       <b-button type="submit" variant="dark">Login</b-button>
 
     </b-form>
@@ -54,6 +56,7 @@
 <script>
 import axios from 'axios'
 import md5 from 'js-md5'
+import App from '../App'
 
 export default {
   data () {
@@ -65,8 +68,7 @@ export default {
     }
   },
   methods: {
-    onSubmit (evt) {
-      evt.preventDefault()
+    onSubmit () {
       alert(JSON.stringify(this.form))
       var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(md5(this.form.password))
       this.sendAxiosRequest(url)
@@ -74,7 +76,11 @@ export default {
     sendAxiosRequest (url) {
       axios
         .post(url)
-        .then(response => { alert(JSON.stringify(response.data)) })
+        .then((response) => {
+          alert(JSON.stringify(response.data))
+          App.loginStatus.setLoginStatus(true)
+          this.$router.push('/')
+        })
         .catch(error => {
           if (error.response.status === 404) {
             alert(JSON.stringify(error.response.data))

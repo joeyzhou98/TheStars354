@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-card
-    title="Welcome XXX"
+    :title="welcomeMessage"
     img-src="https://picsum.photos/600/300/?image=25"
     img-alt="Image"
     img-top
@@ -26,7 +26,35 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
+  data () {
+    return {
+      username: '',
+      email: ''
+    }
+  },
+  mounted () {
+    this.getUserAuthInfo()
+  },
+  computed: {
+    welcomeMessage () {
+      return 'Welcome ' + this.username
+    }
+  },
+  methods: {
+    getUserAuthInfo () {
+      var url = 'api/resource/user'
+      this.sendAxiosRequest(url)
+    },
+    sendAxiosRequest (url) {
+      axios
+        .get(url)
+        .then(response => { this.username = response.data['username'] })
+        .catch(error => alert(error))
+    }
+  }
 
 }
 </script>

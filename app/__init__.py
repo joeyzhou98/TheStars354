@@ -17,8 +17,6 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
-app.config['JWT_ACCESS_COOKIE_PATH'] = '/api/'
-app.config['JWT_REFRESH_COOKIE_PATH'] = '/api/'
 # cookies for jwt tokens are session cookies (deleted when the browser is closed)
 jwt = JWTManager(app)
 

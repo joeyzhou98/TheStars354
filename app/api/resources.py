@@ -140,6 +140,20 @@ class ResetPassword(Resource):
     def get(self):
         return {'message': 'Hit the user password reset endpoint.'}
 
+@resource.route('/user', doc={"description":"Get the user name and email"})
+class UserInfo(Resource):
+    @jwt_required
+    def get(self):
+        current_user = get_jwt_identity()
+        if current_user is not None:
+            userAuth = UserAuthModel.query.filter_by(username=current_user).first()
+            if userAuth is None:
+                abort(404, "User with username {} not found".format(current_user))
+            email = userAuth.useremail
+            return {'username': current_user,
+                    'email': email}
+        abort(400, "Cannot retrieve username from access token.")
+
 
 @resource.route('/buyerInfo', doc={
     "description": "Search and return buyer data that match the queried user name, access token needed"})
