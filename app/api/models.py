@@ -15,7 +15,8 @@ wishListItem = db.Table(
 shoppingListItem = db.Table(
     "shoppingListItem",
     db.Column('buyer_id', db.Integer, db.ForeignKey("buyerInfo.uid")),
-    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id"))
+    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("quantity", db.Integer, default=1)
 )
 
 orderSeller = db.Table(
@@ -101,7 +102,15 @@ class BuyerModel(db.Model):
         db.session.commit()
 
     def add_to_shopping_list(self, item):
-        self.shopping_list.append(item)
+        list_item = db.session.query(shoppingListItem).filter_by(buyer_id=self.uid, item_id=item.item_id)
+        if not list_item.count() == 0:
+            new_quantity = list_item.first().quantity + 1
+            db.engine.execute(db.update(shoppingListItem)
+                              .where(shoppingListItem.c.buyer_id == self.uid and
+                                     shoppingListItem.c.item_id == item.item_id)
+                              .values(quantity=new_quantity))
+        else:
+            self.shopping_list.append(item)
         db.session.commit()
 
     def set_paypal(self, paypal):
