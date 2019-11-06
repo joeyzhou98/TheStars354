@@ -11,6 +11,7 @@ flask = "*"
 flask-sqlalchemy = "*"
 pymysql = "*"
 boto3 = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 pytest = "*"

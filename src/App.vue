@@ -17,6 +17,16 @@ export default {
   components: {
     'NavigationTop': NavigationTop,
     'NavigationBottom': NavigationBottom
+  },
+  loginStatus: {
+    debug: true,
+    state: {
+      login: false
+    },
+    setLoginStatus (newValue) {
+      if (this.debug) console.log('setMessageAction triggered with', newValue)
+      this.state.login = newValue
+    }
   }
 }
 </script>
