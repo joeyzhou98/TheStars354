@@ -1,11 +1,11 @@
 <template>
   <div>
+    <br/><br/>
     <b-card
       bg-variant="light"
       title="Login"
       style="width: 25rem; display: inline-block;"
-    ><br/><br/>
-
+    >
     <b-form @submit="onSubmit">
       <b-form-group
         id="input-group-1"
