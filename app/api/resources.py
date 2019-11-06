@@ -173,19 +173,16 @@ class BuyerInfo(Resource):
 
 
 @resource.route('/sellerInfo', doc={
-    "description": "Search and return seller data that match the queried user name, access token needed"})
-@resource.doc(params={'username': "user name of the user"})
+    "description": "Search and return seller data that match the queried user uid, access token needed"})
+@resource.doc(params={'uid': "uid of the seller"})
 class SellerInfo(Resource):
     @jwt_required
     def get(self):
-        username = request.args.get('username')
-        current_user = UserAuthModel.find_by_username(username)
-        if not current_user:
-            return jsonify(success=False)
+        uid = request.args.get('uid')
 
-        sellerInfo = SellerModel.find_by_uid(current_user.uid)
+        sellerInfo = SellerModel.find_by_uid(uid)
         if sellerInfo is None:
-            abort(404, "Seller info for user {} not found".format(username))
+            abort(404, "Seller info for id {} not found".format(uid))
         return jsonify(sellerInfo.serialize)
 
 
