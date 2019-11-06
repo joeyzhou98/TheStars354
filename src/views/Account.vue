@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-card
-    title="Welcome XXX"
+    :title="welcomeMessage"
     img-src="https://picsum.photos/600/300/?image=25"
     img-alt="Image"
     img-top
@@ -20,31 +20,59 @@
       <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
     </b-nav>
     <br/>
-    <b-button type="submit" variant="dark" @click='logout' href="#/">Logout</b-button>
+    <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
+import App from '../App'
 
 export default {
+  data () {
+    return {
+      username: '',
+      email: ''
+    }
+  },
+  mounted () {
+    this.getUserAuthInfo()
+  },
+  computed: {
+    welcomeMessage () {
+      return 'Welcome ' + this.username
+    }
+  },
   methods: {
-    logout (evt) {
-      evt.preventDefault()
-      var url = 'api/authentication/logout/access'
+    getUserAuthInfo () {
+      var url = 'api/resource/user'
       this.sendAxiosRequest(url)
     },
     sendAxiosRequest (url) {
       axios
-        .post(url)
+        .get(url)
+        .then(response => { this.username = response.data['username'] })
+        .catch(error => alert(error))
+    },
+    userLogout () {
+      let url1 = 'api/authentication/logout/access'
+      let url2 = 'api/authentication/logout/refresh'
+      axios
+        .post(url1)
         .then(response => {
-          localStorage.removeItem('token')
-          this.$router.push('/')
+          console.log('access token revoke', response.data)
         })
-        .catch(error => {
-          console.log(error)
+        .catch(error => alert(error))
+      axios
+        .post(url2)
+        .then(response => {
+          console.log('refresh token revoke', response.data)
         })
+        .catch(error => alert(error))
+      App.loginStatus.setLoginStatus(false)
+      console.log('loginStatus', App.loginStatus.state)
+      this.$router.push('/')
     }
   }
 }

@@ -2,7 +2,7 @@
   <div>
     <b-navbar id="navbar" toggleable="sm" class="fixed-top">
       <div id="categories">
-        <CategoriesMenu></CategoriesMenu>
+        <MainMenu></MainMenu>
       </div>
       <div class="mx-auto" style="width: 200px;">
         <b-navbar-brand><router-link to="/">354 THE STARS</router-link></b-navbar-brand>
@@ -23,7 +23,7 @@
           <div id="buttons"> <!-- Add event listener to login and logout events-->
             <b-button class="icon-button shadow-none" variant="outline"
                       title="Account"
-                     :to='toAccount'>
+                     @click="VerifyLoginStatus">
               <icon name="user"></icon>
             </b-button>
             <b-button class="icon-button shadow-none" variant="outline"
@@ -39,26 +39,29 @@
 </template>
 
 <script>
-import CategoriesMenu from '@/components/CategoriesMenu.vue'
+import MainMenu from '@/components/MainMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
+import App from '../App'
 
 export default {
   name: 'NavigationTop',
   components: {
     'SearchBar': SearchBar,
-    'CategoriesMenu': CategoriesMenu
+    'MainMenu': MainMenu
   },
   data () {
     return {
+      toAccount: '/login', // by default, Account brings to Login page
       toCart: '/cart' // user is able to add to cart without being logged in
     }
   },
-  computed: {
-    toAccount () {
-      if (this.$store.getters.loggedIn) {
-        return '/account'
+  methods: {
+    VerifyLoginStatus () {
+      console.log('loginStatus', App.loginStatus.state)
+      if (App.loginStatus.state.login) {
+        this.$router.push('/account')
       } else {
-        return '/login-register'
+        this.$router.push('/login')
       }
     }
   }
