@@ -4,7 +4,8 @@
       bg-variant="light"
       title="Login"
       style="width: 25rem; display: inline-block;"
-    >
+    ><br/><br/>
+
     <b-form @submit="onSubmit">
       <b-form-group
         id="input-group-1"
@@ -74,7 +75,7 @@ export default {
   methods: {
     onSubmit (evt) {
       evt.preventDefault()
-      alert(JSON.stringify(this.form))
+      // alert(JSON.stringify(this.form))
       var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(md5(this.form.password))
       this.sendAxiosRequest(url)
     },
@@ -82,7 +83,7 @@ export default {
       axios
         .post(url)
         .then((response) => {
-          alert(JSON.stringify(response.data))
+          // alert(JSON.stringify(response.data))
           App.loginStatus.setLoginStatus(true)
           this.$router.push('/')
         })
