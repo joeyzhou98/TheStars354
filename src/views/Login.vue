@@ -41,6 +41,7 @@
         >
         </b-form-input>
       </b-form-group>
+      <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
       <b-link href="#/findPassword">Forget your password?</b-link>
       <br/><br/>
@@ -64,6 +65,9 @@ export default {
       form: {
         username: '',
         password: ''
+      },
+      errors: {
+        message: ''
       }
     }
   },
@@ -84,7 +88,8 @@ export default {
         })
         .catch(error => {
           if (error.response.status === 404) {
-            alert(JSON.stringify(error.response.data))
+            console.log(JSON.stringify(error.response.data))
+            this.errors.message = error.response.data['message']
           }
         })
     }
@@ -127,9 +132,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-/*@media screen{
-  .column{
-    background-color: yellowgreen;
-  }
-}*/
+.error {
+    color: red;
+}
 </style>

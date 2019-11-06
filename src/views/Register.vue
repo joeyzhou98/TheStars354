@@ -80,8 +80,9 @@
         >
         </b-form-input>
       </b-form-group>
+      <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
-      <b-button type="submit" variant="dark">Resgiser</b-button>
+      <b-button type="submit" variant="dark">Register</b-button>
     </b-form>
   </b-card>
   </div>
@@ -100,6 +101,9 @@ export default {
         email: '',
         password: '',
         passwordAgain: ''
+      },
+      errors: {
+        message: ''
       }
     }
   },
@@ -120,7 +124,12 @@ export default {
           App.loginStatus.setLoginStatus(true)
           this.$router.push('/')
         })
-        .catch(error => alert(error))
+        .catch(error => {
+          if (error.response.status === 400) {
+            console.log(JSON.stringify(error.response.data))
+            this.errors.message = error.response.data['message']
+          }
+        })
     }
   },
   computed: {
@@ -193,9 +202,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-/*@media screen{
-  .column{
-    background-color: yellowgreen;
-  }
-}*/
+.error {
+    color: red;
+}
 </style>

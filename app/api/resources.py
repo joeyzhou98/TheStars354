@@ -44,13 +44,13 @@ class UserRegistration(Resource):
 
 
         if username is None or email is None or password is None:
-            abort(400)  # missing arguments
+            abort(400, "Invalid username or email.")
 
         if UserAuthModel.find_by_username(username):
-            abort(400, "User with username {} aleady exists in db.".format(username))  # existing user
+            abort(400, "User name {} is already taken.".format(username))
 
         if UserAuthModel.find_by_useremail(email):
-            abort(400, "User with email {} aleady exists in db.".format(email))  # existing email
+            abort(400, "Email {} is already used for another user".format(email))
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
@@ -86,7 +86,7 @@ class UserLogin(Resource):
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             return resp
-        abort(404, "Credential info for user {} is not correct".format(username))
+        abort(404, "Password for user {} is not correct".format(username))
 
 
 @authentication.route('/logout/access', doc={
