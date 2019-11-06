@@ -44,13 +44,13 @@ class UserRegistration(Resource):
 
 
         if username is None or email is None or password is None:
-            abort(400)  # missing arguments
+            abort(400, "Invalid username or email.")
 
         if UserAuthModel.find_by_username(username):
-            abort(400, "User with username {} aleady exists in db.".format(username))  # existing user
+            abort(400, "User name {} is already taken.".format(username))
 
         if UserAuthModel.find_by_useremail(email):
-            abort(400, "User with email {} aleady exists in db.".format(email))  # existing email
+            abort(400, "Email {} is already used for another user".format(email))
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
@@ -86,7 +86,7 @@ class UserLogin(Resource):
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             return resp
-        abort(404, "Credential info for user {} is not correct".format(username))
+        abort(404, "Password for user {} is not correct".format(username))
 
 
 @authentication.route('/logout/access', doc={
@@ -139,6 +139,20 @@ class ResetPassword(Resource):
     @jwt_required
     def get(self):
         return {'message': 'Hit the user password reset endpoint.'}
+
+@resource.route('/user', doc={"description":"Get the user name and email"})
+class UserInfo(Resource):
+    @jwt_required
+    def get(self):
+        current_user = get_jwt_identity()
+        if current_user is not None:
+            userAuth = UserAuthModel.query.filter_by(username=current_user).first()
+            if userAuth is None:
+                abort(404, "User with username {} not found".format(current_user))
+            email = userAuth.useremail
+            return {'username': current_user,
+                    'email': email}
+        abort(400, "Cannot retrieve username from access token.")
 
 
 @resource.route('/buyerInfo', doc={
@@ -311,3 +325,44 @@ class Deals(Resource):
     def get(self):
         items = Item.query.order_by(Item.discount.desc()).limit(20).all()
         return jsonify([i.serialize for i in items])
+
+
+@resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
+class ShoppingCart(Resource):
+    def get(self, user_id):
+        items = db.engine.execute(
+            db.select([Item.item_id, Item.item_name, Item.price, shoppingListItem.c.quantity]).
+            where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
+        )
+        return jsonify([{
+            "item_id": i.item_id,
+            "name": i.item_name,
+            "price": i.price,
+            "quantity": i.quantity,
+        }for i in items])
+
+    def delete(self, user_id):
+        db.engine.execute(db.delete(shoppingListItem)
+                          .where(shoppingListItem.c.buyer_id == user_id))
+        return jsonify(success=True)
+
+
+@resource.route('/shopping-cart/<int:user_id>/<int:item_id>', doc={"description": "Add and remove items in the shopping cart"})
+class ShoppingCart(Resource):
+    def post(self, user_id, item_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        item = Item.query.filter_by(item_id=item_id).first()
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        buyer.add_to_shopping_list(item)
+        return jsonify(success=True)
+
+    def delete(self, user_id, item_id):
+        items = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item_id)
+        if items.count() == 0:
+            abort(404, "Item with id {} not in the shopping cart".format(item_id))
+        items.delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify(success=True)
