@@ -13,7 +13,7 @@
             <b-card-text>
               <span class="brand">{{item.brand}}</span><br>
               <span class="name">{{item.item_name}}</span><br>
-              <span class="seller">Sold by (seller)</span><br>
+              <span class="seller">Sold by {{seller.uid}}</span><br>
               <div class="rating">* * * * *</div>
               <div v-if="hasDiscount" class="item-price">
                 <span class="discount-price displayed-price">{{discountPrice}}</span>
@@ -57,7 +57,8 @@ export default {
     return {
       item: this.$route.params.item,
       itemID: this.$route.params.itemID,
-      previousRoute: this.$route.params.previousRoute
+      previousRoute: this.$route.params.previousRoute,
+      seller: null
     }
   },
   computed: {
@@ -79,9 +80,19 @@ export default {
       var url = 'api/resource/item/' + this.itemID
       axios
         .get(url)
-        .then((response) => { return response.data })
+        .then((response) => { this.item = response.data })
+        .catch(error => alert(error))
+    },
+    getSeller () { // TODO: change URL for actual user ID when linked to items...
+      var url = 'api/resource/sellerInfo?uid=333'
+      axios
+        .get(url)
+        .then((response) => { this.seller = response.data })
         .catch(error => alert(error))
     }
+  },
+  created () {
+    this.getSeller()
   }
 }
 </script>
