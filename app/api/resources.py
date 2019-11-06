@@ -42,7 +42,6 @@ class UserRegistration(Resource):
         email = request.args['email']
         password = request.args['password']
 
-
         if username is None or email is None or password is None:
             abort(400, "Invalid username or email.")
 
@@ -140,7 +139,8 @@ class ResetPassword(Resource):
     def get(self):
         return {'message': 'Hit the user password reset endpoint.'}
 
-@resource.route('/user', doc={"description":"Get the user name and email"})
+
+@resource.route('/user', doc={"description": "Get the user name and email"})
 class UserInfo(Resource):
     @jwt_required
     def get(self):
@@ -243,7 +243,12 @@ class ItemRoutes(Resource):
         item = Item.query.filter(Item.item_id == item_id).first()
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        return jsonify(item.serialize)
+        seller_auth_info = UserAuthModel.query.filter_by(uid=item.seller_id).first()
+        if seller_auth_info is None:
+            abort(404, "User with id {} not found".format(item.seller_id))
+        result = {"seller_name": seller_auth_info.username,
+                  "item_info": item.serialize}
+        return result
 
     @resource.expect(create_item_payload)
     @jwt_required
@@ -328,14 +333,14 @@ class ShoppingCart(Resource):
     def get(self, user_id):
         items = db.engine.execute(
             db.select([Item.item_id, Item.item_name, Item.price, shoppingListItem.c.quantity]).
-            where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
+                where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
         )
         return jsonify([{
             "item_id": i.item_id,
             "name": i.item_name,
             "price": i.price,
             "quantity": i.quantity,
-        }for i in items])
+        } for i in items])
 
     def delete(self, user_id):
         db.engine.execute(db.delete(shoppingListItem)
@@ -343,7 +348,8 @@ class ShoppingCart(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/shopping-cart/<int:user_id>/<int:item_id>', doc={"description": "Add and remove items in the shopping cart"})
+@resource.route('/shopping-cart/<int:user_id>/<int:item_id>',
+                doc={"description": "Add and remove items in the shopping cart"})
 class ShoppingCart(Resource):
     def post(self, user_id, item_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
