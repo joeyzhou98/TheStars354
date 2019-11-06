@@ -44,13 +44,13 @@ class UserRegistration(Resource):
 
 
         if username is None or email is None or password is None:
-            abort(400)  # missing arguments
+            abort(400, "Invalid username or email.")
 
         if UserAuthModel.find_by_username(username):
-            abort(400, "User with username {} aleady exists in db.".format(username))  # existing user
+            abort(400, "User name {} is already taken.".format(username))
 
         if UserAuthModel.find_by_useremail(email):
-            abort(400, "User with email {} aleady exists in db.".format(email))  # existing email
+            abort(400, "Email {} is already used for another user".format(email))
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
@@ -86,7 +86,7 @@ class UserLogin(Resource):
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             return resp
-        abort(404, "Credential info for user {} is not correct".format(username))
+        abort(404, "Password for user {} is not correct".format(username))
 
 
 @authentication.route('/logout/access', doc={
@@ -139,6 +139,20 @@ class ResetPassword(Resource):
     @jwt_required
     def get(self):
         return {'message': 'Hit the user password reset endpoint.'}
+
+@resource.route('/user', doc={"description":"Get the user name and email"})
+class UserInfo(Resource):
+    @jwt_required
+    def get(self):
+        current_user = get_jwt_identity()
+        if current_user is not None:
+            userAuth = UserAuthModel.query.filter_by(username=current_user).first()
+            if userAuth is None:
+                abort(404, "User with username {} not found".format(current_user))
+            email = userAuth.useremail
+            return {'username': current_user,
+                    'email': email}
+        abort(400, "Cannot retrieve username from access token.")
 
 
 @resource.route('/buyerInfo', doc={

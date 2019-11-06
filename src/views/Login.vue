@@ -4,7 +4,8 @@
       bg-variant="light"
       title="Login"
       style="width: 25rem; display: inline-block;"
-    >
+    ><br/><br/>
+
     <b-form @submit="onSubmit">
       <b-form-group
         id="input-group-1"
@@ -41,8 +42,11 @@
         >
         </b-form-input>
       </b-form-group>
+      <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
       <b-link href="#/findPassword">Forget your password?</b-link>
+      <br/><br/>
+      <b-link href="#/register">Create an account</b-link>
       <br/><br/>
       <b-button type="submit" variant="dark">Login</b-button>
 
@@ -53,6 +57,8 @@
 
 <script>
 import axios from 'axios'
+import md5 from 'js-md5'
+import App from '../App'
 
 export default {
   data () {
@@ -60,23 +66,31 @@ export default {
       form: {
         username: '',
         password: ''
+      },
+      errors: {
+        message: ''
       }
     }
   },
   methods: {
     onSubmit (evt) {
       evt.preventDefault()
-      alert(JSON.stringify(this.form))
-      var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(this.form.password)
+      // alert(JSON.stringify(this.form))
+      var url = 'api/authentication/login?username=' + encodeURIComponent(this.form.username) + '&password=' + encodeURIComponent(md5(this.form.password))
       this.sendAxiosRequest(url)
     },
     sendAxiosRequest (url) {
       axios
         .post(url)
-        .then(response => { alert(JSON.stringify(response.data)) })
+        .then((response) => {
+          // alert(JSON.stringify(response.data))
+          App.loginStatus.setLoginStatus(true)
+          this.$router.push('/')
+        })
         .catch(error => {
           if (error.response.status === 404) {
-            alert(JSON.stringify(error.response.data))
+            console.log(JSON.stringify(error.response.data))
+            this.errors.message = error.response.data['message']
           }
         })
     }
@@ -119,9 +133,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-/*@media screen{
-  .column{
-    background-color: yellowgreen;
-  }
-}*/
+.error {
+    color: red;
+}
 </style>

@@ -4,7 +4,7 @@
       bg-variant="light"
       title="Create account"
       style="width: 25rem; display: inline-block;"
-    >
+    ><br/><br/>
     <b-form @submit="onSubmit">
       <b-form-group
         id="input-group-1"
@@ -80,8 +80,9 @@
         >
         </b-form-input>
       </b-form-group>
+      <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
-      <b-button type="submit" variant="dark">Resgiser</b-button>
+      <b-button type="submit" variant="dark">Register</b-button>
     </b-form>
   </b-card>
   </div>
@@ -89,6 +90,8 @@
 
 <script>
 import axios from 'axios'
+import md5 from 'js-md5'
+import App from '../App'
 
 export default {
   data () {
@@ -98,23 +101,33 @@ export default {
         email: '',
         password: '',
         passwordAgain: ''
+      },
+      errors: {
+        message: ''
       }
     }
   },
   methods: {
     onSubmit (evt) {
       evt.preventDefault()
-      alert(JSON.stringify(this.form))
-      // for testing, make sure to pass the MD5 hashed password in the following line
-      var url = 'api/authentication/registration?username=' + encodeURIComponent(this.form.userName) + '&email=' + encodeURIComponent(this.form.email) + '&password=' + encodeURIComponent(this.form.password)
+      // alert(JSON.stringify(this.form))
+      var url = 'api/authentication/registration?username=' + encodeURIComponent(this.form.userName) + '&email=' + encodeURIComponent(this.form.email) + '&password=' + encodeURIComponent(md5(this.form.password))
       this.sendAxiosRequest(url)
     },
-    // for testing purpose, make sure to add proper logic when the registration is successful (ex.redirect to homepage etc.)
     sendAxiosRequest (url) {
       axios
         .post(url)
-        .then(response => { alert(JSON.stringify(response.data)) })
-        .catch(error => alert(error))
+        .then((response) => {
+          // alert(JSON.stringify(response.data))
+          App.loginStatus.setLoginStatus(true)
+          this.$router.push('/')
+        })
+        .catch(error => {
+          if (error.response.status === 400) {
+            console.log(JSON.stringify(error.response.data))
+            this.errors.message = error.response.data['message']
+          }
+        })
     }
   },
   computed: {
@@ -169,14 +182,14 @@ export default {
     statePasswordAgain () {
       if (this.form.passwordAgain === '') {
         return null
-      } else if (this.form.passwordAgain.match(this.form.password)) {
+      } else if (this.form.passwordAgain === this.form.password) {
         return true
       } else {
         return false
       }
     },
     invalidFeedbackPasswordAgain () {
-      if (this.form.passwordAgain.match(this.form.password) || this.form.password === '') {
+      if (this.form.passwordAgain === this.form.password || this.form.password === '') {
         return ''
       } else {
         return 'the password doesn\'t match'
@@ -187,9 +200,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-/*@media screen{
-  .column{
-    background-color: yellowgreen;
-  }
-}*/
+.error {
+    color: red;
+}
 </style>

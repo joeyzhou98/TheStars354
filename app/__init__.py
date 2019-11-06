@@ -9,6 +9,7 @@ app = Flask(__name__, static_folder='../dist/static')
 # Need to set up database first before import api_bp
 
 from .config import Config
+app.config['ERROR_404_HELP'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://comp354:' + Config.DATABASE_PASSWORD + '@comp354.cha9oynmedpn.us-east-2.rds.amazonaws.com:3306/comp354'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -17,8 +18,6 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
-app.config['JWT_ACCESS_COOKIE_PATH'] = '/api/'
-app.config['JWT_REFRESH_COOKIE_PATH'] = '/api/'
 # cookies for jwt tokens are session cookies (deleted when the browser is closed)
 jwt = JWTManager(app)
 
