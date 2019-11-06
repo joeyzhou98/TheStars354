@@ -173,10 +173,9 @@ class BuyerInfo(Resource):
 
 
 @resource.route('/sellerInfo', doc={
-    "description": "Search and return seller data that match the queried user uid, access token needed"})
+    "description": "Search and return seller data that match the queried user uid"})
 @resource.doc(params={'uid': "uid of the seller"})
 class SellerInfo(Resource):
-    @jwt_required
     def get(self):
         uid = request.args.get('uid')
 
