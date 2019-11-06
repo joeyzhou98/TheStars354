@@ -13,7 +13,7 @@
             <b-card-text>
               <span class="brand">{{item.brand}}</span><br>
               <span class="name">{{item.item_name}}</span><br>
-              <span class="seller">Sold by {{seller.uid}}</span><br>
+              <span class="seller">Sold by {{seller}}</span><br>
               <div class="rating">* * * * *</div>
               <div v-if="hasDiscount" class="item-price">
                 <span class="discount-price displayed-price">{{discountPrice}}</span>
@@ -23,12 +23,26 @@
               <div v-else class="item-price"> <!-- No discount -->
                 <span class="regular-price displayed-price">{{regularPrice}}</span>
               </div>
+              <div v-if="isAvailable" id="quantitySelect">
+                <b-row no-gutters>
+                  <b-col>
+                    <span class="icon-text">Quantity: </span>
+                  </b-col>
+                  <b-col>
+                    <b-select size="sm" v-model="selectedQty">
+                      <option v-for="qty in quantity" :key="qty" :value="qty">{{qty}}</option>
+                    </b-select>
+                  </b-col>
+                  <b-col md="10"></b-col>
+                </b-row>
+              </div>
+              <div v-else style="color: darkred; margin-bottom: 8px">Out of stock :(</div>
               <div class="buttons">
-                <b-button class="cart-btn shadow-none" variant="outline" title="Add to Cart">
+                <b-button class="button cart-btn shadow-none" variant="outline" :disabled="!isAvailable" title="Add to Cart">
                   <icon class="far" name="shopping-bag"></icon>
                   <span class="icon-text">ADD TO CART</span>
                 </b-button>
-                <b-button class="fav-btn shadow-none" variant="outline" title="Add to Wishlist">
+                <b-button class="button fav-btn shadow-none" variant="outline" title="Add to Wishlist">
                   <icon class="far" name="heart"></icon>
                   <span class="icon-text">FAVORITE</span>
                 </b-button>
@@ -49,7 +63,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+// import axios from 'axios'
 
 export default {
   name: 'ItemDetails',
@@ -58,7 +72,8 @@ export default {
       item: this.$route.params.item,
       itemID: this.$route.params.itemID,
       previousRoute: this.$route.params.previousRoute,
-      seller: null
+      seller: 'Seller',
+      selectedQty: 1
     }
   },
   computed: {
@@ -73,23 +88,24 @@ export default {
     },
     hasDiscount () {
       return this.item.discount !== 0
+    },
+    isAvailable () {
+      return this.item.quantity > 0
+    },
+    quantity () {
+      return parseInt(this.item.quantity)
     }
   },
   methods: {
-    getItem () {
-      var url = 'api/resource/item/' + this.itemID
-      axios
-        .get(url)
-        .then((response) => { this.item = response.data })
-        .catch(error => alert(error))
-    },
-    getSeller () { // TODO: change URL for actual user ID when linked to items...
-      var url = 'api/resource/sellerInfo?uid=333'
-      axios
-        .get(url)
-        .then((response) => { this.seller = response.data })
-        .catch(error => alert(error))
-    }
+    // [TODO: Uncomment when items have seller ids]
+    // getSeller () {
+    //   var url = 'api/resource/item/' + this.itemID
+    //   axios
+    //     .get(url)
+    //     .then((response) => { this.seller = response.data })
+    //     .catch(error => alert(error))
+    //   this.seller = this.seller.seller_name
+    // }
   },
   created () {
     this.getSeller()
@@ -101,6 +117,7 @@ export default {
 .back {
   text-align: left;
   margin: 10px 0px;
+  font-size: smaller;
 }
 .current {
   width: 50px;
@@ -144,15 +161,17 @@ export default {
   top: 2px;
   margin-left: 5px;
 }
-.cart-btn {
-  background: $darkblue;
+.button {
   text-align: center;
   cursor: pointer;
   outline: none;
-  color: white;
-  border-color: $darkblue;
   padding-top: 3px;
   margin-right: 10px;
+}
+.cart-btn {
+  background: $darkblue;
+  color: white;
+  border-color: $darkblue;
   &:hover {
     color: white;
     background: $mainblue;
@@ -165,12 +184,8 @@ export default {
 }
 .fav-btn {
   background: none;
-  text-align: center;
-  cursor: pointer;
-  outline: none;
   color: $darkblue;
   border-color: $darkblue;
-  padding-top: 3px;
   &:hover {
     color: $mainblue;
     background: none;
@@ -179,6 +194,12 @@ export default {
   &:active {
     position:relative;
     top:1px;
+  }
+}
+#quantitySelect {
+  margin-bottom: 12px;
+  span {
+    margin-right: 5px;
   }
 }
 </style>

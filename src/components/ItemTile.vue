@@ -1,15 +1,13 @@
 <template>
   <div class="tile">
-    <div class="img-container">
-      <img :src="item.images"/>
-    </div>
     <div>
       <span v-line-clamp="2" style="word-break: normal !important;">
-        <keep-alive>
-          <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, item: item, previousRoute: this.$route}}">
-            <span class="item-title">{{name}}</span>
-          </router-link>
-        </keep-alive>
+        <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, item: item, previousRoute: this.$route}}">
+          <div class="img-container">
+            <img :src="item.images"/>
+          </div>
+          <span class="item-title">{{name}}</span>
+        </router-link>
       </span>
     </div>
     <div v-if="hasDiscount" class="item-price">
