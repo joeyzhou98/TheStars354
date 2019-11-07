@@ -18,7 +18,7 @@ for item in items:
                         description=item["description"],
                         quantity=quantity,
                         quantity_sold=random.randrange(quantity),
-                        discount=random.uniform(0, 1) if random.uniform(0, 1) < 0.5 else 0.0,
+                        discount=random.uniform(0.1, 0.7) if random.uniform(0, 1) < 0.5 else 0.0,
                         images="https://comp354.s3.us-east-2.amazonaws.com/itemPic/" + item["picture"]))
 
 db.session.commit()
