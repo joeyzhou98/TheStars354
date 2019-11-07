@@ -174,7 +174,7 @@ class SellerModel(db.Model):
 class Order(db.Model):
     __tablename__ = "order"
 
-    order_id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, primary_key=True, index=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     purchase_date = db.Column(db.Date, nullable=False)
     items = db.relationship("Item", secondary=orderItem)
