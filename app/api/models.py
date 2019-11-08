@@ -225,8 +225,6 @@ class Review(db.Model):
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
             print("No such buyer")
-        elif Order.order_exists(self.item_id):
-            print("No such item")
         else:
             db.session.add(self)
             db.session.commit()
@@ -247,7 +245,7 @@ class Item(db.Model):
     discount = db.Column(db.Float, nullable=False, default=0.0)
     images = db.Column(db.String(1000), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=True)
-    reviews = db.relationship("Review", cascade="all, delete-orphan")
+    reviews = db.relationship("Review", cascade="all, delete-orphan", backref="post", lazy='dynamic')
 
     @property
     def serialize(self):

@@ -4,7 +4,9 @@ http://flask-restplus.readthedocs.io
 """
 
 from datetime import datetime
-from flask import request, redirect, jsonify, abort
+import os
+import tempfile
+from flask import request, redirect, jsonify, abort, after_this_request
 from flask_restplus import Resource, fields
 import boto3
 import boto3.s3
@@ -335,15 +337,26 @@ class Deals(Resource):
 class CreateAndDeleteReview(Resource):
     @resource.doc(params={'content': "content of the review", 'rating': "rating"},)
     def post(self, item_id):
-        images = [request.files['image1'], request.files['image2'], request.files['image3'], request.files['image4'], request.files['image5']]
+        image_keys = ['image1', 'image2', 'image3', 'image4', 'image5']
+        images = []
+        for image_key in image_keys:
+            if request.files.get(image_key, False):
+                images.append(request.files[image_key])
         image_url = ""
         image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/reviewPic/"
         bucket_name = "comp354"
-        s3 = boto3.resource('s3')
+        #we need to hide all these info
+        s3 = boto3.client('s3',
+                          aws_access_key_id='AKIAIBSF4QHTBFL6SCUA',
+                          aws_secret_access_key='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')
         for image in images:
             if image is not None:
-                s3.upload_file(image.filename, bucket_name, 'reviewPic/{}'.format(image.filename))
-                image_url += image_prefix+image.filename+"&"
+                # create a temporary folder to save the review images
+                with tempfile.TemporaryDirectory() as tempdir:
+                    image_path = os.path.join(tempdir, image.filename)
+                    image.save(image_path)
+                    s3.upload_file(image_path, bucket_name, 'reviewPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
+                    image_url += image_prefix+image.filename+"&"
         content = request.args.get('content')
         rating = request.args.get('rating')
 
@@ -351,9 +364,10 @@ class CreateAndDeleteReview(Resource):
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
 
-        new_review = Review(content=content, rating=rating, images=image_url)
-        new_review.save_to_db()
-        item.reviews.append(new_review)
+        db.session.add(Review(buyer_id=int(333), item_id=int(item_id), content=str(content), rating=int(rating), images=str(image_url)))
+        #new_review.save_to_db()
+        #item.reviews.append(new_review)
+        print("here")
         db.session.commit()
         return jsonify(success=True)
 
