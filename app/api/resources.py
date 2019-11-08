@@ -211,7 +211,8 @@ class Category(Resource):
     def get(self):
         query = request.args.get('category')
         data = Item.query.filter(Item.category == query).all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 @resource.route('/subcategory', doc={"description": "Get all items in a certain subcategory"})
@@ -221,7 +222,8 @@ class Subcategory(Resource):
     def get(self):
         query = request.args.get('subcategory').replace("’", "'")
         data = Item.query.filter(Item.subcategory == query).all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 create_item_payload = api_rest.model('ItemModel', {
