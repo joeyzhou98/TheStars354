@@ -7193,13 +7193,6 @@ vue-awesome@^3.5.4:
   resolved "https://registry.yarnpkg.com/vue-awesome/-/vue-awesome-3.5.4.tgz#da14ca20a3c6415c72823a7f743022f2dbd0183f"
   integrity sha512-RRuo08A6mFye2RyLVdnODH5kyLiHANMl9EzKXZXCeMrsP4SY3nyjkQnTGlgbbVOBQuaGBMrFp9HPOJYDaVNk/w==
 
-vue-burger-menu@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/vue-burger-menu/-/vue-burger-menu-2.0.3.tgz#967e9588e958e8d6945d27d1409fa7e7a773753f"
-  integrity sha512-7HCCxxnorxI9W+qe/a7MR6Bco66kcIvHziUSEaY98OkGJj+3xmNesJMHTA84BLiv5P8JmM4ZrqtrUh0UecDuXg==
-  dependencies:
-    vue "^2.5.17"
-
 vue-eslint-parser@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-2.0.3.tgz#c268c96c6d94cfe3d938a5f7593959b0ca3360d1"
@@ -7261,11 +7254,6 @@ vue-template-es2015-compiler@^1.6.0:
 vue@^2.5.13:
   version "2.5.17"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.5.17.tgz#0f8789ad718be68ca1872629832ed533589c6ada"
-
-vue@^2.5.17:
-  version "2.6.10"
-  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.10.tgz#a72b1a42a4d82a721ea438d1b6bf55e66195c637"
-  integrity sha512-ImThpeNU9HbdZL3utgMCq0oiMzAkt1mcgy3/E6zWC/G6AaQoeuFdsl9nDhTDU3X1R6FK7nsIUuRACVcjI+A2GQ==
 
 vuex@^3.0.1:
   version "3.0.1"

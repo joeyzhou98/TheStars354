@@ -11,18 +11,16 @@
       @sliding-start="onSlideStart"
       @sliding-end="onSlideEnd"
     >
-      <b-carousel-slide
-        v-for="slide in slides"
-        :key="slide.id"
-        :img-src="slide.src"
-      >
-      </b-carousel-slide>
+      <b-link v-for="slide in slides" :key="slide.id" :to="slide.link">
+        <b-carousel-slide :img-src="slide.src">
+        </b-carousel-slide>
+      </b-link>
     </b-carousel>
     <br/>
     <b-card-group deck>
-    <b-card v-for="categoryCard in categoryCards" :key="categoryCard.id" :title="categoryCard.title" :img-src="categoryCard.src" img-alt="Image" img-top>
-      <b-link :href="categoryCard.cardLink">see more products</b-link>
-    </b-card>
+      <b-card v-for="categoryCard in categoryCards" :key="categoryCard.id" :title="categoryCard.title" :img-src="categoryCard.src" img-alt="Image" img-top>
+        <b-link :href="categoryCard.cardLink">see more products</b-link>
+      </b-card>
     </b-card-group>
   </div>
 </template>
@@ -34,15 +32,18 @@ export default {
       slides: [
         {
           id: 0,
-          src: require('@/assets/home-banners/Sale.png')
+          src: require('@/assets/home-banners/Sale.png'),
+          link: '/deals'
         },
         {
           id: 1,
-          src: require('@/assets/home-banners/Shipping.png')
+          src: require('@/assets/home-banners/Shipping.png'),
+          link: '/FAQ'
         },
         {
           id: 2,
-          src: require('@/assets/home-banners/Trending.png')
+          src: require('@/assets/home-banners/Trending.png'),
+          link: '/bestsellers'
         }
       ],
       categoryCards: [

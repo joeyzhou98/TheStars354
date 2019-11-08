@@ -2,7 +2,7 @@
   <div>
     <b-navbar id="navbar" toggleable="sm" class="fixed-top">
       <div id="categories">
-        <CategoriesMenu></CategoriesMenu>
+        <MainMenu></MainMenu>
       </div>
       <div class="mx-auto" style="width: 200px;">
         <b-navbar-brand><router-link to="/">354 THE STARS</router-link></b-navbar-brand>
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import CategoriesMenu from '@/components/CategoriesMenu.vue'
+import MainMenu from '@/components/MainMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import App from '../App'
 
@@ -47,7 +47,7 @@ export default {
   name: 'NavigationTop',
   components: {
     'SearchBar': SearchBar,
-    'CategoriesMenu': CategoriesMenu
+    'MainMenu': MainMenu
   },
   data () {
     return {
