@@ -395,3 +395,57 @@ def add_avg_rating(items):
                 count += 1
         item["rating"] = None if count == 0 else rating / count
     return items
+
+  
+@resource.route('/place-order/<int:user_id>/<int:item_id>', doc={"description": "Place order for a single item"})
+class PlaceOrder(Resource):
+    def post(self, user_id, item_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        item = Item.query.filter_by(item_id=item_id).first()
+
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif item.quantity - item.quantity_sold <= 0:
+            abort(403, "Not enough stock for item {}".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+
+        seller = SellerModel.query.filter_by(uid=item.seller_id).first()
+        if seller is not None:
+            seller.add_commission(item)
+
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
+        order.save_to_db()
+        order.add_item(item)
+        item.quantity_sold += 1
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/place-order-in-shopping-cart/<int:user_id>', doc={"description": "Place order for entire shopping cart"})
+class PlaceOrderInShoppingCart(Resource):
+    def post(self, user_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
+        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+
+        if buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        for item in items:
+            if item is None:
+                abort(404, "Item with id {} not found".format(item.item_id))
+            elif item.quantity - item.quantity_sold <= 0:
+                abort(403, "Not enough stock for item {}".format(item.item_id))
+
+        order.save_to_db()
+        for item in items:
+            seller = SellerModel.query.filter_by(uid=item.seller_id).first()
+            if seller is not None:
+                seller.add_commission(item)
+            order.add_item(item)
+            item.quantity_sold += 1
+            list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
+            list_item.delete(synchronize_session=False)
+            db.session.commit()
+
+        return jsonify(success=True)
