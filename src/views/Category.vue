@@ -3,24 +3,27 @@
     <b-row>
       <b-col>
         <b-row>
-          <div id="filter-info">
-            Refine by...
+          <div id="navigation-links">
+              <router-link v-for="link in relatedLinks" v-bind:key="link.name"
+                :to="link.path"><span class="navigation-link">{{navBracket}} {{link.name}}</span>
+              </router-link>
           </div>
         </b-row>
         <b-row>
-          <FilterNav></FilterNav>
+          <FilterNav :items="itemData" :isSubcategory="isSubcategory"></FilterNav>
         </b-row>
       </b-col>
       <b-col cols="10">
         <b-row id="page-title" class="text-center">
           <b-col>
+          <span :v-if="isSubcategory">{{$route.meta.parent}}</span>
           <h1>{{$route.name}}</h1>
           </b-col>
         </b-row>
         <b-row id="item-info" align-v="center">
-          <b-col id="item-count">
-            {{itemStart}} - {{itemEnd}} of {{itemData.length}} items in
-            <span id="category">{{$route.name}}</span>
+          <b-col class="item-count">
+            {{itemStart}} - {{itemEnd}} of {{displayedItems.length}} items in
+            <span class="category">{{$route.name}}</span>
           </b-col>
           <b-col class="pagination">
             <Pagination :pageNumber="pageNumber" :pageCount="pageCount"></Pagination>
@@ -28,13 +31,14 @@
           <b-col>
             <div id="sort">
               <span id="sort-text">Sort by:</span>
-              <b-select id="sort-menu" size="sm" :v-model="selectedSort" :options="sortOptions">
+              <b-select id="sort-menu" size="sm" v-model="selectedSort" :options="sortOptions" @change="onSortChanged">
               </b-select>
             </div>
           </b-col>
         </b-row>
         <b-row id="grid">
-          <ItemGrid :items="paginatedData"></ItemGrid>
+          <ItemGrid v-if="validItems" :items="paginatedData"></ItemGrid>
+          <div v-if="validItems == false">{{noItemsMsg}}</div>
         </b-row>
         <b-row class="pagination">
           <Pagination :pageNumber="pageNumber" :pageCount="pageCount" :needScrollTop="true"></Pagination>
@@ -48,6 +52,7 @@
 import ItemGrid from '@/components/ItemGrid.vue'
 import Pagination from '@/components/Pagination.vue'
 import FilterNav from '@/components/FilterNav.vue'
+import axios from 'axios'
 import { bus } from '../main'
 
 export default {
@@ -61,52 +66,150 @@ export default {
     return {
       pageNumber: 0,
       pageSize: 20,
-      selectedSort: 0,
+      selectedSort: 'Bestselling',
       sortOptions: [
-        { value: 0, text: 'Bestselling' },
-        { value: 1, text: 'Newest' },
-        { value: 2, text: 'Price: Low to High' },
-        { value: 3, text: 'Price: High to Low' }
+        { value: 'Bestselling', text: 'Bestselling' },
+        { value: 'Discount Value', text: 'Discount Value' },
+        { value: 'Price: Low to High', text: 'Price: Low to High' },
+        { value: 'Price: High to Low', text: 'Price: High to Low' }
       ],
-      itemData: this.createFakeData(80)
+      itemData: [], // items fetched from the API request
+      filteredData: null, // items filtered by FilterNav component
+      noItemsMsg: 'Sorry, there are no products to display here :('
+    }
+  },
+  watch: {
+    // Refresh data when changing categories
+    $route (to, from) {
+      if (to !== from) {
+        this.getItemData()
+      }
     }
   },
   computed: {
+    displayedItems () {
+      if (this.filteredData !== null) {
+        return this.filteredData
+      }
+      return this.itemData
+    },
     pageCount () {
-      return Math.ceil(this.itemData.length / this.pageSize)
+      return Math.ceil(this.displayedItems.length / this.pageSize)
     },
     itemStart () {
       return this.pageNumber * this.pageSize
     },
     itemEnd () {
-      return this.itemStart + this.pageSize
+      return Math.min(this.itemStart + this.pageSize, this.displayedItems.length)
     },
     paginatedData () {
-      return this.itemData.slice(this.itemStart, this.itemEnd)
+      return this.displayedItems.slice(this.itemStart, this.itemEnd)
+    },
+    isSubcategory () {
+      return this.$route.meta.parent != null
+    },
+    categoryName () {
+      return this.$route.name
+    },
+    validItems () {
+      return this.displayedItems != null && this.displayedItems.length !== 0
+    },
+    relatedLinks () {
+      if (this.isSubcategory) {
+        return [{name: this.$route.meta.parent, path: this.$route.meta.path}]
+      } else {
+        var subcategories = []
+        for (var subcategory of this.$route.meta.children) {
+          subcategories.push({name: subcategory.name, path: this.$route.path + subcategory.path})
+        }
+        return subcategories
+      }
+    },
+    navBracket () {
+      if (this.isSubcategory) {
+        return '<'
+      } else {
+        return '>'
+      }
     }
   },
   methods: {
-    createFakeData (count) { // DELETE THIS LATER
-      let data = []
-      for (let i = 0; i < count; i++) {
-        data.push({id: i, name: 'Tile ' + (i + 1)})
+    sendAxiosRequest (url) {
+      this.noItemsMsg = 'Fetching items...'
+      axios
+        .get(url)
+        .then((response) => {
+          this.itemData = this.getSortedItems(response.data)
+          this.noItemsMsg = 'Sorry, there are no products to display here :('
+        })
+        .catch(error => alert(error))
+    },
+    getItemData () {
+      var url = null
+      if (this.categoryName === 'Bestsellers') {
+        url = 'api/resource/item/best'
+      } else if (this.categoryName === 'Special Deals') {
+        url = 'api/resource/item/deals'
+      } else if (this.isSubcategory) {
+        url = 'api/resource/subcategory?subcategory=' + encodeURIComponent(this.categoryName)
+      } else {
+        url = 'api/resource/category?category=' + encodeURIComponent(this.categoryName)
       }
-      return data
+      this.sendAxiosRequest(url)
+    },
+    getSortedItems (data) {
+      switch (this.selectedSort) {
+        case 'Bestselling':
+          return data.sort((a, b) => { return b.quantity_sold - a.quantity_sold })
+        case 'Discount Value':
+          return data.sort((a, b) => { return b.discount - a.discount })
+        case 'Price: Low to High':
+          return data.sort((a, b) => { return this.getRealPrice(a) - this.getRealPrice(b) })
+        case 'Price: High to Low':
+          return data.sort((a, b) => { return this.getRealPrice(b) - this.getRealPrice(a) })
+        default:
+          return data
+      }
+    },
+    getRealPrice (item) {
+      return item.price - item.price * item.discount
+    },
+    onSortChanged () {
+      this.displayedItems = this.getSortedItems(this.displayedItems)
+    },
+    onSearch (query) {
+      var url = 'api/resource/search?query=' + encodeURIComponent(query)
+      this.sendAxiosRequest(url)
     }
   },
+  // LIFECYCLE //
+  // Note that Created is only called when transitioning from a non-category view
+  // (not called when switching between categories or doing multiple searches)
   created () {
+    if (this.$route.path === '/search') {
+      this.noItemsMsg = 'Fetching items...' // transitioning from a non-category view to search result takes longer
+    } else {
+      this.getItemData()
+    }
     // Event listeners for page change
     bus.$on('page:next', () => { this.pageNumber++ })
     bus.$on('page:previous', () => { this.pageNumber-- })
     bus.$on('page:first', () => { this.pageNumber = 0 })
     bus.$on('page:last', () => { this.pageNumber = this.pageCount - 1 })
     bus.$on('page:number', (page) => { this.pageNumber = page })
+    // Event listener for search
+    bus.$on('search', (query) => { this.onSearch(query) })
+    // Event listener for filters
+    bus.$on('filter_change', (filteredData) => {
+      this.pageNumber = 0
+      this.filteredData = filteredData
+    })
   }
 }
 </script>
 
 <style scoped lang="scss">
-#filter-info {
+#filter-space {
   padding-top: 170px;
   padding-bottom: 10px;
 }
@@ -122,15 +225,15 @@ padding: 30px;
 background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
           rgba(123,215,255,1) 100%);
 }
-#item-count {
+.item-count {
   font-size: smaller;
   text-align: left;
 }
 #grid {
   display: block;
 }
-#category {
-  color: $mainblue;
+.category {
+  color: $darkblue;
   font-weight: bold;
   margin-left: 3px;
 }
@@ -147,5 +250,13 @@ background: linear-gradient(180deg, rgba(0,127,181,1) 0%, rgba(0,162,232,1) 50%,
 .pagination {
   display: block;
   margin: 20px;
+}
+#navigation-links {
+  padding: 20px;
+}
+.navigation-link {
+  display: block;
+  text-align: left;
+  font-size: smaller;
 }
 </style>
