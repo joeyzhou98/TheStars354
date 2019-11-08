@@ -2,7 +2,7 @@
   <div class="tile">
     <div>
       <span v-line-clamp="2" style="word-break: normal !important;">
-        <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, item: item, previousRoute: this.$route}}">
+        <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, previousRoute: this.$route}}">
           <div class="img-container">
             <img :src="item.images"/>
           </div>

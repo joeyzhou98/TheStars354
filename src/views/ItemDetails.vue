@@ -81,7 +81,7 @@ export default {
   },
   data () {
     return {
-      item: this.$route.params.item,
+      item: null,
       itemID: this.$route.params.itemID,
       previousRoute: this.$route.params.previousRoute,
       seller: 'Seller',
@@ -122,6 +122,7 @@ export default {
           let data = response.data
           this.seller = data.seller_name
           this.reviews = data.reviews
+          this.item = data.item_info
         })
         .catch(error => alert(error))
     }
