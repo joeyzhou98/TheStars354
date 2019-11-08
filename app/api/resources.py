@@ -367,6 +367,10 @@ class PlaceOrder(Resource):
         elif buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
 
+        seller = SellerModel.query.filter_by(uid=item.seller_id).first()
+        if seller is not None:
+            seller.add_commission(item)
+
         order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
         order.save_to_db()
         order.add_item(item)
@@ -381,7 +385,7 @@ class PlaceOrderInShoppingCart(Resource):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
         items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
-        
+
         if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
         for item in items:
@@ -392,6 +396,9 @@ class PlaceOrderInShoppingCart(Resource):
 
         order.save_to_db()
         for item in items:
+            seller = SellerModel.query.filter_by(uid=item.seller_id).first()
+            if seller is not None:
+                seller.add_commission(item)
             order.add_item(item)
             item.quantity_sold += 1
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
@@ -399,3 +406,4 @@ class PlaceOrderInShoppingCart(Resource):
             db.session.commit()
 
         return jsonify(success=True)
+
