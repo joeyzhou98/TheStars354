@@ -155,6 +155,16 @@ class SellerModel(db.Model):
         self.offered_products.append(item)
         db.session.commit()
 
+    def add_commission(self, item):
+        percentage = 0.08
+        sold_quantity = 0
+        sold_items = Item.query.filter_by(seller_id=self.uid)
+        for sold_item in sold_items:
+            sold_quantity += sold_item.quantity_sold
+        if sold_quantity <= 10:
+            percentage = 0.03
+        self.total_commission += item.price * percentage
+
     @classmethod
     def get_offered_products(cls):
         return cls.query.join(SellerModel, Item)
@@ -174,7 +184,7 @@ class SellerModel(db.Model):
 class Order(db.Model):
     __tablename__ = "order"
 
-    order_id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, primary_key=True, index=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     purchase_date = db.Column(db.Date, nullable=False)
     items = db.relationship("Item", secondary=orderItem)
