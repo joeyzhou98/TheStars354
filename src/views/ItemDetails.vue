@@ -14,7 +14,10 @@
               <span class="brand">{{item.brand}}</span><br>
               <span class="name">{{item.item_name}}</span><br>
               <span class="seller">Sold by {{seller}}</span><br>
-              <div class="rating">* * * * *</div>
+              <div class="rating">
+                <star-rating :starStyle="starStyle" :rating="item.rating" :isIndicatorActive="false"></star-rating>
+                ({{this.reviews.length}})
+              </div>
               <div v-if="hasDiscount" class="item-price">
                 <span class="discount-price displayed-price">{{discountPrice}}</span>
                 <span class="old-price discount-info">{{regularPrice}}</span>
@@ -58,22 +61,36 @@
       </b-row>
     </b-card>
     <!-- Recommendation component here  -->
-    <!-- Review component here (last element of page)  -->
+    <hr/>
+    <span style="display: flex; font-size: 1.5rem; padding-bottom: 20px;">Customer reviews</span>
+    <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
+    <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
   </b-container>
 </template>
 
 <script>
-// import axios from 'axios'
+import axios from 'axios'
+import Review from '@/components/Review.vue'
+import StarRating from 'vue-dynamic-star-rating'
 
 export default {
   name: 'ItemDetails',
+  components: {
+    Review,
+    StarRating
+  },
   data () {
     return {
       item: this.$route.params.item,
       itemID: this.$route.params.itemID,
       previousRoute: this.$route.params.previousRoute,
       seller: 'Seller',
-      selectedQty: 1
+      selectedQty: 1,
+      reviews: [],
+      starStyle: {
+        starWidth: 20,
+        starHeight: 20
+      }
     }
   },
   computed: {
@@ -97,18 +114,20 @@ export default {
     }
   },
   methods: {
-    // [TODO: Uncomment when items have seller ids]
-    // getSeller () {
-    //   var url = 'api/resource/item/' + this.itemID
-    //   axios
-    //     .get(url)
-    //     .then((response) => { this.seller = response.data })
-    //     .catch(error => alert(error))
-    //   this.seller = this.seller.seller_name
-    // }
+    getItemData () {
+      let url = 'api/resource/item/' + this.itemID
+      axios
+        .get(url)
+        .then((response) => {
+          let data = response.data
+          this.seller = data.seller_name
+          this.reviews = data.reviews
+        })
+        .catch(error => alert(error))
+    }
   },
   created () {
-    this.getSeller()
+    this.getItemData()
   }
 }
 </script>
@@ -135,6 +154,7 @@ export default {
 }
 .rating {
   padding: 5px 0px;
+  display: flex;
 }
 .item-price {
   margin-bottom: 6px;

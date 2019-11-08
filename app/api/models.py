@@ -216,8 +216,10 @@ class Review(db.Model):
     review_id = db.Column(db.Integer, primary_key=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    rating = db.Column(db.Integer, nullable=False)   # 1 to 5
+    reply = db.Column(db.String(512), nullable=True)    # Seller's reply to buyer's rating
     content = db.Column(db.String(512), nullable=True)
-    images = db.Column(db.String(1000))
+    images = db.Column(db.String(1000), nullable=True)
 
     @property
     def serialize(self):
@@ -225,6 +227,8 @@ class Review(db.Model):
             "review_id": self.review_id,
             "buyer_id": self.buyer_id,
             "item_id": self.item_id,
+            "rating": self.rating,
+            "reply": self.reply,
             "content": self.content,
             "images": self.images}
 

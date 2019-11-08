@@ -200,7 +200,8 @@ class Search(Resource):
             )).all()
         else:
             data = Item.query.all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 @resource.route('/category', doc={"description": "Get all items in a certain category"})
@@ -210,7 +211,8 @@ class Category(Resource):
     def get(self):
         query = request.args.get('category')
         data = Item.query.filter(Item.category == query).all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 @resource.route('/subcategory', doc={"description": "Get all items in a certain subcategory"})
@@ -220,7 +222,8 @@ class Subcategory(Resource):
     def get(self):
         query = request.args.get('subcategory').replace("’", "'")
         data = Item.query.filter(Item.subcategory == query).all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 create_item_payload = api_rest.model('ItemModel', {
@@ -246,8 +249,14 @@ class ItemRoutes(Resource):
         seller_auth_info = UserAuthModel.query.filter_by(uid=item.seller_id).first()
         if seller_auth_info is None:
             abort(404, "User with id {} not found".format(item.seller_id))
+        reviews = [i.serialize for i in Review.query.filter(Review.item_id == item_id).all()]
+        ratings = list(map(lambda x: x["rating"], reviews))
+        ratings_avg = sum(ratings) / len(ratings) if len(ratings) != 0 else None
+        item = item.serialize
+        item.update({"rating": ratings_avg})
         result = {"seller_name": seller_auth_info.username,
-                  "item_info": item.serialize}
+                  "item_info": item,
+                  "reviews": reviews}
         return result
 
     @resource.expect(create_item_payload)
@@ -318,14 +327,18 @@ class CreateItem(Resource):
 class BestSellers(Resource):
     def get(self):
         items = Item.query.order_by(Item.quantity_sold.desc()).limit(20).all()
-        return jsonify([i.serialize for i in items])
+        payload = add_avg_rating(items)
+
+        return jsonify(payload)
 
 
 @resource.route('/item/deals', doc={"description": "Return top 20 most discounted items"})
 class Deals(Resource):
     def get(self):
         items = Item.query.order_by(Item.discount.desc()).limit(20).all()
-        return jsonify([i.serialize for i in items])
+        payload = add_avg_rating(items)
+
+        return jsonify(payload)
 
 
 @resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
@@ -370,6 +383,20 @@ class ShoppingCart(Resource):
         return jsonify(success=True)
 
 
+def add_avg_rating(items):
+    items = [i.serialize for i in items]
+    reviews = [i.serialize for i in Review.query.all()]
+    for item in items:
+        rating = 0
+        count = 0
+        for review in reviews:
+            if review["item_id"] == item["item_id"]:
+                rating += review["rating"]
+                count += 1
+        item["rating"] = None if count == 0 else rating / count
+    return items
+
+  
 @resource.route('/place-order/<int:user_id>/<int:item_id>', doc={"description": "Place order for a single item"})
 class PlaceOrder(Resource):
     def post(self, user_id, item_id):
@@ -422,4 +449,3 @@ class PlaceOrderInShoppingCart(Resource):
             db.session.commit()
 
         return jsonify(success=True)
-
