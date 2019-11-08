@@ -54,7 +54,7 @@ class UserAuthModel(db.Model):
 
 class RevokedTokenModel(db.Model):
     __tablename__ = 'revokedTokens'
-    id = db.Column(db.Integer, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(120))
 
     def add(self):
@@ -204,34 +204,21 @@ class Review(db.Model):
     __tablename__ = "review"
 
     review_id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey("order.order_id"))
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    rating = db.Column(db.Integer, nullable=False)   # 1 to 5
+    reply = db.Column(db.String(512), nullable=True)    # Seller's reply to buyer's rating
     content = db.Column(db.String(512), nullable=True)
-    images = db.Column(db.String(1000)),
-    rating = db.Column(db.Integer, nullable=True),
-    seller_response = db.Column(db.String(512))
-
+    images = db.Column(db.String(1000), nullable=True)
 
     @property
     def serialize(self):
         return {
             "review_id": self.review_id,
-            "order_id": self.order_id,
             "buyer_id": self.buyer_id,
             "item_id": self.item_id,
-            "content": self.content,
-            "images": self.images,
             "rating": self.rating,
-            "seller_response": self.seller_response
-        }
-
-    @property
-    def serialize(self):
-        return {
-            "review_id": self.review_id,
-            "buyer_id": self.buyer_id,
-            "item_id": self.item_id,
+            "reply": self.reply,
             "content": self.content,
             "images": self.images}
 
@@ -277,7 +264,6 @@ class Item(db.Model):
             "discount": self.discount,
             "images": self.images,
             "seller_id": self.seller_id,
-            "reviews": self.reviews
         }
 
     def save_to_db(self):

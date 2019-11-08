@@ -334,7 +334,7 @@ class Deals(Resource):
 class CreateAndDeleteReview(Resource):
     @resource.doc(params={'content': "content of the review", 'rating': "rating"},)
     def post(self, item_id):
-        images = [request.files['image1'],request.files['image2'],request.files['image3'],request.files['image4'],request.files['image5']]
+        images = [request.files['image1'], request.files['image2'], request.files['image3'], request.files['image4'], request.files['image5']]
         image_url = ""
         image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/reviewPic/"
         bucket_name = "comp354"
@@ -350,7 +350,8 @@ class CreateAndDeleteReview(Resource):
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
 
-        new_review = Review(content=content, rating=rating, images= image_url)
+        new_review = Review(content=content, rating=rating, images=image_url)
+        new_review.save_to_db()
         item.reviews.append(new_review)
         db.session.commit()
         return jsonify(success=True)
