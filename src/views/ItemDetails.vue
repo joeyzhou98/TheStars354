@@ -166,7 +166,8 @@ export default {
   cursor: pointer;
   outline: none;
   padding-top: 3px;
-  margin-right: 10px;
+  margin-right: 12px;
+  margin-bottom: 10px;
 }
 .cart-btn {
   background: $darkblue;
@@ -197,7 +198,8 @@ export default {
   }
 }
 #quantitySelect {
-  margin-bottom: 12px;
+  margin-top: 20px;
+  margin-bottom: 25px;
   span {
     margin-right: 5px;
   }
