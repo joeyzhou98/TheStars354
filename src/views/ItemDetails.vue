@@ -69,7 +69,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Review from '@/components/Review.vue'
 import StarRating from 'vue-dynamic-star-rating'
 
@@ -82,7 +81,6 @@ export default {
   data () {
     return {
       item: null,
-      itemID: this.$route.params.itemID,
       previousRoute: this.$route.params.previousRoute,
       seller: 'Seller',
       selectedQty: 1,
@@ -113,22 +111,11 @@ export default {
       return parseInt(this.item.quantity)
     }
   },
-  methods: {
-    getItemData () {
-      let url = 'api/resource/item/' + this.itemID
-      axios
-        .get(url)
-        .then((response) => {
-          let data = response.data
-          this.seller = data.seller_name
-          this.reviews = data.reviews
-          this.item = data.item_info
-        })
-        .catch(error => alert(error))
-    }
-  },
   created () {
-    this.getItemData()
+    let data = this.$route.params.itemData
+    this.seller = data.seller_name
+    this.reviews = data.reviews
+    this.item = data.item_info
   }
 }
 </script>

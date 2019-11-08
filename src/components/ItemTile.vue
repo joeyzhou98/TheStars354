@@ -2,7 +2,7 @@
   <div class="tile">
     <div>
       <span v-line-clamp="2" style="word-break: normal !important;">
-        <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, previousRoute: this.$route}}">
+        <router-link :to="{name: 'ItemDetails', params: {itemData: itemData, previousRoute: this.$route}}">
           <div class="img-container">
             <img :src="item.images"/>
           </div>
@@ -26,16 +26,19 @@
 </template>
 
 <script>
+import axios from 'axios'
 import StarRating from 'vue-dynamic-star-rating'
 
 export default {
   name: 'ItemTile',
-  props: ['item'],
+  props: ['itemID'],
   components: {
     StarRating
   },
   data () {
     return {
+      itemData: null,
+      item: null,
       starStyle: {
         starWidth: 15,
         starHeight: 15
@@ -61,6 +64,21 @@ export default {
     hasGoodDiscount () {
       return this.item.discount >= 0.15
     }
+  },
+  methods: {
+    getItemData () {
+      let url = 'api/resource/item/' + this.itemID
+      axios
+        .get(url)
+        .then((response) => {
+          this.itemData = response.data
+          this.item = response.data.item_info
+        })
+        .catch(error => alert(error))
+    }
+  },
+  created () {
+    this.getItemData()
   }
 }
 </script>
