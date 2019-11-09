@@ -20,15 +20,28 @@
       <span>{{regularPrice}}</span>
     </div>
     <div class="item-rating">
-      * * * * *
+      <star-rating :starStyle="starStyle" :rating="item.rating" :isIndicatorActive="false"></star-rating>
     </div>
   </div>
 </template>
 
 <script>
+import StarRating from 'vue-dynamic-star-rating'
+
 export default {
   name: 'ItemTile',
   props: ['item'],
+  components: {
+    StarRating
+  },
+  data () {
+    return {
+      starStyle: {
+        starWidth: 15,
+        starHeight: 15
+      }
+    }
+  },
   computed: {
     name () {
       return this.item.item_name
@@ -85,5 +98,8 @@ img {
 }
 .old-price {
   text-decoration: line-through;
+}
+.item-rating {
+  display: inline-flex;
 }
 </style>

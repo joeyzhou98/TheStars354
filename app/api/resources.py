@@ -204,7 +204,8 @@ class Search(Resource):
             )).all()
         else:
             data = Item.query.all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 @resource.route('/category', doc={"description": "Get all items in a certain category"})
@@ -214,7 +215,8 @@ class Category(Resource):
     def get(self):
         query = request.args.get('category')
         data = Item.query.filter(Item.category == query).all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 @resource.route('/subcategory', doc={"description": "Get all items in a certain subcategory"})
@@ -224,7 +226,8 @@ class Subcategory(Resource):
     def get(self):
         query = request.args.get('subcategory').replace("’", "'")
         data = Item.query.filter(Item.subcategory == query).all()
-        return jsonify([i.serialize for i in data])
+        payload = add_avg_rating(data)
+        return jsonify(payload)
 
 
 create_item_payload = api_rest.model('ItemModel', {
@@ -250,8 +253,14 @@ class ItemRoutes(Resource):
         seller_auth_info = UserAuthModel.query.filter_by(uid=item.seller_id).first()
         if seller_auth_info is None:
             abort(404, "User with id {} not found".format(item.seller_id))
+        reviews = [i.serialize for i in Review.query.filter(Review.item_id == item_id).all()]
+        ratings = list(map(lambda x: x["rating"], reviews))
+        ratings_avg = sum(ratings) / len(ratings) if len(ratings) != 0 else None
+        item = item.serialize
+        item.update({"rating": ratings_avg})
         result = {"seller_name": seller_auth_info.username,
-                  "item_info": item.serialize}
+                  "item_info": item,
+                  "reviews": reviews}
         return result
 
     @resource.expect(create_item_payload)
@@ -322,14 +331,18 @@ class CreateItem(Resource):
 class BestSellers(Resource):
     def get(self):
         items = Item.query.order_by(Item.quantity_sold.desc()).limit(20).all()
-        return jsonify([i.serialize for i in items])
+        payload = add_avg_rating(items)
+
+        return jsonify(payload)
 
 
 @resource.route('/item/deals', doc={"description": "Return top 20 most discounted items"})
 class Deals(Resource):
     def get(self):
         items = Item.query.order_by(Item.discount.desc()).limit(20).all()
-        return jsonify([i.serialize for i in items])
+        payload = add_avg_rating(items)
+
+        return jsonify(payload)
 
 
 # the function of getting reviews for an item is achieved by '/item/<int:item_id>' route using get request
@@ -443,4 +456,72 @@ class ShoppingCart(Resource):
             abort(404, "Item with id {} not in the shopping cart".format(item_id))
         items.delete(synchronize_session=False)
         db.session.commit()
+        return jsonify(success=True)
+
+
+def add_avg_rating(items):
+    items = [i.serialize for i in items]
+    reviews = [i.serialize for i in Review.query.all()]
+    for item in items:
+        rating = 0
+        count = 0
+        for review in reviews:
+            if review["item_id"] == item["item_id"]:
+                rating += review["rating"]
+                count += 1
+        item["rating"] = None if count == 0 else rating / count
+    return items
+
+  
+@resource.route('/place-order/<int:user_id>/<int:item_id>', doc={"description": "Place order for a single item"})
+class PlaceOrder(Resource):
+    def post(self, user_id, item_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        item = Item.query.filter_by(item_id=item_id).first()
+
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif item.quantity - item.quantity_sold <= 0:
+            abort(403, "Not enough stock for item {}".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+
+        seller = SellerModel.query.filter_by(uid=item.seller_id).first()
+        if seller is not None:
+            seller.add_commission(item)
+
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
+        order.save_to_db()
+        order.add_item(item)
+        item.quantity_sold += 1
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/place-order-in-shopping-cart/<int:user_id>', doc={"description": "Place order for entire shopping cart"})
+class PlaceOrderInShoppingCart(Resource):
+    def post(self, user_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
+        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+
+        if buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        for item in items:
+            if item is None:
+                abort(404, "Item with id {} not found".format(item.item_id))
+            elif item.quantity - item.quantity_sold <= 0:
+                abort(403, "Not enough stock for item {}".format(item.item_id))
+
+        order.save_to_db()
+        for item in items:
+            seller = SellerModel.query.filter_by(uid=item.seller_id).first()
+            if seller is not None:
+                seller.add_commission(item)
+            order.add_item(item)
+            item.quantity_sold += 1
+            list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
+            list_item.delete(synchronize_session=False)
+            db.session.commit()
+
         return jsonify(success=True)
