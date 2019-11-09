@@ -6,6 +6,7 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 import os
 import tempfile
+from app import config
 from flask import request, redirect, jsonify, abort, after_this_request
 from flask_restplus import Resource, fields
 import boto3
@@ -345,11 +346,30 @@ class Deals(Resource):
         return jsonify(payload)
 
 
-# the function of getting reviews for an item is achieved by '/item/<int:item_id>' route using get request
 @resource.route('/review/<int:item_id>', doc={"description": "1. post a new review for an item. 2. Delete all reviews for an item."})
 class CreateAndDeleteReview(Resource):
     @resource.doc(params={'content': "content of the review", 'rating': "rating"},)
+    @jwt_required
     def post(self, item_id):
+        item = Item.find_by_id(item_id)
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+
+        orders = Order.query.join(orderItem.join(Item, Item.item_id == item_id))
+        if orders.count() == 0:
+            abort(404, "No order record for item with id {} ".format(item_id))
+
+        current_user_id = UserAuthModel.find_by_username(get_jwt_identity()).uid
+        current_user_is_buyer = False
+
+        for order in orders:
+            if order.buyer_id == current_user_id:
+                current_user_is_buyer = True
+                break
+
+        if not current_user_is_buyer:
+            abort(400, "Current user {} is not a buyer of this item".format(current_user_id))
+
         image_keys = ['image1', 'image2', 'image3', 'image4', 'image5']
         images = []
         for image_key in image_keys:
@@ -358,14 +378,13 @@ class CreateAndDeleteReview(Resource):
         image_url = ""
         image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/reviewPic/"
         bucket_name = "comp354"
-        #we need to hide all these info
         s3 = boto3.client('s3',
-                          aws_access_key_id='AKIAIBSF4QHTBFL6SCUA',
-                          aws_secret_access_key='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')
-        for image in images:
-            if image is not None:
-                # create a temporary folder to save the review images
-                with tempfile.TemporaryDirectory() as tempdir:
+                          aws_access_key_id=config.Config.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=config.Config.AWS_SECRET_ACCESS_KEY)
+        with tempfile.TemporaryDirectory() as tempdir:
+            for image in images:
+                if image is not None:
+                    # create a temporary folder to save the review images
                     image_path = os.path.join(tempdir, image.filename)
                     image.save(image_path)
                     s3.upload_file(image_path, bucket_name, 'reviewPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
@@ -373,14 +392,8 @@ class CreateAndDeleteReview(Resource):
         content = request.args.get('content')
         rating = request.args.get('rating')
 
-        item = Item.query.filter(Item.item_id == item_id).first()
-        if item is None:
-            abort(404, "Item with id {} not found".format(item_id))
-
-        db.session.add(Review(buyer_id=int(333), item_id=int(item_id), content=str(content), rating=int(rating), images=str(image_url)))
-        #new_review.save_to_db()
-        #item.reviews.append(new_review)
-        print("here")
+        new_review = Review(buyer_id=current_user_id, item_id=item_id, content=content, rating=rating, images=image_url)
+        item.reviews.append(new_review)
         db.session.commit()
         return jsonify(success=True)
 
@@ -389,30 +402,27 @@ class CreateAndDeleteReview(Resource):
         item = Item.query.filter(Item.item_id == item_id).first()
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        db.engine.execute(db.delete(item.reviews))
+        reviews = db.session.query(Review).filter_by(item_id=item_id)
+        reviews.delete(synchronize_session=False)
         db.session.commit()
         return jsonify(success=True)
 
 @resource.route('/review/<int:item_id>/<int:review_id>', doc={"description": "Manipulate (put, delete) a review for an item."})
-class Review(Resource):
+class PutAndDeleteReview(Resource):
     @resource.doc(params={'response': "seller's response for the review"})
     def put(self, item_id, review_id):
-        review = db.session.query(Review)\
-            .filter(Review.review_id == review_id and Review.item_id == item_id)
-        if review is None:
-            abort(404, "Review with id {} not found".format(review_id) + "for item {}".format(item_id))
-        seller_response = request.args.get('response')
-        review.seller_response = seller_response
+        db.session.query(Review)\
+            .filter(Review.review_id == review_id and Review.item_id == item_id).\
+            update({"reply": request.args.get('response')})
         db.session.commit()
         return jsonify(success=True)
-
 
     def delete(self, item_id, review_id):
         review = db.session.query(Review) \
             .filter(Review.review_id == review_id and Review.item_id == item_id)
         if review is None:
             abort(404, "Review with id {} not found".format(review_id) + "for item {}".format(item_id))
-        db.delete(review)
+        review.delete(synchronize_session=False)
         db.session.commit()
         return jsonify(success=True)
 
@@ -472,7 +482,7 @@ def add_avg_rating(items):
         item["rating"] = None if count == 0 else rating / count
     return items
 
-  
+
 @resource.route('/place-order/<int:user_id>/<int:item_id>', doc={"description": "Place order for a single item"})
 class PlaceOrder(Resource):
     def post(self, user_id, item_id):
@@ -523,5 +533,4 @@ class PlaceOrderInShoppingCart(Resource):
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
-
         return jsonify(success=True)

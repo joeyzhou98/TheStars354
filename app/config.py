@@ -13,6 +13,8 @@ class Config(object):
     FLASK_ENV = os.getenv('FLASK_ENV', 'production')
     # Set FLASK_SECRET on your production Environment
     DATABASE_PASSWORD = os.getenv('FLASK_SECRET', 'Secret')
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', 'AKIAIBSF4QHTBFL6SCUA')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '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')
 
     APP_DIR = os.path.dirname(__file__)
     ROOT_DIR = os.path.dirname(APP_DIR)

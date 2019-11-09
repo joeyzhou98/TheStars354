@@ -214,8 +214,8 @@ class Review(db.Model):
     __tablename__ = "review"
 
     review_id = db.Column(db.Integer, primary_key=True)
-    buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
-    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    buyer_id = db.Column(db.Integer, db.ForeignKey('buyerInfo.uid'))
+    item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))
     rating = db.Column(db.Integer, nullable=False)   # 1 to 5
     reply = db.Column(db.String(512), nullable=True)    # Seller's reply to buyer's rating
     content = db.Column(db.String(512), nullable=True)
@@ -255,7 +255,7 @@ class Item(db.Model):
     discount = db.Column(db.Float, nullable=False, default=0.0)
     images = db.Column(db.String(1000), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=True)
-    reviews = db.relationship("Review", cascade="all, delete-orphan", backref="post", lazy='dynamic')
+    reviews = db.relationship("Review")
 
     @property
     def serialize(self):
@@ -271,7 +271,7 @@ class Item(db.Model):
             "quantity_sold": self.quantity_sold,
             "discount": self.discount,
             "images": self.images,
-            "seller_id": self.seller_id,
+            "seller_id": self.seller_id
         }
 
     def save_to_db(self):
@@ -296,3 +296,8 @@ class Item(db.Model):
             return False
         else:
             return True
+
+    @classmethod
+    def find_by_id(cls, item_id):
+        return cls.query.filter_by(item_id=item_id).first()
+
