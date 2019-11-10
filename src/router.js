@@ -10,6 +10,7 @@ import Home from './views/Home.vue'
 import ItemDetails from './views/ItemDetails.vue'
 import Login from './views/Login.vue'
 import Register from './views/Register.vue'
+import ForgetPassword from './views/ForgetPassword'
 
 Vue.use(Router)
 
@@ -29,6 +30,11 @@ export default new Router({
       path: '/register',
       name: 'Register',
       component: Register
+    },
+    {
+      path: '/forgetPassword',
+      name: 'ForgetPassword',
+      component: ForgetPassword
     },
     {
       path: '/faq',

@@ -2,6 +2,7 @@ import os
 from flask import Flask, current_app, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 
 from .client import client_bp
 
@@ -20,6 +21,8 @@ app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 # cookies for jwt tokens are session cookies (deleted when the browser is closed)
 jwt = JWTManager(app)
+app.config['MAIL_DEFAULT_SENDER'] = 'customer_service@the354stars.com'
+mail = Mail(app)
 
 from .api import api_bp
 
