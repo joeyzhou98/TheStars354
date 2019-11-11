@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-navbar id="navbar" :key="this.isLoggedIn" toggleable="sm" class="fixed-top">
+    <b-navbar id="navbar" toggleable="sm" class="fixed-top">
         <div id="categories">
           <MainMenu></MainMenu>
         </div>
@@ -42,7 +42,6 @@
 <script>
 import MainMenu from '@/components/MainMenu.vue'
 import SearchBar from '@/components/SearchBar.vue'
-import App from '../App'
 
 export default {
   name: 'NavigationTop',
@@ -52,16 +51,16 @@ export default {
   },
   computed: {
     isLoggedIn () {
-      return App.loginStatus.state.login
+      return this.$store.state.isLoggedIn
     },
     username () {
-      return App.loginStatus.state.username
+      return this.$store.state.username
     }
   },
   methods: {
     VerifyLoginStatus () {
-      console.log('loginStatus', App.loginStatus.state)
-      if (App.loginStatus.state.login) {
+      console.log('isLoggedIn', this.isLoggedIn)
+      if (this.isLoggedIn) {
         this.$router.push('/account')
       } else {
         this.$router.push('/login')

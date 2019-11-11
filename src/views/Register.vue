@@ -92,7 +92,6 @@
 <script>
 import axios from 'axios'
 import md5 from 'js-md5'
-import App from '../App'
 
 export default {
   data () {
@@ -120,8 +119,7 @@ export default {
         .post(url)
         .then((response) => {
           // alert(JSON.stringify(response.data))
-          App.loginStatus.setLoginStatus(true)
-          App.loginStatus.setUser(response.data.id, this.form.username)
+          this.$store.commit('login', response.data)
           this.$router.push('/')
         })
         .catch(error => {

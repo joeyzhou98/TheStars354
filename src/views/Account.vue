@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div v-if="isLoggedOut" style="margin: 20px">
+  <div v-if="!isLoggedIn" style="margin: 20px">
     Oops! You are not supposed to be here.<br>
     <router-link to="/login">Log In</router-link><br>
     <router-link to="/">Back to Home Page</router-link>
@@ -34,40 +34,17 @@
 
 <script>
 import axios from 'axios'
-import App from '../App'
 
 export default {
-  data () {
-    return {
-      username: '',
-      email: ''
-    }
-  },
-  mounted () {
-    if (this.isLoggedOut) {
-      return
-    }
-    this.getUserAuthInfo()
-  },
   computed: {
-    welcomeMessage () {
-      return 'Welcome ' + this.username
+    isLoggedIn () {
+      return this.$store.state.isLoggedIn
     },
-    isLoggedOut () {
-      return App.loginStatus.state.login === false
+    welcomeMessage () {
+      return 'Welcome ' + this.$store.state.username
     }
   },
   methods: {
-    getUserAuthInfo () {
-      var url = 'api/resource/user'
-      this.sendAxiosRequest(url)
-    },
-    sendAxiosRequest (url) {
-      axios
-        .get(url)
-        .then(response => { this.username = response.data['username'] })
-        .catch(error => alert(error))
-    },
     userLogout () {
       let url1 = 'api/authentication/logout/access'
       let url2 = 'api/authentication/logout/refresh'
@@ -83,9 +60,8 @@ export default {
           console.log('refresh token revoke', response.data)
         })
         .catch(error => alert(error))
-      App.loginStatus.setLoginStatus(false)
-      App.loginStatus.setUser(null, null)
-      console.log('loginStatus', App.loginStatus.state)
+      this.$store.commit('logout')
+      console.log('isLoggedIn', this.isLoggedIn)
       this.$router.push('/')
     }
   }

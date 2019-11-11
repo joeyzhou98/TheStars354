@@ -9,30 +9,16 @@
 </template>
 
 <script>
+import store from '@/store.js'
 import NavigationTop from '@/components/NavigationTop.vue'
 import NavigationBottom from '@/components/NavigationBottom.vue'
 
 export default {
   name: 'App',
+  store,
   components: {
     'NavigationTop': NavigationTop,
     'NavigationBottom': NavigationBottom
-  },
-  loginStatus: {
-    debug: true,
-    state: {
-      login: false,
-      uid: null,
-      username: null
-    },
-    setLoginStatus (newValue) {
-      if (this.debug) console.log('setMessageAction triggered with', newValue)
-      this.state.login = newValue
-    },
-    setUser (uid, username) {
-      this.state.uid = uid
-      this.state.username = username
-    }
   }
 }
 </script>
