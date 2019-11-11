@@ -21,11 +21,17 @@ export default {
   loginStatus: {
     debug: true,
     state: {
-      login: false
+      login: false,
+      uid: null,
+      username: null
     },
     setLoginStatus (newValue) {
       if (this.debug) console.log('setMessageAction triggered with', newValue)
       this.state.login = newValue
+    },
+    setUser (uid, username) {
+      this.state.uid = uid
+      this.state.username = username
     }
   }
 }

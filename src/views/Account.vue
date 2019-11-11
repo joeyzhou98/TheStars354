@@ -1,5 +1,11 @@
 <template>
-  <div>
+<div>
+  <div v-if="isLoggedOut" style="margin: 20px">
+    Oops! You are not supposed to be here.<br>
+    <router-link to="/login">Log In</router-link><br>
+    <router-link to="/">Back to Home Page</router-link>
+  </div>
+  <div v-else>
     <b-card
     :title="welcomeMessage"
     img-src="https://picsum.photos/600/300/?image=25"
@@ -23,6 +29,7 @@
     <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
   </div>
+</div>
 </template>
 
 <script>
@@ -37,11 +44,17 @@ export default {
     }
   },
   mounted () {
+    if (this.isLoggedOut) {
+      return
+    }
     this.getUserAuthInfo()
   },
   computed: {
     welcomeMessage () {
       return 'Welcome ' + this.username
+    },
+    isLoggedOut () {
+      return App.loginStatus.state.login === false
     }
   },
   methods: {
@@ -71,6 +84,7 @@ export default {
         })
         .catch(error => alert(error))
       App.loginStatus.setLoginStatus(false)
+      App.loginStatus.setUser(null, null)
       console.log('loginStatus', App.loginStatus.state)
       this.$router.push('/')
     }

@@ -33,7 +33,7 @@
                   </b-col>
                   <b-col>
                     <b-select size="sm" v-model="selectedQty">
-                      <option v-for="qty in quantity" :key="qty" :value="qty">{{qty}}</option>
+                      <option v-for="qty in availableQty" :key="qty" :value="qty">{{qty}}</option>
                     </b-select>
                   </b-col>
                   <b-col md="10"></b-col>
@@ -41,11 +41,40 @@
               </div>
               <div v-else style="color: darkred; margin-bottom: 8px">Out of stock :(</div>
               <div class="buttons">
-                <b-button class="button cart-btn shadow-none" variant="outline" :disabled="!isAvailable" title="Add to Cart">
+                <b-button  @click="$bvModal.show('addtocart')" class="button main-btn shadow-none" variant="outline" :disabled="!isAvailable"
+                  title="Add to Cart">
                   <icon class="far" name="shopping-bag"></icon>
                   <span class="icon-text">ADD TO CART</span>
                 </b-button>
-                <b-button class="button fav-btn shadow-none" variant="outline" title="Add to Wishlist">
+                <!-- Start of modal section -->
+                <b-modal id="addtocart" ref="addtocart">
+                  <template slot="modal-title">
+                    <span style="font-size: smaller">{{item.item_name}}</span>
+                  </template>
+                  <b-row no-gutters>
+                    <b-col>
+                      <div class="img-container">
+                        <img :src="item.images"/>
+                      </div>
+                    </b-col>
+                    <b-col>
+                      Brand: {{item.brand}}<br>
+                      Price: {{discountPrice}}<br>
+                      Quantity: {{selectedQty}}
+                    </b-col>
+                    <b-col>
+                      In cart: <br>
+                      Items: (count)<br>
+                      Total: ($$)
+                    </b-col>
+                  </b-row>
+                  <template slot="modal-footer">
+                    <b-button class="sec-btn" @click="keepShopping">KEEP SHOPPING</b-button>
+                    <b-button class="main-btn" @click="goToCart">CHECKOUT</b-button>
+                  </template>
+                </b-modal>
+                <!-- End of modal section -->
+                <b-button class="button sec-btn shadow-none" variant="outline" title="Add to Wishlist">
                   <icon class="far" name="heart"></icon>
                   <span class="icon-text">FAVORITE</span>
                 </b-button>
@@ -69,6 +98,7 @@
 </template>
 
 <script>
+import App from '../App'
 import axios from 'axios'
 import Review from '@/components/Review.vue'
 import StarRating from 'vue-dynamic-star-rating'
@@ -109,7 +139,7 @@ export default {
     isAvailable () {
       return this.item.quantity > 0
     },
-    quantity () {
+    availableQty () {
       return parseInt(this.item.quantity)
     }
   },
@@ -124,6 +154,26 @@ export default {
           this.reviews = data.reviews
         })
         .catch(error => alert(error))
+    },
+    goToCart () {
+      this.addToCart()
+      this.$refs['addtocart'].hide()
+      this.$router.push('/cart')
+    },
+    keepShopping () {
+      this.addToCart()
+      this.$refs['addtocart'].hide()
+    },
+    addToCart () {
+      if (App.loginStatus.login) {
+      //   for (var i = 0; i < this.selectedQty; ++i) {
+      //     let url = 'api/resource/shopping-cart/' + App.loginStatus.userID + '/' + this.itemID
+      //     axios
+      //       .post(url)
+      //       .catch(error => alert(error))
+      //   }
+      }
+      // else add to cookies
     }
   },
   created () {
@@ -189,7 +239,7 @@ export default {
   margin-right: 12px;
   margin-bottom: 10px;
 }
-.cart-btn {
+.main-btn {
   background: $darkblue;
   color: white;
   border-color: $darkblue;
@@ -203,7 +253,7 @@ export default {
     top:1px;
   }
 }
-.fav-btn {
+.sec-btn {
   background: none;
   color: $darkblue;
   border-color: $darkblue;
@@ -223,5 +273,14 @@ export default {
   span {
     margin-right: 5px;
   }
+}
+.img-container {
+  width: 100px;
+  margin-bottom: 5px;
+}
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
 }
 </style>

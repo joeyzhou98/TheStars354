@@ -85,6 +85,7 @@ export default {
         .then((response) => {
           // alert(JSON.stringify(response.data))
           App.loginStatus.setLoginStatus(true)
+          App.loginStatus.setUser(response.data.id, this.form.username)
           this.$router.push('/')
         })
         .catch(error => {
