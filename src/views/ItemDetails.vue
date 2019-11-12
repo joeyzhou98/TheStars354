@@ -1,8 +1,9 @@
 <template>
   <b-container fluid>
-    <div class="back">
+    <div class="back" v-if="previousRoute !== undefined">
       <router-link :to="previousRoute.path">&lt; {{previousRoute.name}} </router-link>
     </div>
+    <br v-else />
     <b-card no-body class="overflow-hidden" align="left">
       <b-row no-gutters>
         <b-col md="4">
@@ -74,9 +75,9 @@
                   </template>
                 </b-modal>
                 <!-- End of modal section -->
-                <b-button class="button sec-btn shadow-none" variant="outline" title="Add to Wishlist">
+                <b-button class="button sec-btn shadow-none" @click="addToWishlist" variant="outline" title="Add to Wishlist">
                   <icon class="far" name="heart"></icon>
-                  <span class="icon-text">FAVORITE</span>
+                  <span class="icon-text">WISHLIST</span>
                 </b-button>
               </div>
               <hr />
@@ -91,7 +92,7 @@
     </b-card>
     <!-- Recommendation component here  -->
     <hr/>
-    <span style="display: flex; font-size: 1.5rem; padding-bottom: 20px;">Customer reviews</span>
+    <h5 style="display: flex; padding-bottom: 20px;">Customer reviews</h5>
     <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
   </b-container>
@@ -151,6 +152,7 @@ export default {
           let data = response.data
           this.seller = data.seller_name
           this.reviews = data.reviews
+          this.item = data.item_info
         })
         .catch(error => alert(error))
     },
@@ -191,6 +193,13 @@ export default {
         var jsonItems = JSON.stringify(cookie)
         this.$cookies.set('cart', jsonItems)
         console.log('cookie', this.$cookies.get('cart'))
+      }
+    },
+    addToWishlist () {
+      if (this.$store.state.isLoggedIn) {
+        // add to wishlist, change button for remove
+      } else {
+        this.$router.push('/login')
       }
     }
   },

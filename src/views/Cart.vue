@@ -19,7 +19,9 @@
               </b-col>
               <b-col md="8">
                 <div class="d-flex align-items-start flex-column">
-                  <div style="text-align: left;">{{data.item.item_name}}</div><br>
+                  <div style="text-align: left;">
+                    <b-link :to="itemLink(data.item)"><span class="item-link">{{data.item.item_name}}</span></b-link>
+                  </div><br>
                   <div class="mb-auto">
                     <small>
                       Qty:
@@ -28,8 +30,8 @@
                           <option v-for="qty in data.item.quantity" :key="qty" :value="qty">{{qty}}</option>
                         </b-select>
                       </div>
-                      <b-link class="item-link" @click="remove(data.item)">Delete</b-link>
-                      <b-link class="item-link">Move to Wishlist</b-link>
+                      <b-link class="item-link small-link" @click="remove(data.item)">Delete</b-link>
+                      <b-link class="item-link small-link">Move to Wishlist</b-link>
                     </small>
                   </div>
                 </div>
@@ -194,6 +196,9 @@ export default {
     },
     discountPrice (item) {
       return '$' + (item.price - (item.price * item.discount)).toFixed(2)
+    },
+    itemLink (item) {
+      return 'item-details/' + item.item_id
     }
   },
   created () {
@@ -212,8 +217,10 @@ img {
   object-fit: scale-down;
 }
 .item-link {
-  margin-left: 15px;
   color: $darkblue;
+}
+.small-link {
+  margin-left: 15px;
 }
 .small-bold {
   font-weight: bold;
