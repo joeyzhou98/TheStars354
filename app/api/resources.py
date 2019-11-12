@@ -508,7 +508,8 @@ class PlaceOrder(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/place-order-in-shopping-cart/<int:user_id>', doc={"description": "Place order for entire shopping cart"})
+@resource.route('/place-order-in-shopping-cart/<int:user_id>',
+                doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
     def post(self, user_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
@@ -536,7 +537,8 @@ class PlaceOrderInShoppingCart(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/orders/<start_date>/<end_date>', doc={"description": "Return all orders during a given period of time"})
+@resource.route('/orders/<start_date>/<end_date>',
+                doc={"description": "Return all orders during a given period of time"})
 class AllOrders(Resource):
     def get(self, start_date, end_date):
         try:
@@ -550,7 +552,8 @@ class AllOrders(Resource):
         return jsonify([i.serialize for i in orders])
 
 
-@resource.route('/commission/<start_date>/<end_date>', doc={"description": "Return total commission during a given period of time"})
+@resource.route('/commission/<start_date>/<end_date>',
+                doc={"description": "Return total commission during a given period of time"})
 class TotalCommission(Resource):
     def get(self, start_date, end_date):
         try:
@@ -570,9 +573,10 @@ class TotalCommission(Resource):
                 items = [Item.query.filter_by(item_id=i.item_id, seller_id=seller.uid).first() for i in order_items]
                 for item in items:
                     if item is not None:
-                        if counter < 10:
-                            commission += item.price * 0.03
-                        else:
-                            commission += item.price * 0.08
                         counter += 1
+                        if order.purchase_date <= end and order.purchase_date >= start:
+                            if counter < 10:
+                                commission += item.price * 0.03
+                            else:
+                                commission += item.price * 0.08
         return jsonify(commission)
