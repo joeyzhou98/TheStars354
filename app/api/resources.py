@@ -534,3 +534,17 @@ class PlaceOrderInShoppingCart(Resource):
             list_item.delete(synchronize_session=False)
             db.session.commit()
         return jsonify(success=True)
+
+
+@resource.route('/admin/<start_date>/<end_date>', doc={"description": "Return all orders during a given period of time"})
+class AllOrders(Resource):
+    def get(self, start_date, end_date):
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end = datetime.strptime(end_date, "%Y-%m-%d").date()
+            if start > end:
+                abort(400, "Invalid Date")
+        except:
+            abort(400, "Invalid Date")
+        orders = Order.query.filter(start <= Order.purchase_date, end >= Order.purchase_date).all()
+        return jsonify([i.serialize for i in orders])

@@ -191,11 +191,13 @@ class Order(db.Model):
 
     @property
     def serialize(self):
+        order_items = db.session.query(orderItem).filter_by(order_id=self.order_id).all()
+        items = [Item.query.filter_by(item_id=i.item_id).first() for i in order_items]
         return {
             "order_id": self.order_id,
             "buyer_id": self.buyer_id,
             "purchase_date": self.purchase_date,
-            "items": self.items}
+            "items": [i.serialize for i in items]}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
