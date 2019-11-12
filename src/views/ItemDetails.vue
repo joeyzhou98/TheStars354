@@ -157,7 +157,7 @@ export default {
     goToCart () {
       this.addToCart()
       this.$refs['addtocart'].hide()
-      // this.$router.push('/cart')
+      this.$router.push('/cart')
     },
     keepShopping () {
       this.addToCart()
@@ -165,32 +165,30 @@ export default {
     },
     addToCart () {
       if (this.$store.state.isLoggedIn) {
-      //   for (var i = 0; i < this.selectedQty; ++i) {
-      //     let url = 'api/resource/shopping-cart/' + App.loginStatus.state.userID + '/' + this.itemID
-      //     axios
-      //       .post(url)
-      //       .catch(error => alert(error))
-      //   }
-      } else {
-        var items
+        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '/' + this.selectedQty
+        axios
+          .post(url)
+          .catch(error => alert(error))
+      } else { // visitor: add to cookies
+        var cookie
         if (this.$cookies.isKey('cart')) {
           let jsonCartCookie = this.$cookies.get('cart')
-          items = JSON.parse(jsonCartCookie)
+          cookie = JSON.parse(jsonCartCookie)
           let itemInCart = false
-          for (var item of items) {
-            if (item.id === this.itemID) {
-              item.qty = parseInt(item.qty) + this.selectedQty
+          for (var data of cookie) {
+            if (data.item.item_id === this.itemID) {
+              data.qty = parseInt(data.qty) + this.selectedQty
               itemInCart = true
               break
             }
           }
           if (itemInCart === false) {
-            items.push({'id': this.itemID, 'qty': this.selectedQty})
+            cookie.push({'item': this.item, 'qty': this.selectedQty})
           }
         } else {
-          items = [{'id': this.itemID, 'qty': this.selectedQty}]
+          cookie = [{'item': this.item, 'qty': this.selectedQty}]
         }
-        var jsonItems = JSON.stringify(items)
+        var jsonItems = JSON.stringify(cookie)
         this.$cookies.set('cart', jsonItems)
         console.log('cookie', this.$cookies.get('cart'))
       }
