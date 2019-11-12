@@ -32,7 +32,7 @@
                     <span class="icon-text">Quantity: </span>
                   </b-col>
                   <b-col>
-                    <b-select size="sm" v-model="selectedQty">
+                    <b-select class="shadow-none" size="sm" v-model="selectedQty">
                       <option v-for="qty in availableQty" :key="qty" :value="qty">{{qty}}</option>
                     </b-select>
                   </b-col>

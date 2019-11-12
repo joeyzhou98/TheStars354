@@ -18,14 +18,14 @@
                 </div>
               </b-col>
               <b-col md="8">
-                <div id="item-info">
-                  <div>{{data.item.item_name}}</div><br>
-                  <div id="item-info-change">
+                <div class="d-flex align-items-start flex-column">
+                  <div style="text-align: left;">{{data.item.item_name}}</div><br>
+                  <div class="mb-auto">
                     <small>
                       Qty:
                       <div style="display: inline-block; width: 50px">
-                        <b-select size="sm" v-model="data.qty">
-                            <option v-for="qty in data.item.quantity" :key="qty" :value="qty">{{qty}}</option>
+                        <b-select class="shadow-none" size="sm" v-model="data.qty" @input="updateQty(data.item, data.qty)">
+                          <option v-for="qty in data.item.quantity" :key="qty" :value="qty">{{qty}}</option>
                         </b-select>
                       </div>
                       <b-link class="item-link" @click="remove(data.item)">Delete</b-link>
@@ -35,16 +35,49 @@
                 </div>
               </b-col>
               <b-col align-self="center">
-                <h5 style="color: green">{{discountPrice(data.item)}}</h5>
+                <span style="font-weight: bold">{{discountPrice(data.item)}}</span>
               </b-col>
             </b-row>
           </b-list-group-item>
         </b-list-group>
+        <div style="text-align: right; margin: 10px">
+          Items in cart: {{itemCount}}
+        </div>
       </b-col>
       <b-col>
-        <b-card class="text-center">
+        <b-card align="left">
           <div>
-            Order Summary
+            <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">Order Summary</div>
+            <div class="d-flex justify-content-between">
+              <span>Subtotal:</span>
+              <span style="font-weight: bold">{{subtotalTxt}}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Shipping:</span>
+              <small class="small-bold">FREE</small>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Taxes:</span>
+              <small class="small-bold">TBD</small>
+            </div>
+            <hr/>
+            <div class="d-flex justify-content-between">
+              <span>Estimated Total:</span>
+              <span style="font-weight: bold;">{{subtotalTxt}}</span>
+            </div>
+            <small class="text-muted">Taxes calculated during checkout</small>
+            <hr/>
+            <div>
+              Coupon Code: <br>
+              <b-input-group>
+                <b-form-input class="shadow-none" v-model="couponCode"></b-form-input>
+                <b-input-group-append>
+                  <b-button class="shadow-none" size="sm" text="Apply">Apply</b-button>
+                </b-input-group-append>
+              </b-input-group>
+            </div>
+            <hr/>
+            <b-button block variant="success">CHECKOUT</b-button>
           </div>
         </b-card>
       </b-col>
@@ -59,12 +92,31 @@ export default {
   name: 'Cart',
   data () {
     return {
-      cartData: null
+      cartData: null,
+      couponCode: ''
     }
   },
   computed: {
     isEmpty () {
       return this.cartData == null || this.cartData.length === 0
+    },
+    subtotal () {
+      var subtotal = 0
+      for (var data of this.cartData) {
+        let price = data.item.price - (data.item.price * data.item.discount)
+        subtotal += price * data.qty
+      }
+      return subtotal
+    },
+    subtotalTxt () {
+      return '$' + this.subtotal.toFixed(2)
+    },
+    itemCount () {
+      var count = 0
+      for (var data of this.cartData) {
+        count += data.qty
+      }
+      return count
     }
   },
   methods: {
@@ -118,6 +170,28 @@ export default {
         this.cartData = cookie
       }
     },
+    updateQty (item, qty) {
+      if (this.$store.state.isLoggedIn) {
+        // change qty
+      } else {
+        this.updateQtyInCookies(item, qty)
+      }
+    },
+    updateQtyInCookies (item, qty) {
+      if (this.$cookies.isKey('cart')) {
+        let jsonCartCookie = this.$cookies.get('cart')
+        let cookie = JSON.parse(jsonCartCookie)
+        for (var data of cookie) {
+          if (data.item.item_id === item.item_id) {
+            data.qty = qty
+            break
+          }
+        }
+        var jsonItems = JSON.stringify(cookie)
+        this.$cookies.set('cart', jsonItems)
+        this.cartData = cookie
+      }
+    },
     discountPrice (item) {
       return '$' + (item.price - (item.price * item.discount)).toFixed(2)
     }
@@ -141,14 +215,8 @@ img {
   margin-left: 15px;
   color: $darkblue;
 }
-#item-info {
-  text-align: left;
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-#item-info-change {
-  position: absolute;
-  bottom: 5px;
+.small-bold {
+  font-weight: bold;
+  margin-top: 3px
 }
 </style>
