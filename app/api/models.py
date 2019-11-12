@@ -101,16 +101,21 @@ class BuyerModel(db.Model):
         self.wish_list.append(item)
         db.session.commit()
 
-    def add_to_shopping_list(self, item):
+    def add_to_shopping_list(self, item, qty):
         list_item = db.session.query(shoppingListItem).filter_by(buyer_id=self.uid, item_id=item.item_id)
         if not list_item.count() == 0:
-            new_quantity = list_item.first().quantity + 1
+            new_quantity = list_item.first().quantity + qty
             db.engine.execute(db.update(shoppingListItem)
                               .where(shoppingListItem.c.buyer_id == self.uid and
                                      shoppingListItem.c.item_id == item.item_id)
                               .values(quantity=new_quantity))
         else:
             self.shopping_list.append(item)
+            if (qty > 1):
+                db.engine.execute(db.update(shoppingListItem)
+                                .where(shoppingListItem.c.buyer_id == self.uid and
+                                        shoppingListItem.c.item_id == item.item_id)
+                                .values(quantity=qty))
         db.session.commit()
 
     def set_paypal(self, paypal):

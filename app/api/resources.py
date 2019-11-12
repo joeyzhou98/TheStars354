@@ -455,20 +455,22 @@ class ShoppingCart(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/shopping-cart/<int:user_id>/<int:item_id>',
+@resource.route('/shopping-cart/<int:user_id>/<int:item_id>/<int:qty>',
                 doc={"description": "Add and remove items in the shopping cart"})
 class ShoppingCart(Resource):
-    def post(self, user_id, item_id):
+    def post(self, user_id, item_id, qty):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         item = Item.query.filter_by(item_id=item_id).first()
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
         elif buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        buyer.add_to_shopping_list(item)
+        elif len(buyer.shopping_list) + qty < 0: 
+             abort(404, "Trying to remove more items than the quantity in the cart")
+        buyer.add_to_shopping_list(item, qty)
         return jsonify(success=True)
 
-    def delete(self, user_id, item_id):
+    def delete(self, user_id, item_id, qty):
         items = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item_id)
         if items.count() == 0:
             abort(404, "Item with id {} not in the shopping cart".format(item_id))
