@@ -11,9 +11,12 @@ import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon'
 import lineClamp from 'vue-line-clamp'
 
+import VueCookies from 'vue-cookies'
+
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 Vue.use(lineClamp)
+Vue.use(VueCookies)
 Vue.component('icon', Icon)
 
 export const bus = new Vue()

@@ -98,7 +98,6 @@
 </template>
 
 <script>
-import App from '../App'
 import axios from 'axios'
 import Review from '@/components/Review.vue'
 import StarRating from 'vue-dynamic-star-rating'
@@ -158,22 +157,43 @@ export default {
     goToCart () {
       this.addToCart()
       this.$refs['addtocart'].hide()
-      this.$router.push('/cart')
+      // this.$router.push('/cart')
     },
     keepShopping () {
       this.addToCart()
       this.$refs['addtocart'].hide()
     },
     addToCart () {
-      if (App.loginStatus.login) {
+      if (this.$store.state.isLoggedIn) {
       //   for (var i = 0; i < this.selectedQty; ++i) {
-      //     let url = 'api/resource/shopping-cart/' + App.loginStatus.userID + '/' + this.itemID
+      //     let url = 'api/resource/shopping-cart/' + App.loginStatus.state.userID + '/' + this.itemID
       //     axios
       //       .post(url)
       //       .catch(error => alert(error))
       //   }
+      } else {
+        var items
+        if (this.$cookies.isKey('cart')) {
+          let jsonCartCookie = this.$cookies.get('cart')
+          items = JSON.parse(jsonCartCookie)
+          let itemInCart = false
+          for (var item of items) {
+            if (item.id === this.itemID) {
+              item.qty = parseInt(item.qty) + this.selectedQty
+              itemInCart = true
+              break
+            }
+          }
+          if (itemInCart === false) {
+            items.push({'id': this.itemID, 'qty': this.selectedQty})
+          }
+        } else {
+          items = [{'id': this.itemID, 'qty': this.selectedQty}]
+        }
+        var jsonItems = JSON.stringify(items)
+        this.$cookies.set('cart', jsonItems)
+        console.log('cookie', this.$cookies.get('cart'))
       }
-      // else add to cookies
     }
   },
   created () {
