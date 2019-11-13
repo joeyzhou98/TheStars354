@@ -3,10 +3,10 @@
     <div>
       <span v-line-clamp="2" style="word-break: normal !important;">
         <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, item: item, previousRoute: this.$route}}">
-          <div class="img-container">
+          <div :style="imgStyle">
             <img :src="item.images"/>
           </div>
-          <span class="item-title">{{name}}</span>
+          <span id="item-title" :class="titleSize">{{name}}</span>
         </router-link>
       </span>
     </div>
@@ -30,7 +30,21 @@ import StarRating from 'vue-dynamic-star-rating'
 
 export default {
   name: 'ItemTile',
-  props: ['item'],
+  props: {
+    item: {
+      required: true
+    },
+    imgHeight: {
+      type: String,
+      required: false,
+      default: '200px'
+    },
+    titleSize: {
+      type: String,
+      required: false,
+      default: 'normal'
+    }
+  },
   components: {
     StarRating
   },
@@ -60,6 +74,9 @@ export default {
     },
     hasGoodDiscount () {
       return this.item.discount >= 0.15
+    },
+    imgStyle () {
+      return 'height: ' + this.imgHeight + '; margin-bottom: 5px;'
     }
   }
 }
@@ -70,21 +87,20 @@ export default {
   color: $black;
   padding: 10px 0px;
 }
-.img-container {
-  height: 200px;
-  margin-bottom: 5px;
-}
 img {
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
-.item-title {
+#item-title {
   font-weight: bold;
   color: $black;
   &:hover {
     color: $darkblue;
   }
+}
+.small {
+  font-size: smaller;
 }
 .item-price > span {
   padding: 2px;

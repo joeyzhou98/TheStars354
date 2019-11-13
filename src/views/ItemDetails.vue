@@ -1,9 +1,6 @@
 <template>
   <b-container fluid>
-    <div class="back" v-if="previousRoute !== undefined">
-      <router-link :to="previousRoute.path">&lt; {{previousRoute.name}} </router-link>
-    </div>
-    <br v-else />
+    <br>
     <b-card no-body class="overflow-hidden" align="left">
       <b-row no-gutters>
         <b-col md="4">
@@ -90,7 +87,9 @@
         </b-col>
       </b-row>
     </b-card>
-    <!-- Recommendation component here  -->
+    <br>
+    <h5 style="display: flex; padding-bottom: 20px;">You might also like:</h5>
+    <Recommendations></Recommendations>
     <hr/>
     <h5 style="display: flex; padding-bottom: 20px;">Customer reviews</h5>
     <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
@@ -102,24 +101,36 @@
 import axios from 'axios'
 import Review from '@/components/Review.vue'
 import StarRating from 'vue-dynamic-star-rating'
+import Recommendations from '@/components/Recommendations.vue'
 
 export default {
   name: 'ItemDetails',
   components: {
     Review,
-    StarRating
+    StarRating,
+    Recommendations
   },
   data () {
     return {
       item: this.$route.params.item,
       itemID: this.$route.params.itemID,
-      previousRoute: this.$route.params.previousRoute,
       seller: 'Seller',
       selectedQty: 1,
       reviews: [],
       starStyle: {
         starWidth: 20,
         starHeight: 20
+      }
+    }
+  },
+  watch: {
+    // Refresh data when changing between ItemDetail pages
+    $route (to, from) {
+      if (to !== from) {
+        let currentURL = window.location.href
+        this.itemID = currentURL.match(/item-details\/([0-9]+)/)[1]
+        this.getItemData()
+        this.updateVisitedItems()
       }
     }
   },
@@ -201,10 +212,34 @@ export default {
       } else {
         this.$router.push('/login')
       }
+    },
+    updateVisitedItems () {
+      var itemQueue
+      if (this.$cookies.isKey('viewedItems')) {
+        let jsonViewedItemsCookie = this.$cookies.get('viewedItems')
+        itemQueue = JSON.parse(jsonViewedItemsCookie)
+        for (var i = 0; i < itemQueue.length; i++) {
+          if (itemQueue[i].item_id === this.itemID) {
+            alert(this.itemID)
+            itemQueue.splice(i, 1) // remove so we can put back at beginning of queue
+            break
+          }
+        }
+        itemQueue.unshift(this.item) // add to 1st
+        if (itemQueue.length > 10) {
+          itemQueue.pop() // keep 10 last visited items
+        }
+      } else {
+        itemQueue = [this.item]
+      }
+      var jsonItems = JSON.stringify(itemQueue)
+      this.$cookies.set('viewedItems', jsonItems)
+      console.log('viewedItems', itemQueue.length)
     }
   },
   created () {
     this.getItemData()
+    this.updateVisitedItems()
   }
 }
 </script>
