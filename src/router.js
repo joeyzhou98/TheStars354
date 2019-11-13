@@ -11,6 +11,7 @@ import ItemDetails from './views/ItemDetails.vue'
 import Login from './views/Login.vue'
 import Register from './views/Register.vue'
 import ForgetPassword from './views/ForgetPassword'
+import ChangePassword from './views/ChangePassword'
 
 Vue.use(Router)
 
@@ -35,6 +36,11 @@ export default new Router({
       path: '/forgetPassword',
       name: 'ForgetPassword',
       component: ForgetPassword
+    },
+    {
+      path: '/changePassword/:token/:username',
+      name: 'ChangePassword',
+      component: ChangePassword
     },
     {
       path: '/faq',

@@ -59,6 +59,7 @@ export default {
         .post(url)
         .then((response) => {
           alert(JSON.stringify(response.data))
+          this.$router.push('/')
         })
         .catch(error => {
           if (error.response.status === 404) {

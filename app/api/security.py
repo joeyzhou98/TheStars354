@@ -22,3 +22,7 @@ def require_auth(func):
 
 def generate_encoded_token(payload, secret, algorithm):
     return jwt.encode(payload, secret, algorithm)
+
+
+def decode_token(encodedToken, secret, algorithm):
+    return jwt.decode(encodedToken, secret, algorithm)
