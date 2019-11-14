@@ -28,8 +28,17 @@
 
       <br/><br/>
       <b-button type="submit" variant="dark">Continue</b-button>
-
     </b-form>
+      <div class="Popup">
+        <!-- Start of modal section -->
+        <b-modal id="notification" ref="notification">
+          <h5 class="notification_text">An email that contains the password reset link has been sent to the email address you provided, please check your email inbox.</h5>
+          <template slot="modal-footer">
+            <b-button class="continue-btn" @click="GoToHomePage">Continue</b-button>
+          </template>
+        </b-modal>
+        <!-- End of modal section -->
+      </div>
   </b-card>
   </div>
 </template>
@@ -58,8 +67,8 @@ export default {
       axios
         .post(url)
         .then((response) => {
-          alert(JSON.stringify(response.data))
-          this.$router.push('/')
+          // alert(JSON.stringify(response.data))
+          this.$bvModal.show('notification')
         })
         .catch(error => {
           if (error.response.status === 404) {
@@ -67,6 +76,9 @@ export default {
             this.errors.message = error.response.data['message']
           }
         })
+    },
+    GoToHomePage () {
+      this.$router.push('/')
     }
   },
   computed: {
@@ -94,4 +106,22 @@ export default {
 .error {
     color: red;
 }
+.continue-btn {
+  background: none;
+  color: $darkblue;
+  border-color: $darkblue;
+  &:hover {
+    color: $mainblue;
+    background: none;
+    border-color: $mainblue;
+  }
+  &:active {
+    position:relative;
+    top:1px;
+  }
+}
+h5.notification_text{
+  color: $darkgray;
+  font-size: larger;
+ }
 </style>
