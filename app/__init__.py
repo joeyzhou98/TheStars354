@@ -25,7 +25,7 @@ app.config['MAIL_SERVER'] ='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'customerservice354thestars@gmail.com'
-app.config['MAIL_PASSWORD'] = 'ab1234%%'
+app.config['MAIL_PASSWORD'] = Config.EMAIL_PASSWORD
 app.config['MAIL_DEFAULT_SENDER'] = 'customerservice354thestars@gmail.com'
 mail = Mail(app)
 
