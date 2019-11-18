@@ -2,13 +2,13 @@
 REST API Resource Routing
 http://flask-restplus.readthedocs.io
 """
-
 from datetime import datetime
 import os
 import tempfile
-from app import config
-from flask import request, redirect, jsonify, abort, after_this_request
+from app import config, mail
+from flask import request, jsonify, abort, render_template
 from flask_restplus import Resource, fields
+from flask_mail import Message
 import boto3
 import boto3.s3
 from flask_jwt_extended import (jwt_required, create_access_token,
@@ -18,7 +18,7 @@ from flask_jwt_extended import (jwt_required, create_access_token,
                                 unset_refresh_cookies)
 
 from app import jwt
-from .security import require_auth
+from .security import generate_encoded_token, decode_token
 from . import api_rest
 from .models import *
 
@@ -146,11 +146,54 @@ class TokenRefresh(Resource):
         return resp
 
 
-@authentication.route('/password/reset')
+@authentication.route('/password/forget', doc={"description": "This route will send an email to the validated email address with a link to rest password, part of the link is jwt token"})
+class ForgetPassword(Resource):
+    @resource.doc(params={'email': "email for the new user, will return 404 if it doesn't exist in database."})
+    def post(self):
+        email = request.args['email']
+        user = UserAuthModel.find_by_useremail(email)
+        if user is None:
+            abort(404, "We weren't able to identify you given the email provided.")
+        payload = {"username": user.username, "useremail": user.useremail}
+        encoded_token = generate_encoded_token(payload, 'secret', algorithm='HS256')
+        # print(encoded_token)
+        password_reset_url = 'http://localhost:8080/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
+        msg = Message("Reset password - 354TheStars.com",
+                      recipients=[email])
+        msg.html = render_template('ResetPasswordEmail.html', username=user.username, link=password_reset_url)
+        mail.send(msg)
+        return jsonify(success=True)
+
+
+@authentication.route('/changePassword/<string:token>', doc={"description": "This route will check the token in url, return success if validated."})
+class CheckTokenInEmail(Resource):
+    def get(self, token):
+        # TODO: validate the token, then redirect to the reset password page.
+        decoded_payload = decode_token(token, 'secret', algorithm=['HS256'])
+        username = decoded_payload['username']
+        email = decoded_payload['useremail']
+
+        current_user = UserAuthModel.find_by_username(username)
+        if not current_user:
+            abort(404, "User with username {} not found".format(username))
+        if current_user.useremail != email:
+            abort(404, "Invalid token.")
+        return jsonify(success=True)
+
+
+@authentication.route('/changePassword', doc={"description": "This route will update the password for a user"})
 class ResetPassword(Resource):
-    @jwt_required
-    def get(self):
-        return {'message': 'Hit the user password reset endpoint.'}
+    @resource.doc(params={'username': "username for the account, will return 404 if it doesn't exist in database.",
+                          'password': "new password for the user"})
+    def put(self):
+        username = request.args['username']
+        password = request.args['password']
+        current_user = UserAuthModel.find_by_username(username)
+        if not current_user:
+            abort(404, "User with username {} not found".format(username))
+        current_user.password = password
+        db.session.commit()
+        return jsonify(success=True)
 
 
 @resource.route('/user', doc={"description": "Get the user name and email"})
