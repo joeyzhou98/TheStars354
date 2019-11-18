@@ -139,8 +139,8 @@ export default {
         .catch(error => alert(error))
     },
     getItemsFromCookies () {
-      if (this.$cookies.isKey('cart')) {
-        let jsonCartCookie = this.$cookies.get('cart')
+      if (localStorage.cart) {
+        let jsonCartCookie = localStorage.cart
         this.cartData = JSON.parse(jsonCartCookie)
       }
     },
@@ -158,8 +158,8 @@ export default {
         .catch(error => alert(error))
     },
     removeItemFromCookies (item) {
-      if (this.$cookies.isKey('cart')) {
-        let jsonCartCookie = this.$cookies.get('cart')
+      if (localStorage.cart) {
+        let jsonCartCookie = localStorage.cart
         let cookie = JSON.parse(jsonCartCookie)
         for (var i = 0; i < cookie.length; i++) {
           if (cookie[i].item.item_id === item.item_id) {
@@ -168,7 +168,7 @@ export default {
           }
         }
         var jsonItems = JSON.stringify(cookie)
-        this.$cookies.set('cart', jsonItems)
+        localStorage.cart = jsonItems
         this.cartData = cookie
       }
     },
@@ -180,8 +180,8 @@ export default {
       }
     },
     updateQtyInCookies (item, qty) {
-      if (this.$cookies.isKey('cart')) {
-        let jsonCartCookie = this.$cookies.get('cart')
+      if (localStorage.cart) {
+        let jsonCartCookie = localStorage.cart
         let cookie = JSON.parse(jsonCartCookie)
         for (var data of cookie) {
           if (data.item.item_id === item.item_id) {
@@ -190,7 +190,7 @@ export default {
           }
         }
         var jsonItems = JSON.stringify(cookie)
-        this.$cookies.set('cart', jsonItems)
+        localStorage.cart = jsonItems
         this.cartData = cookie
       }
     },

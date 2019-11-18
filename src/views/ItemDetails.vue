@@ -88,12 +88,15 @@
       </b-row>
     </b-card>
     <br>
-    <h5 style="display: flex; padding-bottom: 20px;">You might also like:</h5>
-    <Recommendations></Recommendations>
+    <h5 class="section">You might also like:</h5>
+    <Recommendations :showHistory="false"></Recommendations>
     <hr/>
-    <h5 style="display: flex; padding-bottom: 20px;">Customer reviews</h5>
+    <h5 class="section">Customer reviews</h5>
     <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
+    <hr/>
+    <h5 class="section">History:</h5>
+    <Recommendations :showHistory="true"></Recommendations>
   </b-container>
 </template>
 
@@ -128,7 +131,7 @@ export default {
     $route (to, from) {
       if (to !== from) {
         let currentURL = window.location.href
-        this.itemID = currentURL.match(/item-details\/([0-9]+)/)[1]
+        this.itemID = parseInt(currentURL.match(/item-details\/([0-9]+)/)[1])
         this.getItemData()
         this.updateVisitedItems()
       }
@@ -184,8 +187,8 @@ export default {
           .catch(error => alert(error))
       } else { // visitor: add to cookies
         var cookie
-        if (this.$cookies.isKey('cart')) {
-          let jsonCartCookie = this.$cookies.get('cart')
+        if (localStorage.cart) {
+          let jsonCartCookie = localStorage.cart
           cookie = JSON.parse(jsonCartCookie)
           let itemInCart = false
           for (var data of cookie) {
@@ -202,8 +205,7 @@ export default {
           cookie = [{'item': this.item, 'qty': this.selectedQty}]
         }
         var jsonItems = JSON.stringify(cookie)
-        this.$cookies.set('cart', jsonItems)
-        console.log('cookie', this.$cookies.get('cart'))
+        localStorage.cart = jsonItems
       }
     },
     addToWishlist () {
@@ -215,26 +217,25 @@ export default {
     },
     updateVisitedItems () {
       var itemQueue
-      if (this.$cookies.isKey('viewedItems')) {
-        let jsonViewedItemsCookie = this.$cookies.get('viewedItems')
+      if (localStorage.history) {
+        let jsonViewedItemsCookie = localStorage.history
         itemQueue = JSON.parse(jsonViewedItemsCookie)
+        itemQueue = itemQueue.filter(item => item != null)
         for (var i = 0; i < itemQueue.length; i++) {
           if (itemQueue[i].item_id === this.itemID) {
-            alert(this.itemID)
             itemQueue.splice(i, 1) // remove so we can put back at beginning of queue
             break
           }
         }
-        itemQueue.unshift(this.item) // add to 1st
-        if (itemQueue.length > 10) {
+        if (itemQueue.length >= 10) {
           itemQueue.pop() // keep 10 last visited items
         }
+        itemQueue.unshift(this.item) // add to 1st
       } else {
         itemQueue = [this.item]
       }
       var jsonItems = JSON.stringify(itemQueue)
-      this.$cookies.set('viewedItems', jsonItems)
-      console.log('viewedItems', itemQueue.length)
+      localStorage.history = jsonItems
     }
   },
   created () {
@@ -344,5 +345,9 @@ img {
   width: 100%;
   height: 100%;
   object-fit: scale-down;
+}
+.section {
+  display: flex;
+  padding-bottom: 20px;
 }
 </style>
