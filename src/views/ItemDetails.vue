@@ -96,7 +96,7 @@
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
     <hr/>
     <h5 class="section">History:</h5>
-    <Recommendations :showHistory="true"></Recommendations>
+    <Recommendations v-if="showHistory" :showHistory="true"></Recommendations>
   </b-container>
 </template>
 
@@ -123,7 +123,8 @@ export default {
       starStyle: {
         starWidth: 20,
         starHeight: 20
-      }
+      },
+      showHistory: false
     }
   },
   watch: {
@@ -132,8 +133,8 @@ export default {
       if (to !== from) {
         let currentURL = window.location.href
         this.itemID = parseInt(currentURL.match(/item-details\/([0-9]+)/)[1])
-        this.getItemData()
-        this.updateVisitedItems()
+        this.showHistory = false
+        this.getDataAndUpdateHistory()
       }
     }
   },
@@ -158,9 +159,15 @@ export default {
     }
   },
   methods: {
+    async getDataAndUpdateHistory () {
+      await this.getItemData()
+      await this.$nextTick()
+      this.updateVisitedItems()
+      this.showHistory = true
+    },
     getItemData () {
       let url = 'api/resource/item/' + this.itemID
-      axios
+      return axios
         .get(url)
         .then((response) => {
           let data = response.data
@@ -216,22 +223,30 @@ export default {
       }
     },
     updateVisitedItems () {
+      if (this.item === null) {
+        return
+      }
       var itemQueue
       if (localStorage.history) {
         let jsonViewedItemsCookie = localStorage.history
         itemQueue = JSON.parse(jsonViewedItemsCookie)
-        itemQueue = itemQueue.filter(item => item != null)
+        itemQueue = itemQueue.filter(item => item !== null)
+        console.log('itemID: ' + this.itemID + ' | item_id: ' + this.item.item_id)
         for (var i = 0; i < itemQueue.length; i++) {
           if (itemQueue[i].item_id === this.itemID) {
+            console.log('removing ' + this.item.item_id)
             itemQueue.splice(i, 1) // remove so we can put back at beginning of queue
             break
           }
         }
+        console.log('add ' + this.item.item_id)
+        itemQueue.unshift(this.item) // add to 1st
         if (itemQueue.length >= 10) {
+          console.log('pop last')
           itemQueue.pop() // keep 10 last visited items
         }
-        itemQueue.unshift(this.item) // add to 1st
       } else {
+        console.log('new cookie')
         itemQueue = [this.item]
       }
       var jsonItems = JSON.stringify(itemQueue)
@@ -239,8 +254,7 @@ export default {
     }
   },
   created () {
-    this.getItemData()
-    this.updateVisitedItems()
+    this.getDataAndUpdateHistory()
   }
 }
 </script>
