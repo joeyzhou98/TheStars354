@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid>
+  <b-container v-if="showPage" fluid>
     <br>
     <b-card no-body class="overflow-hidden" align="left">
       <b-row no-gutters>
@@ -96,7 +96,7 @@
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
     <hr/>
     <h5 class="section">History:</h5>
-    <Recommendations v-if="showHistory" :showHistory="true"></Recommendations>
+    <Recommendations :showHistory="true"></Recommendations>
   </b-container>
 </template>
 
@@ -124,7 +124,7 @@ export default {
         starWidth: 20,
         starHeight: 20
       },
-      showHistory: false
+      showPage: false
     }
   },
   watch: {
@@ -133,7 +133,7 @@ export default {
       if (to !== from) {
         let currentURL = window.location.href
         this.itemID = parseInt(currentURL.match(/item-details\/([0-9]+)/)[1])
-        this.showHistory = false
+        this.showPage = false
         this.getDataAndUpdateHistory()
       }
     }
@@ -163,7 +163,7 @@ export default {
       await this.getItemData()
       await this.$nextTick()
       this.updateVisitedItems()
-      this.showHistory = true
+      this.showPage = true
     },
     getItemData () {
       let url = 'api/resource/item/' + this.itemID
@@ -260,11 +260,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.back {
-  text-align: left;
-  margin: 10px 0px;
-  font-size: smaller;
-}
 .current {
   width: 50px;
   white-space: nowrap;

@@ -48,8 +48,20 @@ export default {
       return this.$store.state.cookieItems.slice(1)
     },
     similarItems () {
-      var similar = this.shuffle(this.$store.state.similarItems)
-      return similar.slice(0, 7)
+      if (this.$store.state.similarItems.length === 0) {
+        return []
+      }
+      let used = []
+      let similar = []
+      while (similar.length < 7 && used.length < this.$store.state.similarItems.length) {
+        let i = Math.floor(Math.random() * this.$store.state.similarItems.length)
+        if (used.includes(i)) {
+          continue
+        }
+        used.push(i)
+        similar.push(this.$store.state.similarItems[i])
+      }
+      return similar
     },
     showSimilar () {
       return !this.showHistory
