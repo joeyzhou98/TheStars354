@@ -4107,6 +4107,11 @@ js-base64@^2.1.8:
   version "2.4.8"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.4.8.tgz#57a9b130888f956834aa40c5b165ba59c758f033"
 
+js-md5@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/js-md5/-/js-md5-0.7.3.tgz#b4f2fbb0b327455f598d6727e38ec272cd09c3f2"
+  integrity sha512-ZC41vPSTLKGwIRjqDh8DfXoCrdQIyBgspJVPXHBGu4nZlAEvG3nf+jO9avM9RmLiGakg7vz974ms99nEV0tmTQ==
+
 js-message@1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/js-message/-/js-message-1.0.5.tgz#2300d24b1af08e89dd095bc1a4c9c9cfcb892d15"
@@ -7188,12 +7193,10 @@ vue-awesome@^3.5.4:
   resolved "https://registry.yarnpkg.com/vue-awesome/-/vue-awesome-3.5.4.tgz#da14ca20a3c6415c72823a7f743022f2dbd0183f"
   integrity sha512-RRuo08A6mFye2RyLVdnODH5kyLiHANMl9EzKXZXCeMrsP4SY3nyjkQnTGlgbbVOBQuaGBMrFp9HPOJYDaVNk/w==
 
-vue-burger-menu@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/vue-burger-menu/-/vue-burger-menu-2.0.3.tgz#967e9588e958e8d6945d27d1409fa7e7a773753f"
-  integrity sha512-7HCCxxnorxI9W+qe/a7MR6Bco66kcIvHziUSEaY98OkGJj+3xmNesJMHTA84BLiv5P8JmM4ZrqtrUh0UecDuXg==
-  dependencies:
-    vue "^2.5.17"
+vue-dynamic-star-rating@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/vue-dynamic-star-rating/-/vue-dynamic-star-rating-1.0.8.tgz#45da24ea6ce11d5d63dc2410394f06724febd789"
+  integrity sha512-HZUbmot40hrWUYAe6pSUkg2HcGl8DPfiJ0tbsnQ3yokjHNhBYZqDyLLxYX7EJu0S1AYi1vw2tjyCuI1/nWOD/w==
 
 vue-eslint-parser@^2.0.3:
   version "2.0.3"
@@ -7256,11 +7259,6 @@ vue-template-es2015-compiler@^1.6.0:
 vue@^2.5.13:
   version "2.5.17"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.5.17.tgz#0f8789ad718be68ca1872629832ed533589c6ada"
-
-vue@^2.5.17:
-  version "2.6.10"
-  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.10.tgz#a72b1a42a4d82a721ea438d1b6bf55e66195c637"
-  integrity sha512-ImThpeNU9HbdZL3utgMCq0oiMzAkt1mcgy3/E6zWC/G6AaQoeuFdsl9nDhTDU3X1R6FK7nsIUuRACVcjI+A2GQ==
 
 vuex@^3.0.1:
   version "3.0.1"
