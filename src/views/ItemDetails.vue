@@ -60,11 +60,6 @@
                       Price: {{discountPrice}}<br>
                       Quantity: {{selectedQty}}
                     </b-col>
-                    <b-col>
-                      In cart: <br>
-                      Items: (count)<br>
-                      Total: ($$)
-                    </b-col>
                   </b-row>
                   <template slot="modal-footer">
                     <b-button class="sec-btn" @click="keepShopping">KEEP SHOPPING</b-button>
@@ -95,8 +90,10 @@
     <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
     <hr/>
-    <h5 class="section">History:</h5>
-    <Recommendations :showHistory="true"></Recommendations>
+    <div v-if="hasHistory">
+      <h5 class="section">History:</h5>
+      <Recommendations :showHistory="true"></Recommendations>
+    </div>
   </b-container>
 </template>
 
@@ -165,6 +162,9 @@ export default {
       this.updateVisitedItems()
       this.showPage = true
     },
+    hasHistory () {
+      return localStorage.history
+    },
     getItemData () {
       let url = 'api/resource/item/' + this.itemID
       return axios
@@ -232,23 +232,21 @@ export default {
         itemQueue = JSON.parse(jsonViewedItemsCookie)
         itemQueue = itemQueue.filter(item => item !== null)
         console.log('itemID: ' + this.itemID + ' | item_id: ' + this.item.item_id)
+        console.log(itemQueue.length)
         for (var i = 0; i < itemQueue.length; i++) {
           if (itemQueue[i].item_id === this.itemID) {
-            console.log('removing ' + this.item.item_id)
             itemQueue.splice(i, 1) // remove so we can put back at beginning of queue
             break
           }
         }
-        console.log('add ' + this.item.item_id)
         itemQueue.unshift(this.item) // add to 1st
-        if (itemQueue.length >= 10) {
-          console.log('pop last')
+        if (itemQueue.length > 10) {
           itemQueue.pop() // keep 10 last visited items
         }
       } else {
-        console.log('new cookie')
         itemQueue = [this.item]
       }
+
       var jsonItems = JSON.stringify(itemQueue)
       localStorage.history = jsonItems
     }
