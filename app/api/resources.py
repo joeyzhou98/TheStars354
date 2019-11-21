@@ -62,7 +62,11 @@ class UserRegistration(Resource):
             new_user.save_to_db()
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
-            resp = jsonify(success=True)
+            resp = jsonify({
+                "success": True,
+                "id": current_user.uid,
+                "username": current_user.username,
+                "email": current_user.useremail})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             return resp
@@ -86,7 +90,11 @@ class UserLogin(Resource):
         if current_user.password == password:
             access_token = create_access_token(identity=username)
             refresh_token = create_refresh_token(identity=username)
-            resp = jsonify(success=True)
+            resp = jsonify({
+                "success": True,
+                "id": current_user.uid,
+                "username": current_user.username,
+                "email": current_user.useremail})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             return resp

@@ -2,7 +2,7 @@
 <div>
   <b-nav-form>
     <b-input-group>
-      <b-form-input id="bar" class="mr-sm-2"  size="sm" placeholder="Search" v-model="query" @keyup.enter="onSearch">
+      <b-form-input id="bar" class="shadow-none mr-sm-2"  size="sm" placeholder="Search" v-model="query" @keyup.enter="onSearch">
         </b-form-input>
       <b-button id="submit" variant="outline-primary" class="shadow-none" size="sm" type="submit"
         @click="onSearch">Search</b-button>

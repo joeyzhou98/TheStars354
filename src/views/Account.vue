@@ -1,5 +1,11 @@
 <template>
-  <div>
+<div>
+  <div v-if="!isLoggedIn" style="margin: 20px">
+    Oops! You are not supposed to be here.<br>
+    <router-link to="/login">Log In</router-link><br>
+    <router-link to="/">Back to Home Page</router-link>
+  </div>
+  <div v-else>
     <b-card
     :title="welcomeMessage"
     img-src="https://picsum.photos/600/300/?image=25"
@@ -23,38 +29,22 @@
     <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
   </div>
+</div>
 </template>
 
 <script>
 import axios from 'axios'
-import App from '../App'
 
 export default {
-  data () {
-    return {
-      username: '',
-      email: ''
-    }
-  },
-  mounted () {
-    this.getUserAuthInfo()
-  },
   computed: {
+    isLoggedIn () {
+      return this.$store.state.isLoggedIn
+    },
     welcomeMessage () {
-      return 'Welcome ' + this.username
+      return 'Welcome ' + this.$store.state.username
     }
   },
   methods: {
-    getUserAuthInfo () {
-      var url = 'api/resource/user'
-      this.sendAxiosRequest(url)
-    },
-    sendAxiosRequest (url) {
-      axios
-        .get(url)
-        .then(response => { this.username = response.data['username'] })
-        .catch(error => alert(error))
-    },
     userLogout () {
       let url1 = 'api/authentication/logout/access'
       let url2 = 'api/authentication/logout/refresh'
@@ -70,8 +60,8 @@ export default {
           console.log('refresh token revoke', response.data)
         })
         .catch(error => alert(error))
-      App.loginStatus.setLoginStatus(false)
-      console.log('loginStatus', App.loginStatus.state)
+      this.$store.commit('logout')
+      console.log('isLoggedIn', this.isLoggedIn)
       this.$router.push('/')
     }
   }
