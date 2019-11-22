@@ -87,7 +87,7 @@
     <Recommendations :showHistory="false"></Recommendations>
     <hr/>
     <h5 class="section">Customer reviews</h5>
-    <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
+    <Review v-for="review in reviews" v-bind:key="review.review_id" :seller_id="item.seller_id" :review="review"></Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
     <hr/>
     <div v-if="hasHistory">
