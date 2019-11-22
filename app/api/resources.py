@@ -576,7 +576,7 @@ class TotalCommission(Resource):
                         counter += 1
                         if order.purchase_date <= end and order.purchase_date >= start:
                             if counter < 10:
-                                commission += item.price * 0.03
+                                commission += item.price * (1 - item.discount) * 0.03
                             else:
-                                commission += item.price * 0.08
+                                commission += item.price * (1 - item.discount) * 0.08
         return jsonify(commission)
