@@ -19,12 +19,33 @@
       You can change your personal details, manage your orders, and much more.
     </b-card-text>
 
-    <b-nav tabs justified>
-      <b-nav-item active href="#/login/">PROFILE</b-nav-item>
-      <b-nav-item active href="#/login/">ORDER HISTORY</b-nav-item>
-      <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
-      <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
-    </b-nav>
+    <keep-alive>
+      <b-tabs lazy justified>
+        <b-tab title="Buyer Profile"> <br />Buyer Profile</b-tab>
+        <b-tab title="Seller Profile"> <br />Seller Profile</b-tab>
+        <b-tab title="Admin Control Center" v-if=(isAdmin)>
+          <b-card-group>
+            <b-card-body>
+              <p>All users registered in the database:</p>
+              <b-row v-for="user in this.users" :key="user">
+                <b-col>
+                  <p>{{user.uid}}</p>
+                </b-col>
+                <b-col>
+                  <p>{{user.username}}</p>
+                </b-col>
+                <b-col>
+                  <p>{{user.useremail}}</p>
+                </b-col>
+                <b-col>
+                  <b-button type="submit" variant="dark" @click="deleteUser(user.username)">Delete this user</b-button>
+                </b-col>
+              </b-row>
+          </b-card-body>
+          </b-card-group>
+        </b-tab>
+      </b-tabs>
+    </keep-alive>
     <br/>
     <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
@@ -36,12 +57,30 @@
 import axios from 'axios'
 
 export default {
+  data () {
+    return {
+      users: {
+        uid: '',
+        username: '',
+        useremail: '',
+        role: ''
+      }
+    }
+  },
   computed: {
     isLoggedIn () {
       return this.$store.state.isLoggedIn
     },
     welcomeMessage () {
       return 'Welcome ' + this.$store.state.username
+    },
+    isAdmin () {
+      return this.$store.state.role === 'admin'
+    }
+  },
+  mounted: function mounted () {
+    if (this.isAdmin) {
+      this.getAllUser()
     }
   },
   methods: {
@@ -63,6 +102,25 @@ export default {
       this.$store.commit('logout')
       console.log('isLoggedIn', this.isLoggedIn)
       this.$router.push('/')
+    },
+    getAllUser () {
+      let url = 'api/authentication/allUser'
+      axios
+        .get(url)
+        .then(response => {
+          this.users = response.data
+          console.log(this.users)
+        })
+        .catch(error => alert(error))
+    },
+    deleteUser (uid) {
+      let url = 'api/authentication/deleteUser/' + uid
+      axios
+        .delete(url)
+        .then(response => {
+          this.getAllUser()
+        })
+        .catch(error => alert(error))
     }
   }
 }

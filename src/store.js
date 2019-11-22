@@ -11,6 +11,7 @@ export default new Vuex.Store({
     uid: null,
     username: null,
     email: null,
+    role: null,
 
     // Cookie related (recommendations)
     cookieItems: [],
@@ -23,12 +24,14 @@ export default new Vuex.Store({
       state.uid = data.id
       state.username = data.username
       state.email = data.email
+      state.role = data.role
     },
     logout (state) {
       state.isLoggedIn = false
       state.uid = null
       state.username = null
       state.email = null
+      state.role = null
     }
   },
   actions: {
