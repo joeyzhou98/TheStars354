@@ -54,7 +54,7 @@ class UserAuthModel(db.Model):
 
 class RevokedTokenModel(db.Model):
     __tablename__ = 'revokedTokens'
-    id = db.Column(db.Integer, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(120))
 
     def add(self):
@@ -191,11 +191,13 @@ class Order(db.Model):
 
     @property
     def serialize(self):
+        order_items = db.session.query(orderItem).filter_by(order_id=self.order_id).all()
+        items = [Item.query.filter_by(item_id=i.item_id).first() for i in order_items]
         return {
             "order_id": self.order_id,
             "buyer_id": self.buyer_id,
             "purchase_date": self.purchase_date,
-            "items": self.items}
+            "items": [i.serialize for i in items]}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
@@ -214,8 +216,8 @@ class Review(db.Model):
     __tablename__ = "review"
 
     review_id = db.Column(db.Integer, primary_key=True)
-    buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
-    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    buyer_id = db.Column(db.Integer, db.ForeignKey('buyerInfo.uid'))
+    item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))
     rating = db.Column(db.Integer, nullable=False)   # 1 to 5
     reply = db.Column(db.String(512), nullable=True)    # Seller's reply to buyer's rating
     content = db.Column(db.String(512), nullable=True)
@@ -235,8 +237,6 @@ class Review(db.Model):
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
             print("No such buyer")
-        elif Order.order_exists(self.item_id):
-            print("No such item")
         else:
             db.session.add(self)
             db.session.commit()
@@ -298,3 +298,8 @@ class Item(db.Model):
             return False
         else:
             return True
+
+    @classmethod
+    def find_by_id(cls, item_id):
+        return cls.query.filter_by(item_id=item_id).first()
+

@@ -10,7 +10,10 @@ python-dotenv = "*"
 flask = "*"
 flask-sqlalchemy = "*"
 pymysql = "*"
+boto3 = "*"
 flask-jwt-extended = "*"
+pyjwt = "*"
+flask-mail = "*"
 
 [dev-packages]
 pytest = "*"

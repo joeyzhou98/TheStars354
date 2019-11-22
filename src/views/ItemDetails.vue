@@ -1,8 +1,6 @@
 <template>
-  <b-container fluid>
-    <div class="back">
-      <router-link :to="previousRoute.path">&lt; {{previousRoute.name}} </router-link>
-    </div>
+  <b-container v-if="showPage" fluid>
+    <br>
     <b-card no-body class="overflow-hidden" align="left">
       <b-row no-gutters>
         <b-col md="4">
@@ -32,8 +30,8 @@
                     <span class="icon-text">Quantity: </span>
                   </b-col>
                   <b-col>
-                    <b-select size="sm" v-model="selectedQty">
-                      <option v-for="qty in quantity" :key="qty" :value="qty">{{qty}}</option>
+                    <b-select class="shadow-none" size="sm" v-model="selectedQty">
+                      <option v-for="qty in availableQty" :key="qty" :value="qty">{{qty}}</option>
                     </b-select>
                   </b-col>
                   <b-col md="10"></b-col>
@@ -41,13 +39,37 @@
               </div>
               <div v-else style="color: darkred; margin-bottom: 8px">Out of stock :(</div>
               <div class="buttons">
-                <b-button class="button cart-btn shadow-none" variant="outline" :disabled="!isAvailable" title="Add to Cart">
+                <b-button  @click="$bvModal.show('addtocart')" class="button main-btn shadow-none" variant="outline" :disabled="!isAvailable"
+                  title="Add to Cart">
                   <icon class="far" name="shopping-bag"></icon>
                   <span class="icon-text">ADD TO CART</span>
                 </b-button>
-                <b-button class="button fav-btn shadow-none" variant="outline" title="Add to Wishlist">
+                <!-- Start of modal section -->
+                <b-modal id="addtocart" ref="addtocart">
+                  <template slot="modal-title">
+                    <span style="font-size: smaller">{{item.item_name}}</span>
+                  </template>
+                  <b-row no-gutters>
+                    <b-col>
+                      <div class="img-container">
+                        <img :src="item.images"/>
+                      </div>
+                    </b-col>
+                    <b-col>
+                      Brand: {{item.brand}}<br>
+                      Price: {{discountPrice}}<br>
+                      Quantity: {{selectedQty}}
+                    </b-col>
+                  </b-row>
+                  <template slot="modal-footer">
+                    <b-button class="sec-btn" @click="keepShopping">KEEP SHOPPING</b-button>
+                    <b-button class="main-btn" @click="goToCart">CHECKOUT</b-button>
+                  </template>
+                </b-modal>
+                <!-- End of modal section -->
+                <b-button class="button sec-btn shadow-none" @click="addToWishlist" variant="outline" title="Add to Wishlist">
                   <icon class="far" name="heart"></icon>
-                  <span class="icon-text">FAVORITE</span>
+                  <span class="icon-text">WISHLIST</span>
                 </b-button>
               </div>
               <hr />
@@ -60,11 +82,18 @@
         </b-col>
       </b-row>
     </b-card>
-    <!-- Recommendation component here  -->
+    <br>
+    <h5 class="section">You might also like:</h5>
+    <Recommendations :showHistory="false"></Recommendations>
     <hr/>
-    <span style="display: flex; font-size: 1.5rem; padding-bottom: 20px;">Customer reviews</span>
+    <h5 class="section">Customer reviews</h5>
     <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
+    <hr/>
+    <div v-if="hasHistory">
+      <h5 class="section">History:</h5>
+      <Recommendations :showHistory="true"></Recommendations>
+    </div>
   </b-container>
 </template>
 
@@ -72,24 +101,37 @@
 import axios from 'axios'
 import Review from '@/components/Review.vue'
 import StarRating from 'vue-dynamic-star-rating'
+import Recommendations from '@/components/Recommendations.vue'
 
 export default {
   name: 'ItemDetails',
   components: {
     Review,
-    StarRating
+    StarRating,
+    Recommendations
   },
   data () {
     return {
       item: this.$route.params.item,
       itemID: this.$route.params.itemID,
-      previousRoute: this.$route.params.previousRoute,
       seller: 'Seller',
       selectedQty: 1,
       reviews: [],
       starStyle: {
         starWidth: 20,
         starHeight: 20
+      },
+      showPage: false
+    }
+  },
+  watch: {
+    // Refresh data when changing between ItemDetail pages
+    $route (to, from) {
+      if (to !== from) {
+        let currentURL = window.location.href
+        this.itemID = parseInt(currentURL.match(/item-details\/([0-9]+)/)[1])
+        this.showPage = false
+        this.getDataAndUpdateHistory()
       }
     }
   },
@@ -109,35 +151,113 @@ export default {
     isAvailable () {
       return this.item.quantity > 0
     },
-    quantity () {
+    availableQty () {
       return parseInt(this.item.quantity)
     }
   },
   methods: {
+    async getDataAndUpdateHistory () {
+      await this.getItemData()
+      await this.$nextTick()
+      this.updateVisitedItems()
+      this.showPage = true
+    },
+    hasHistory () {
+      return localStorage.history
+    },
     getItemData () {
       let url = 'api/resource/item/' + this.itemID
-      axios
+      return axios
         .get(url)
         .then((response) => {
           let data = response.data
           this.seller = data.seller_name
           this.reviews = data.reviews
+          this.item = data.item_info
         })
         .catch(error => alert(error))
+    },
+    goToCart () {
+      this.addToCart()
+      this.$refs['addtocart'].hide()
+      this.$router.push('/cart')
+    },
+    keepShopping () {
+      this.addToCart()
+      this.$refs['addtocart'].hide()
+    },
+    addToCart () {
+      if (this.$store.state.isLoggedIn) {
+        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '/' + this.selectedQty
+        axios
+          .post(url)
+          .catch(error => alert(error))
+      } else { // visitor: add to cookies
+        var cookie
+        if (localStorage.cart) {
+          let jsonCartCookie = localStorage.cart
+          cookie = JSON.parse(jsonCartCookie)
+          let itemInCart = false
+          for (var data of cookie) {
+            if (data.item.item_id === this.itemID) {
+              data.qty = parseInt(data.qty) + this.selectedQty
+              itemInCart = true
+              break
+            }
+          }
+          if (itemInCart === false) {
+            cookie.push({'item': this.item, 'qty': this.selectedQty})
+          }
+        } else {
+          cookie = [{'item': this.item, 'qty': this.selectedQty}]
+        }
+        var jsonItems = JSON.stringify(cookie)
+        localStorage.cart = jsonItems
+      }
+    },
+    addToWishlist () {
+      if (this.$store.state.isLoggedIn) {
+        // add to wishlist, change button for remove
+      } else {
+        this.$router.push('/login')
+      }
+    },
+    updateVisitedItems () {
+      if (this.item === null) {
+        return
+      }
+      var itemQueue
+      if (localStorage.history) {
+        let jsonViewedItemsCookie = localStorage.history
+        itemQueue = JSON.parse(jsonViewedItemsCookie)
+        itemQueue = itemQueue.filter(item => item !== null)
+        console.log('itemID: ' + this.itemID + ' | item_id: ' + this.item.item_id)
+        console.log(itemQueue.length)
+        for (var i = 0; i < itemQueue.length; i++) {
+          if (itemQueue[i].item_id === this.itemID) {
+            itemQueue.splice(i, 1) // remove so we can put back at beginning of queue
+            break
+          }
+        }
+        itemQueue.unshift(this.item) // add to 1st
+        if (itemQueue.length > 10) {
+          itemQueue.pop() // keep 10 last visited items
+        }
+      } else {
+        itemQueue = [this.item]
+      }
+
+      var jsonItems = JSON.stringify(itemQueue)
+      localStorage.history = jsonItems
     }
   },
   created () {
-    this.getItemData()
+    this.getDataAndUpdateHistory()
   }
 }
 </script>
 
 <style scoped lang="scss">
-.back {
-  text-align: left;
-  margin: 10px 0px;
-  font-size: smaller;
-}
 .current {
   width: 50px;
   white-space: nowrap;
@@ -186,9 +306,10 @@ export default {
   cursor: pointer;
   outline: none;
   padding-top: 3px;
-  margin-right: 10px;
+  margin-right: 12px;
+  margin-bottom: 10px;
 }
-.cart-btn {
+.main-btn {
   background: $darkblue;
   color: white;
   border-color: $darkblue;
@@ -202,7 +323,7 @@ export default {
     top:1px;
   }
 }
-.fav-btn {
+.sec-btn {
   background: none;
   color: $darkblue;
   border-color: $darkblue;
@@ -217,9 +338,23 @@ export default {
   }
 }
 #quantitySelect {
-  margin-bottom: 12px;
+  margin-top: 20px;
+  margin-bottom: 25px;
   span {
     margin-right: 5px;
   }
+}
+.img-container {
+  width: 100px;
+  margin-bottom: 5px;
+}
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
+}
+.section {
+  display: flex;
+  padding-bottom: 20px;
 }
 </style>
