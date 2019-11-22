@@ -52,7 +52,7 @@ export default {
         axios
           .put(url)
           .then(response => {
-            this.$router.push('/')
+            this.review.reply = this.text
           })
           .catch(error => alert(error))
       }
