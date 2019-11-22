@@ -559,7 +559,8 @@ class PlaceOrder(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/place-order-in-shopping-cart/<int:user_id>', doc={"description": "Place order for entire shopping cart"})
+@resource.route('/place-order-in-shopping-cart/<int:user_id>',
+                doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
     def post(self, user_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
@@ -585,3 +586,48 @@ class PlaceOrderInShoppingCart(Resource):
             list_item.delete(synchronize_session=False)
             db.session.commit()
         return jsonify(success=True)
+
+
+@resource.route('/orders/<start_date>/<end_date>',
+                doc={"description": "Return all orders during a given period of time"})
+class AllOrders(Resource):
+    def get(self, start_date, end_date):
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end = datetime.strptime(end_date, "%Y-%m-%d").date()
+            if start > end:
+                abort(400, "Invalid Date")
+        except:
+            abort(400, "Invalid Date")
+        orders = Order.query.filter(start <= Order.purchase_date, end >= Order.purchase_date).all()
+        return jsonify([i.serialize for i in orders])
+
+
+@resource.route('/commission/<start_date>/<end_date>',
+                doc={"description": "Return total commission during a given period of time"})
+class TotalCommission(Resource):
+    def get(self, start_date, end_date):
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end = datetime.strptime(end_date, "%Y-%m-%d").date()
+            if start > end:
+                abort(400, "Invalid Date")
+        except:
+            abort(400, "Invalid Date")
+        commission = 0
+        for seller in SellerModel.query.all():
+            seller_orders = db.session.query(orderSeller).filter_by(seller_id=seller.uid).all()
+            orders = [Order.query.filter_by(order_id=i.order_id).order_by(Order.purchase_date.asc()).first() for i in seller_orders]
+            counter = 0
+            for order in orders:
+                order_items = db.session.query(orderItem).filter_by(order_id=order.order_id).all()
+                items = [Item.query.filter_by(item_id=i.item_id, seller_id=seller.uid).first() for i in order_items]
+                for item in items:
+                    if item is not None:
+                        counter += 1
+                        if order.purchase_date <= end and order.purchase_date >= start:
+                            if counter < 10:
+                                commission += item.price * (1 - item.discount) * 0.03
+                            else:
+                                commission += item.price * (1 - item.discount) * 0.08
+        return jsonify(commission)
