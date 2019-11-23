@@ -161,7 +161,7 @@ class ForgetPassword(Resource):
         payload = {"username": user.username, "useremail": user.useremail}
         encoded_token = generate_encoded_token(payload, 'secret', algorithm='HS256')
         # print(encoded_token)
-        password_reset_url = 'http://localhost:8080/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
+        password_reset_url = 'https://thestars354.herokuapp.com/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
         msg = Message("Reset password - 354TheStars.com",
                       recipients=[email])
         msg.html = render_template('ResetPasswordEmail.html', username=user.username, link=password_reset_url)
@@ -220,6 +220,28 @@ class DeleteUser(Resource):
         seller_info = SellerModel.find_by_uid(uid)
         if buyer_info is None or seller_info is None:
             abort(404, "Seller info or buyer info with uid {} not found".format(uid))
+        orders = Order.find_by_buyer_id(buyer_info.uid)
+        # clean up the database that relate to the user's buyer status
+        db.session.query(wishListItem).\
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        db.session.query(shoppingListItem). \
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        for order in orders:
+            db.session.query(orderItem).\
+                filter_by(order_id=order.order_id).delete(synchronize_session=False)
+            db.session.query(orderSeller).\
+                filter_by(order_id=order.order_id).delete(synchronize_session=False)
+        db.session.query(Review).\
+            filter_by(buyer_id=buyer_info.uid).update({"buyer_id": None}, synchronize_session=False)
+
+        # clean up the database that relate to the user's seller status
+        db.session.query(orderSeller). \
+            filter_by(seller_id=seller_info.uid).update({"seller_id": None}, synchronize_session=False)
+        db.session.query(Item).\
+            filter_by(seller_id=seller_info.uid).update({"seller_id": None}, synchronize_session=False)
+
+        db.session.query(Order). \
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
         db.session.query(BuyerModel). \
             filter_by(uid=uid).delete(synchronize_session=False)
         db.session.query(SellerModel). \
@@ -321,14 +343,12 @@ class ItemRoutes(Resource):
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
         seller_auth_info = UserAuthModel.query.filter_by(uid=item.seller_id).first()
-        if seller_auth_info is None:
-            abort(404, "User with id {} not found".format(item.seller_id))
         reviews = [i.serialize for i in Review.query.filter(Review.item_id == item_id).all()]
         ratings = list(map(lambda x: x["rating"], reviews))
         ratings_avg = sum(ratings) / len(ratings) if len(ratings) != 0 else None
         item = item.serialize
         item.update({"rating": ratings_avg})
-        result = {"seller_name": seller_auth_info.username,
+        result = {"seller_name": seller_auth_info.username if seller_auth_info is not None else None,
                   "item_info": item,
                   "reviews": reviews}
         return result

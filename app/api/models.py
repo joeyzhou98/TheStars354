@@ -225,6 +225,10 @@ class Order(db.Model):
         self.items.append(item)
         db.session.commit()
 
+    @classmethod
+    def find_by_buyer_id(cls, buyer_id):
+        return cls.query.filter_by(buyer_id=buyer_id).all()
+
 
 class Review(db.Model):
     __tablename__ = "review"

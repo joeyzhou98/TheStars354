@@ -21,8 +21,8 @@
 
     <keep-alive>
       <b-tabs lazy justified>
-        <b-tab title="Buyer Profile"> <br />Buyer Profile</b-tab>
-        <b-tab title="Seller Profile"> <br />Seller Profile</b-tab>
+        <b-tab title="Buyer Profile" v-if=!(isAdmin)> <br />Buyer Profile</b-tab>
+        <b-tab title="Seller Profile" v-if=!(isAdmin)> <br />Seller Profile</b-tab>
         <b-tab title="Admin Control Center" v-if=(isAdmin)>
           <b-card-group>
             <b-card-body>
@@ -38,7 +38,7 @@
                   <p>{{user.useremail}}</p>
                 </b-col>
                 <b-col>
-                  <b-button type="submit" variant="dark" @click="deleteUser(user.username)">Delete this user</b-button>
+                  <b-button v-if="user.role !== 'admin'" type="submit" variant="dark" @click="deleteUser(user.username)">Delete this user</b-button>
                 </b-col>
               </b-row>
           </b-card-body>
