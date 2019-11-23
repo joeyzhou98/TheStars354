@@ -526,7 +526,7 @@ class ShoppingCart(Resource):
         for i in shoppingListItems:
             item = Item.query.filter_by(item_id=i.item_id).first()
             shopping_list_items.append({"item": item.serialize,
-                                        "quantity": i.quantity})
+                                        "qty": i.quantity})
 
         return shopping_list_items
 
@@ -549,7 +549,7 @@ class ShoppingCart(Resource):
         buyer.add_to_shopping_list(item, qty)
         return jsonify(success=True)
 
-    def delete(self, user_id, item_id):
+    def delete(self, user_id, item_id, qty):
         items = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item_id)
         if items.count() == 0:
             abort(404, "Item with id {} not in the shopping cart".format(item_id))

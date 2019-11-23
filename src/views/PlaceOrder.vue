@@ -7,9 +7,9 @@
           <b-card align="left">
             <div class="minor-title">Select a shipping address</div>
             <b-form-radio-group stacked>
-              <b-form-radio v-if="address1 !== null" v-model="selectedAddress" name="address1" value="address1">{{address1}}</b-form-radio>
-              <b-form-radio v-if="address2 !== null" v-model="selectedAddress" name="address2" value="address2">{{address2}}</b-form-radio>
-              <b-form-radio v-if="address3 !== null" v-model="selectedAddress" name="address3" value="address3">{{address3}}</b-form-radio>
+              <b-form-radio v-if="address1 !== null" v-model="selectedAddress" name="address1" value="1">{{address1}}</b-form-radio>
+              <b-form-radio v-if="address2 !== null" v-model="selectedAddress" name="address2" value="2">{{address2}}</b-form-radio>
+              <b-form-radio v-if="address3 !== null" v-model="selectedAddress" name="address3" value="3">{{address3}}</b-form-radio>
               <b-form-radio v-model="selectedAddress" name="custom" value="custom">Add or modify an address</b-form-radio>
             </b-form-radio-group>
             <div v-if="addNewAddress">
@@ -75,6 +75,14 @@
               </b-button>
             </div>
           </b-card>
+          <br>
+          <b-card align="left">
+            <div class="minor-title">Select a shipping method</div>
+            <b-form-radio-group>
+              <b-form-radio v-model="selectedMethod" name="regular" value="regular">Regular</b-form-radio>
+              <b-form-radio v-model="selectedMethod" name="express" value="express">Express</b-form-radio>
+            </b-form-radio-group>
+          </b-card>
         </div>
       </b-col>
       <b-col>
@@ -99,7 +107,7 @@
               <span style="font-weight: bold;">{{totalTxt}}</span>
             </div>
             <hr/>
-            <b-button block variant="success">PLACE ORDER</b-button>
+            <b-button block variant="success" @click="placeOrder">PLACE ORDER</b-button>
           </div>
         </b-card>
       </b-col>
@@ -129,7 +137,8 @@ export default {
         state: '',
         postalCode: '',
         country: ''
-      }
+      },
+      selectedMethod: ''
     }
   },
   computed: {
@@ -165,6 +174,24 @@ export default {
           this.address1 = response.data.address1
           this.address2 = response.data.address2
           this.address3 = response.data.address3
+        })
+        .catch(error => alert(error))
+    },
+    changeAddress () {
+      // post new address then
+      // set this.selectedAddress to the index of the address to change
+    },
+    placeOrder () {
+      window.open('https://paypal.com', '_blank')
+      this.postOrder()
+    },
+    postOrder () {
+      let url = 'api/resource/place-order-in-shopping-cart/' + this.$store.state.uid + '/' + this.selectedAddress + '/' + this.selectedMethod
+      return axios
+        .post(url)
+        .then((response) => {
+          this.$router.push('/order-confirmation')
+          // send email
         })
         .catch(error => alert(error))
     }

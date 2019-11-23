@@ -11,6 +11,7 @@ import ForgetPassword from './views/ForgetPassword'
 import Home from './views/Home.vue'
 import ItemDetails from './views/ItemDetails.vue'
 import Login from './views/Login.vue'
+import OrderConfirmation from './views/OrderConfirmation.vue'
 import PlaceOrder from './views/PlaceOrder.vue'
 import Register from './views/Register.vue'
 
@@ -67,6 +68,11 @@ export default new Router({
       path: '/place-order',
       name: 'PlaceOrder',
       component: PlaceOrder
+    },
+    {
+      path: '/order-confirmation',
+      name: 'OrderConfirmation',
+      component: OrderConfirmation
     },
     // Item display
     {

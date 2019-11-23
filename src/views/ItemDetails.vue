@@ -177,9 +177,9 @@ export default {
         })
         .catch(error => alert(error))
     },
-    goToCart () {
-      this.addToCart()
+    async goToCart () {
       this.$refs['addtocart'].hide()
+      await this.addToCart()
       this.$router.push('/cart')
     },
     keepShopping () {
@@ -189,7 +189,7 @@ export default {
     addToCart () {
       if (this.$store.state.isLoggedIn) {
         let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '/' + this.selectedQty
-        axios
+        return axios
           .post(url)
           .catch(error => alert(error))
       } else { // visitor: add to cookies

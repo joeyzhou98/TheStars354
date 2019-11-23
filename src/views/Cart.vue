@@ -161,9 +161,17 @@ export default {
       }
     },
     removeItemFromDB (item) {
-      var url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id
+      var url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id + '/' + 0
       axios
         .delete(url)
+        .then((response) => {
+          for (var i = 0; i < this.cartData.length; i++) {
+            if (this.cartData[i].item.item_id === item.item_id) {
+              this.cartData.splice(i, 1)
+              break
+            }
+          }
+        })
         .catch(error => alert(error))
     },
     removeItemFromCookies (item) {
