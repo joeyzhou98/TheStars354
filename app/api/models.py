@@ -15,7 +15,8 @@ class ShippingMethod(str, enum.Enum):
 orderItem = db.Table(
     "orderItem",
     db.Column('order_id', db.Integer, db.ForeignKey("order.order_id")),
-    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id"))
+    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("order_item_quantity", db.Integer, default=1)
 )
 
 wishListItem = db.Table(
@@ -222,18 +223,24 @@ class Order(db.Model):
     items = db.relationship("Item", secondary=orderItem)
     buyer_address_index = db.Column(db.Integer, nullable=False)
     shipping_method = db.Column(db.Enum(ShippingMethod), nullable=False)
+    coupon_discount = db.Column(db.Float, nullable=False, default=0.0)
 
     @property
     def serialize(self):
         order_items = db.session.query(orderItem).filter_by(order_id=self.order_id).all()
-        items = [Item.query.filter_by(item_id=i.item_id).first() for i in order_items]
+        orders = []
+        for i in order_items:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            orders.append({"item": item.serialize, "order_item_quantity": i.order_item_quantity})
+
         return {
             "order_id": self.order_id,
             "buyer_id": self.buyer_id,
             "purchase_date": self.purchase_date,
-            "items": [i.serialize for i in items],
+            "items": orders,
             "buyer_address_index": self.buyer_address_index,
-            "shipping_method": self.shipping_method}
+            "shipping_method": self.shipping_method,
+            "coupon_discount": self.coupon_discount}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
@@ -342,3 +349,4 @@ class Item(db.Model):
     @classmethod
     def find_by_id(cls, item_id):
         return cls.query.filter_by(item_id=item_id).first()
+

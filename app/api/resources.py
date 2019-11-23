@@ -268,6 +268,34 @@ class BuyerInfo(Resource):
         return jsonify(buyerInfo.serialize)
 
 
+@resource.route('/updateAddress/<int:uid>/<int:address_index>', doc={"description": "Update the i-th address of the user."})
+@resource.doc(params={'newAddress': "new address for the i-th address"})
+class UpdateAddress(Resource):
+    @jwt_required
+    def put(self, uid, address_index):
+        address = 'address'+str(address_index)
+
+        db.session.query(BuyerModel) \
+            .filter(BuyerModel.uid == uid). \
+            update({address: request.args.get('newAddress')})
+
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/updatePaypal/<int:uid>', doc={"description": "Update user's paypal account"})
+@resource.doc(params={'paypal': "new paypal account"})
+class UpdatePaypal(Resource):
+    @jwt_required
+    def put(self, uid):
+        db.session.query(BuyerModel) \
+            .filter(BuyerModel.uid == uid). \
+            update({"paypal": request.args.get('paypal')})
+
+        db.session.commit()
+        return jsonify(success=True)
+
+
 @resource.route('/sellerInfo', doc={
     "description": "Search and return seller data that match the queried user uid"})
 @resource.doc(params={'uid': "uid of the seller"})
@@ -625,7 +653,7 @@ class PlaceOrderInShoppingCart(Resource):
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
-        return jsonify(success=True)
+        return jsonify(order.serialize)
 
 
 @resource.route('/orders/<start_date>/<end_date>',
