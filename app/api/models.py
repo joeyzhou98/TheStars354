@@ -1,4 +1,11 @@
 from app import db
+import enum
+
+
+class Roles(str, enum.Enum):
+    ADMIN = 'admin'
+    NORMAL = 'normal'
+
 
 orderItem = db.Table(
     "orderItem",
@@ -33,6 +40,15 @@ class UserAuthModel(db.Model):
     username = db.Column(db.String(120), unique=True, nullable=False)
     useremail = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(300), nullable=False)
+    role = db.Column(db.Enum(Roles), nullable=False, default=Roles.NORMAL.value, server_default=Roles.NORMAL.value)
+
+    @property
+    def serialize(self):
+        return {
+            "uid": self.uid,
+            "username": self.username,
+            "useremail": self.useremail,
+            "role": self.role}
 
     def save_to_db(self):
         db.session.add(self)
@@ -211,6 +227,10 @@ class Order(db.Model):
         self.items.append(item)
         db.session.commit()
 
+    @classmethod
+    def find_by_buyer_id(cls, buyer_id):
+        return cls.query.filter_by(buyer_id=buyer_id).all()
+
 
 class Review(db.Model):
     __tablename__ = "review"
@@ -218,8 +238,8 @@ class Review(db.Model):
     review_id = db.Column(db.Integer, primary_key=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey('buyerInfo.uid'))
     item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))
-    rating = db.Column(db.Integer, nullable=False)   # 1 to 5
-    reply = db.Column(db.String(512), nullable=True)    # Seller's reply to buyer's rating
+    rating = db.Column(db.Integer, nullable=False)  # 1 to 5
+    reply = db.Column(db.String(512), nullable=True)  # Seller's reply to buyer's rating
     content = db.Column(db.String(512), nullable=True)
     images = db.Column(db.String(1000), nullable=True)
 
@@ -302,4 +322,3 @@ class Item(db.Model):
     @classmethod
     def find_by_id(cls, item_id):
         return cls.query.filter_by(item_id=item_id).first()
-

@@ -15,10 +15,10 @@ from flask_jwt_extended import (jwt_required, create_access_token,
                                 jwt_refresh_token_required, create_refresh_token,
                                 get_jwt_identity, set_access_cookies,
                                 set_refresh_cookies, get_raw_jwt, unset_access_cookies,
-                                unset_refresh_cookies)
+                                unset_refresh_cookies, get_jwt_claims)
 
 from app import jwt
-from .security import generate_encoded_token, decode_token
+from .security import generate_encoded_token, decode_token, admin_required
 from . import api_rest
 from .models import *
 
@@ -60,13 +60,14 @@ class UserRegistration(Resource):
 
         try:
             new_user.save_to_db()
-            access_token = create_access_token(identity=username)
+            access_token = create_access_token(identity=username, user_claims={'role': new_user.role.value})
             refresh_token = create_refresh_token(identity=username)
             resp = jsonify({
                 "success": True,
-                "id": current_user.uid,
-                "username": current_user.username,
-                "email": current_user.useremail})
+                "id": new_user.uid,
+                "username": new_user.username,
+                "email": new_user.useremail,
+                "role": new_user.role.value})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             return resp
@@ -88,15 +89,17 @@ class UserLogin(Resource):
             abort(404, "User with username {} not found".format(username))
 
         if current_user.password == password:
-            access_token = create_access_token(identity=username)
+            access_token = create_access_token(identity=username, user_claims={'role': current_user.role.value})
             refresh_token = create_refresh_token(identity=username)
             resp = jsonify({
                 "success": True,
                 "id": current_user.uid,
                 "username": current_user.username,
-                "email": current_user.useremail})
+                "email": current_user.useremail,
+                "role": current_user.role.value})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
+
             return resp
         abort(404, "Password for user {} is not correct".format(username))
 
@@ -139,7 +142,8 @@ class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
-        access_token = create_access_token(identity=current_user)
+        user = UserAuthModel.find_by_username(current_user)
+        access_token = create_access_token(identity=current_user, user_claims={'role': user.role.value})
 
         resp = jsonify(success=True)
         set_access_cookies(resp, access_token)
@@ -157,7 +161,7 @@ class ForgetPassword(Resource):
         payload = {"username": user.username, "useremail": user.useremail}
         encoded_token = generate_encoded_token(payload, 'secret', algorithm='HS256')
         # print(encoded_token)
-        password_reset_url = 'http://localhost:8080/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
+        password_reset_url = 'https://thestars354.herokuapp.com/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
         msg = Message("Reset password - 354TheStars.com",
                       recipients=[email])
         msg.html = render_template('ResetPasswordEmail.html', username=user.username, link=password_reset_url)
@@ -196,19 +200,55 @@ class ResetPassword(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/user', doc={"description": "Get the user name and email"})
-class UserInfo(Resource):
-    @jwt_required
+@authentication.route('/allUser', doc={"description": "Get the all users info in db, needs admin status"})
+class AllUserInfo(Resource):
+    @admin_required
     def get(self):
-        current_user = get_jwt_identity()
-        if current_user is not None:
-            userAuth = UserAuthModel.query.filter_by(username=current_user).first()
-            if userAuth is None:
-                abort(404, "User with username {} not found".format(current_user))
-            email = userAuth.useremail
-            return {'username': current_user,
-                    'email': email}
-        abort(400, "Cannot retrieve username from access token.")
+        users = UserAuthModel.query.all()
+        return [i.serialize for i in users]
+
+
+@authentication.route('/deleteUser/<string:username>', doc={"description": "This route will delete a user from the datebase, admin status needed"})
+class DeleteUser(Resource):
+    @admin_required
+    def delete(self, username):
+        user = UserAuthModel.find_by_username(username)
+        if user is None:
+            abort(404, "User with username {} not found".format(username))
+        uid = user.uid
+        buyer_info = BuyerModel.find_by_uid(uid)
+        seller_info = SellerModel.find_by_uid(uid)
+        if buyer_info is None or seller_info is None:
+            abort(404, "Seller info or buyer info with uid {} not found".format(uid))
+        orders = Order.find_by_buyer_id(buyer_info.uid)
+        # clean up the database that relate to the user's buyer status
+        db.session.query(wishListItem).\
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        db.session.query(shoppingListItem). \
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        for order in orders:
+            db.session.query(orderItem).\
+                filter_by(order_id=order.order_id).delete(synchronize_session=False)
+            db.session.query(orderSeller).\
+                filter_by(order_id=order.order_id).delete(synchronize_session=False)
+        db.session.query(Review).\
+            filter_by(buyer_id=buyer_info.uid).update({"buyer_id": None}, synchronize_session=False)
+
+        # clean up the database that relate to the user's seller status
+        db.session.query(orderSeller). \
+            filter_by(seller_id=seller_info.uid).update({"seller_id": None}, synchronize_session=False)
+        db.session.query(Item).\
+            filter_by(seller_id=seller_info.uid).update({"seller_id": None}, synchronize_session=False)
+
+        db.session.query(Order). \
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        db.session.query(BuyerModel). \
+            filter_by(uid=uid).delete(synchronize_session=False)
+        db.session.query(SellerModel). \
+            filter_by(uid=uid).delete(synchronize_session=False)
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify(success=True)
 
 
 @resource.route('/buyerInfo', doc={
@@ -303,14 +343,12 @@ class ItemRoutes(Resource):
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
         seller_auth_info = UserAuthModel.query.filter_by(uid=item.seller_id).first()
-        if seller_auth_info is None:
-            abort(404, "User with id {} not found".format(item.seller_id))
         reviews = [i.serialize for i in Review.query.filter(Review.item_id == item_id).all()]
         ratings = list(map(lambda x: x["rating"], reviews))
         ratings_avg = sum(ratings) / len(ratings) if len(ratings) != 0 else None
         item = item.serialize
         item.update({"rating": ratings_avg})
-        result = {"seller_name": seller_auth_info.username,
+        result = {"seller_name": seller_auth_info.username if seller_auth_info is not None else None,
                   "item_info": item,
                   "reviews": reviews}
         return result
@@ -448,7 +486,7 @@ class CreateAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
-    # TODO: add admin constrain
+    @jwt_required
     def delete(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
         if item is None:
@@ -461,6 +499,7 @@ class CreateAndDeleteReview(Resource):
 @resource.route('/review/<int:item_id>/<int:review_id>', doc={"description": "Manipulate (put, delete) a review for an item."})
 class PutAndDeleteReview(Resource):
     @resource.doc(params={'response': "seller's response for the review"})
+    @jwt_required
     def put(self, item_id, review_id):
         db.session.query(Review)\
             .filter(Review.review_id == review_id and Review.item_id == item_id).\
@@ -468,6 +507,7 @@ class PutAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+    @jwt_required
     def delete(self, item_id, review_id):
         review = db.session.query(Review) \
             .filter(Review.review_id == review_id and Review.item_id == item_id)
@@ -536,6 +576,7 @@ def add_avg_rating(items):
 
 @resource.route('/place-order/<int:user_id>/<int:item_id>', doc={"description": "Place order for a single item"})
 class PlaceOrder(Resource):
+    @jwt_required
     def post(self, user_id, item_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         item = Item.query.filter_by(item_id=item_id).first()
@@ -562,6 +603,7 @@ class PlaceOrder(Resource):
 @resource.route('/place-order-in-shopping-cart/<int:user_id>',
                 doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
+    @jwt_required
     def post(self, user_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
