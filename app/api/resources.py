@@ -521,16 +521,14 @@ class PutAndDeleteReview(Resource):
 @resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
 class ShoppingCart(Resource):
     def get(self, user_id):
-        items = db.engine.execute(
-            db.select([Item.item_id, Item.item_name, Item.price, shoppingListItem.c.quantity]).
-                where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
-        )
-        return jsonify([{
-            "item_id": i.item_id,
-            "name": i.item_name,
-            "price": i.price,
-            "quantity": i.quantity,
-        } for i in items])
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
+        shopping_list_items = []
+        for i in shoppingListItems:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            shopping_list_items.append({"item": item.serialize,
+                                        "quantity": i.quantity})
+
+        return shopping_list_items
 
     def delete(self, user_id):
         db.engine.execute(db.delete(shoppingListItem)
@@ -600,13 +598,13 @@ class PlaceOrder(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/place-order-in-shopping-cart/<int:user_id>',
+@resource.route('/place-order-in-shopping-cart/<int:user_id>/<int:buyer_address_index>/<string:shipping_method>',
                 doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
     @jwt_required
-    def post(self, user_id):
+    def post(self, user_id, buyer_address_index, shipping_method):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
-        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method= shipping_method)
         items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
 
         if buyer is None:
