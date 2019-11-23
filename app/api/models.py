@@ -7,6 +7,11 @@ class Roles(str, enum.Enum):
     NORMAL = 'normal'
 
 
+class ShippingMethod(str, enum.Enum):
+    REGULAR = 'regular'
+    EXPRESS = 'express'
+
+
 orderItem = db.Table(
     "orderItem",
     db.Column('order_id', db.Integer, db.ForeignKey("order.order_id")),
@@ -98,16 +103,27 @@ class BuyerModel(db.Model):
 
     @property
     def serialize(self):
+        orders = Order.query.filter_by(buyer_id=self.uid).all()
+        wishlists = db.session.query(wishListItem).filter_by(buyer_id=self.uid).all()
+        wish_list_items = [Item.query.filter_by(item_id=i.item_id).first() for i in wishlists]
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=self.uid).all()
+        shopping_list_items = []
+        for i in shoppingListItems:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            shopping_list_items.append({"item": item.serialize,
+                                       "quantity": i.quantity})
+
+        reviews = Review.query.filter_by(buyer_id=self.uid).all()
         return {
             "uid": self.uid,
             "address1": self.address1,
             "address2": self.address2,
             "address3": self.address3,
             "paypal": self.paypal,
-            "order_history": self.order_history,
-            "wish_list": self.wish_list,
-            "shopping_list": self.shopping_list,
-            "review_list": self.review_list}
+            "order_history": [order.serialize for order in orders],
+            "wish_list": [i.serialize for i in wish_list_items],
+            "shopping_list": shopping_list_items,
+            "review_list": [review.serialize for review in reviews]}
 
     def save_to_db(self):
         db.session.add(self)
@@ -203,6 +219,8 @@ class Order(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     purchase_date = db.Column(db.Date, nullable=False)
     items = db.relationship("Item", secondary=orderItem)
+    buyer_address_index = db.Column(db.Integer, nullable=False)
+    shipping_method = db.Column(db.Enum(ShippingMethod), nullable=False)
 
     @property
     def serialize(self):
@@ -212,7 +230,9 @@ class Order(db.Model):
             "order_id": self.order_id,
             "buyer_id": self.buyer_id,
             "purchase_date": self.purchase_date,
-            "items": [i.serialize for i in items]}
+            "items": [i.serialize for i in items],
+            "buyer_address_index": self.buyer_address_index,
+            "shipping_method": self.shipping_method}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
