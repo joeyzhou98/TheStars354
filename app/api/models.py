@@ -101,10 +101,10 @@ class BuyerModel(db.Model):
         self.wish_list.append(item)
         db.session.commit()
 
-    def add_to_shopping_list(self, item):
+    def add_to_shopping_list(self, item, qty):
         list_item = db.session.query(shoppingListItem).filter_by(buyer_id=self.uid, item_id=item.item_id)
         if not list_item.count() == 0:
-            new_quantity = list_item.first().quantity + 1
+            new_quantity = list_item.first().quantity + qty
             if list_item.count() != 1:
                 return
             list_item.update({"quantity": new_quantity}, synchronize_session=False)
