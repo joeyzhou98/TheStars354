@@ -486,7 +486,7 @@ class CreateAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
-    @admin_required
+    @jwt_required
     def delete(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
         if item is None:
@@ -507,7 +507,7 @@ class PutAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
-    @admin_required
+    @jwt_required
     def delete(self, item_id, review_id):
         review = db.session.query(Review) \
             .filter(Review.review_id == review_id and Review.item_id == item_id)
