@@ -79,7 +79,10 @@
               </b-input-group>
             </div>
             <hr/>
-            <b-button block variant="success">CHECKOUT</b-button>
+            <b-button block variant="success"
+              :to="checkoutLink">
+              CHECKOUT
+            </b-button>
           </div>
         </b-card>
       </b-col>
@@ -94,7 +97,7 @@ export default {
   name: 'Cart',
   data () {
     return {
-      cartData: null,
+      cartData: [],
       couponCode: ''
     }
   },
@@ -119,6 +122,12 @@ export default {
         count += data.qty
       }
       return count
+    },
+    checkoutLink () {
+      if (this.$store.state.isLoggedIn) {
+        return {name: 'PlaceOrder', params: {cartData: this.cartData, subtotal: this.subtotal, subtotalTxt: this.subtotalTxt}}
+      }
+      return '/login'
     }
   },
   methods: {
