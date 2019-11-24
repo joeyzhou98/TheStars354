@@ -44,7 +44,7 @@
       </b-form-group>
       <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
-      <b-link href="#/forgetPassword">Forget your password?</b-link>
+      <b-link href="#/forgetPassword">Forgot your password?</b-link>
       <br/><br/>
       <b-link href="#/register">Create an account</b-link>
       <br/><br/>

@@ -16,6 +16,15 @@
               <br>
               <b-form-group
                 label-cols-sm="2"
+                label="Name:"
+                label-align-sm="right"
+                label-for="nested-name"
+              >
+                <b-form-input id="nested-name" v-model="newAddress.name"></b-form-input>
+              </b-form-group>
+
+              <b-form-group
+                label-cols-sm="2"
                 label="Street address:"
                 label-align-sm="right"
                 label-for="nested-street"
@@ -132,6 +141,7 @@ export default {
       address3: null,
       modifyRequest: false,
       newAddress: {
+        name: '',
         street: '',
         city: '',
         state: '',
@@ -161,8 +171,24 @@ export default {
       return this.address1 != null && this.address2 != null && this.address3 != null
     },
     incompleteForm () {
-      return this.addressToChange === '' || this.newAddress.street === '' || this.newAddress.city === '' ||
+      return this.addressToChange === '' || this.newAddress.name === '' || this.newAddress.street === '' || this.newAddress.city === '' ||
        this.newAddress.state === '' || this.newAddress.postalCode === '' || this.newAddress.country === ''
+    },
+    newAddressString () {
+      return this.newAddress.name + ', ' + this.newAddress.street + ', ' + this.newAddress.city + ', ' + this.newAddress.state +
+        ', ' + this.newAddress.postalCode + ', ' + this.newAddress.country
+    },
+    addressIndexToChange () {
+      switch (this.addressToChange) {
+        case 'change1':
+          return 1
+        case 'change2':
+          return 2
+        case 'change3':
+          return 3
+        default:
+          return 0
+      }
     }
   },
   methods: {
@@ -178,8 +204,32 @@ export default {
         .catch(error => alert(error))
     },
     changeAddress () {
-      // post new address then
-      // set this.selectedAddress to the index of the address to change
+      let url = 'api/resource/updateAddress/' + this.$store.state.uid + '/' + this.addressIndexToChange +
+        '?newAddress=' + encodeURIComponent(this.newAddressString)
+      axios
+        .put(url)
+        .then((response) => {
+          this.updateAddress()
+        })
+        .catch(error => alert(error))
+    },
+    updateAddress () {
+      switch (this.addressIndexToChange) {
+        case 1:
+          this.address1 = this.newAddressString
+          this.selectedAddress = '1'
+          break
+        case 2:
+          this.address2 = this.newAddressString
+          this.selectedAddress = '2'
+          break
+        case 3:
+          this.address3 = this.newAddressString
+          this.selectedAddress = '3'
+          break
+        default:
+          break
+      }
     },
     placeOrder () {
       window.open('https://paypal.com', '_blank')
