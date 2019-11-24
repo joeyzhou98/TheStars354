@@ -22,9 +22,6 @@ export default new Vuex.Store({
     similarItems: [],
     subcategories: []
   },
-  getters: {
-
-  },
   mutations: {
     login (state, data) {
       state.isLoggedIn = true
