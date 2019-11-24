@@ -149,10 +149,10 @@ export default {
       return this.item.discount !== 0
     },
     isAvailable () {
-      return this.item.quantity > 0
+      return this.item.quantity - this.item.quantity_sold > 0
     },
     availableQty () {
-      return parseInt(this.item.quantity)
+      return parseInt(this.item.quantity - this.item.quantity_sold)
     }
   },
   methods: {

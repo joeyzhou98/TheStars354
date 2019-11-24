@@ -134,11 +134,11 @@ export default {
       cartData: this.$route.params.cartData,
       subtotal: this.$route.params.subtotal,
       subtotalTxt: this.$route.params.subtotalTxt,
-      selectedAddress: '',
+      selectedAddress: '1',
       addressToChange: '',
-      address1: null,
-      address2: null,
-      address3: null,
+      address1: 'Fetching address...',
+      address2: 'Fetching address...',
+      address3: 'Fetching address...',
       modifyRequest: false,
       newAddress: {
         name: '',
@@ -148,7 +148,7 @@ export default {
         postalCode: '',
         country: ''
       },
-      selectedMethod: ''
+      selectedMethod: 'regular'
     }
   },
   computed: {
@@ -177,6 +177,18 @@ export default {
     newAddressString () {
       return this.newAddress.name + ', ' + this.newAddress.street + ', ' + this.newAddress.city + ', ' + this.newAddress.state +
         ', ' + this.newAddress.postalCode + ', ' + this.newAddress.country
+    },
+    selectedAddressString () {
+      switch (this.selectedAddress) {
+        case '1':
+          return this.address1
+        case '2':
+          return this.address2
+        case '3':
+          return this.address3
+        default:
+          return ''
+      }
     },
     addressIndexToChange () {
       switch (this.addressToChange) {
@@ -240,7 +252,15 @@ export default {
       return axios
         .post(url)
         .then((response) => {
-          this.$router.push('/order-confirmation')
+          this.$router.push({name: 'OrderConfirmation',
+            params: {
+              order: response.data,
+              address: this.selectedAddressString,
+              subtotal: this.subtotalTxt,
+              taxes: this.taxesTxt,
+              total: this.totalTxt
+            }
+          })
           // send email
         })
         .catch(error => alert(error))

@@ -13,14 +13,14 @@
         <div class="alignLeft"><span class="boldTxt">Payment method:</span> PayPal</div>
         <hr />
         <div class="boldTxt alignLeft">Ordered items:</div><br>
-        <b-row v-for="item in order.items" :key="item.item_id" align-content="left">
+        <b-row v-for="item in order.items" :key="item.item.item_id" align-content="left">
           <b-col md="8">
-            <div class="alignLeft">{{item.item_name}}</div>
+            <div class="alignLeft">{{item.item.item_name}} (x{{item.order_item_quantity}})</div>
           </b-col>
           <b-col>
-            <div>{{itemPriceTxt(item)}}</div>
+            <div>{{itemPriceTxt(item.item, item.order_item_quantity)}}</div>
           </b-col>
-        </b-row>
+        </b-row><br>
         <div class="alignLeft">Subtotal: {{subtotal}}</div>
         <div class="alignLeft">Shipping: $0.00</div>
         <div class="alignLeft">Taxes: {{taxes}}</div>
@@ -37,13 +37,22 @@ export default {
   name: 'OrderConfirmation',
   data () {
     return {
-      address: '',
-      order: ''
+      address: this.$route.params.address,
+      order: this.$route.params.order,
+      subtotal: this.$route.params.subtotal,
+      taxes: this.$route.params.taxes,
+      total: this.$route.params.total
     }
   },
   computed: {
     email () {
       return this.$store.state.email
+    }
+  },
+  methods: {
+    itemPriceTxt (item, qty) {
+      let price = (item.price - (item.price * item.discount)) * qty
+      return '$' + price.toFixed(2)
     }
   }
 }

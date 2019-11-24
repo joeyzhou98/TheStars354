@@ -27,7 +27,7 @@
                       Qty:
                       <div style="display: inline-block; width: 50px">
                         <b-select class="shadow-none" size="sm" v-model="data.qty" @input="updateQty(data.item, data.qty)">
-                          <option v-for="qty in data.item.quantity" :key="qty" :value="qty">{{qty}}</option>
+                          <option v-for="qty in getAvailableQty(data.item)" :key="qty" :value="qty">{{qty}}</option>
                         </b-select>
                       </div>
                       <b-link class="item-link small-link" @click="remove(data.item)">Delete</b-link>
@@ -165,7 +165,7 @@ export default {
       }
     },
     removeItemFromDB (item) {
-      var url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id + '/' + 0
+      var url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id
       axios
         .delete(url)
         .then((response) => {
@@ -230,6 +230,9 @@ export default {
     },
     itemLink (item) {
       return 'item-details/' + item.item_id
+    },
+    getAvailableQty (item) {
+      return item.quantity - item.quantity_sold
     }
   },
   created () {
