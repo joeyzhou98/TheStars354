@@ -1,15 +1,19 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
-import Login from './views/Login.vue'
-import Register from './views/Register.vue'
-import FAQ from './views/FAQ.vue'
+
 import About from './views/About.vue'
 import Account from './views/Account.vue'
 import AccountBuyer from './views/AccountBuyer.vue'
 import AccountSeller from './views/AccountSeller.vue'
 import Category from './views/Category.vue'
 import Cart from './views/Cart.vue'
+import FAQ from './views/FAQ.vue'
+import Home from './views/Home.vue'
+import ItemDetails from './views/ItemDetails.vue'
+import Login from './views/Login.vue'
+import Register from './views/Register.vue'
+import ForgetPassword from './views/ForgetPassword'
+import ChangePassword from './views/ChangePassword'
 
 Vue.use(Router)
 
@@ -29,6 +33,16 @@ export default new Router({
       path: '/register',
       name: 'Register',
       component: Register
+    },
+    {
+      path: '/forgetPassword',
+      name: 'ForgetPassword',
+      component: ForgetPassword
+    },
+    {
+      path: '/changePassword/:token/:username',
+      name: 'ChangePassword',
+      component: ChangePassword
     },
     {
       path: '/faq',
@@ -61,6 +75,11 @@ export default new Router({
       component: Cart
     },
     // Item display
+    {
+      path: '/item-details/:itemID',
+      name: 'ItemDetails',
+      component: ItemDetails
+    },
     {
       path: '/bestsellers',
       name: 'Bestsellers',

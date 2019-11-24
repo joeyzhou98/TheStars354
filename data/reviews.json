@@ -1,0 +1,62 @@
+[
+    {
+        "message": "Amazing product!",
+        "rating": 5
+    },
+    {
+        "message": "Very good quality and durable",
+        "rating": 5
+    },
+    {
+        "message": null,
+        "rating": 5
+    },
+    {
+        "message": "Very useful and easy to use, but kinda expensive",
+        "rating": 4
+    },
+    {
+        "message": null,
+        "rating": 4
+    },
+    {
+        "message": "I use it everyday! Only complaint I have is that is is a little small",
+        "rating": 4
+    },
+    {
+        "message": null,
+        "rating": 3
+    },
+    {
+        "message": "Meh",
+        "rating": 3
+    },
+    {
+        "message": "I like it, but it broke after a while",
+        "rating": 3
+    },
+    {
+        "message": "God it is ugly",
+        "rating": 2
+    },
+    {
+        "message": "Too expensive for the value it offers",
+        "rating": 2
+    },
+    {
+        "message": null,
+        "rating": 2
+    },
+    {
+        "message": "Horrible item, will not recommend",
+        "rating": 1
+    },
+    {
+        "message": "Do not buy this item, it broke after only 5 seconds",
+        "rating": 1
+    },
+    {
+        "message": null,
+        "rating": 1
+    }
+]

@@ -7207,6 +7207,11 @@ vue-awesome@^3.5.4:
   resolved "https://registry.yarnpkg.com/vue-awesome/-/vue-awesome-3.5.4.tgz#da14ca20a3c6415c72823a7f743022f2dbd0183f"
   integrity sha512-RRuo08A6mFye2RyLVdnODH5kyLiHANMl9EzKXZXCeMrsP4SY3nyjkQnTGlgbbVOBQuaGBMrFp9HPOJYDaVNk/w==
 
+vue-dynamic-star-rating@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/vue-dynamic-star-rating/-/vue-dynamic-star-rating-1.0.8.tgz#45da24ea6ce11d5d63dc2410394f06724febd789"
+  integrity sha512-HZUbmot40hrWUYAe6pSUkg2HcGl8DPfiJ0tbsnQ3yokjHNhBYZqDyLLxYX7EJu0S1AYi1vw2tjyCuI1/nWOD/w==
+
 vue-eslint-parser@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-2.0.3.tgz#c268c96c6d94cfe3d938a5f7593959b0ca3360d1"

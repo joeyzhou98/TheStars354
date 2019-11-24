@@ -1,9 +1,22 @@
 from app import db
+import enum
+
+
+class Roles(str, enum.Enum):
+    ADMIN = 'admin'
+    NORMAL = 'normal'
+
+
+class ShippingMethod(str, enum.Enum):
+    REGULAR = 'regular'
+    EXPRESS = 'express'
+
 
 orderItem = db.Table(
     "orderItem",
     db.Column('order_id', db.Integer, db.ForeignKey("order.order_id")),
-    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id"))
+    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("order_item_quantity", db.Integer, default=1)
 )
 
 wishListItem = db.Table(
@@ -33,6 +46,15 @@ class UserAuthModel(db.Model):
     username = db.Column(db.String(120), unique=True, nullable=False)
     useremail = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(300), nullable=False)
+    role = db.Column(db.Enum(Roles), nullable=False, default=Roles.NORMAL.value, server_default=Roles.NORMAL.value)
+
+    @property
+    def serialize(self):
+        return {
+            "uid": self.uid,
+            "username": self.username,
+            "useremail": self.useremail,
+            "role": self.role}
 
     def save_to_db(self):
         db.session.add(self)
@@ -54,7 +76,7 @@ class UserAuthModel(db.Model):
 
 class RevokedTokenModel(db.Model):
     __tablename__ = 'revokedTokens'
-    id = db.Column(db.Integer, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(120))
 
     def add(self):
@@ -82,16 +104,27 @@ class BuyerModel(db.Model):
 
     @property
     def serialize(self):
+        orders = Order.query.filter_by(buyer_id=self.uid).all()
+        wishlists = db.session.query(wishListItem).filter_by(buyer_id=self.uid).all()
+        wish_list_items = [Item.query.filter_by(item_id=i.item_id).first() for i in wishlists]
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=self.uid).all()
+        shopping_list_items = []
+        for i in shoppingListItems:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            shopping_list_items.append({"item": item.serialize,
+                                       "quantity": i.quantity})
+
+        reviews = Review.query.filter_by(buyer_id=self.uid).all()
         return {
             "uid": self.uid,
             "address1": self.address1,
             "address2": self.address2,
             "address3": self.address3,
             "paypal": self.paypal,
-            "order_history": self.order_history,
-            "wish_list": self.wish_list,
-            "shopping_list": self.shopping_list,
-            "review_list": self.review_list}
+            "order_history": [order.serialize for order in orders],
+            "wish_list": [i.serialize for i in wish_list_items],
+            "shopping_list": shopping_list_items,
+            "review_list": [review.serialize for review in reviews]}
 
     def save_to_db(self):
         db.session.add(self)
@@ -155,6 +188,16 @@ class SellerModel(db.Model):
         self.offered_products.append(item)
         db.session.commit()
 
+    def add_commission(self, item):
+        percentage = 0.08
+        sold_quantity = 0
+        sold_items = Item.query.filter_by(seller_id=self.uid)
+        for sold_item in sold_items:
+            sold_quantity += sold_item.quantity_sold
+        if sold_quantity <= 10:
+            percentage = 0.03
+        self.total_commission += item.price * percentage
+
     @classmethod
     def get_offered_products(cls):
         return cls.query.join(SellerModel, Item)
@@ -174,18 +217,30 @@ class SellerModel(db.Model):
 class Order(db.Model):
     __tablename__ = "order"
 
-    order_id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, primary_key=True, index=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"), nullable=False)
     purchase_date = db.Column(db.Date, nullable=False)
     items = db.relationship("Item", secondary=orderItem)
+    buyer_address_index = db.Column(db.Integer, nullable=False)
+    shipping_method = db.Column(db.Enum(ShippingMethod), nullable=False)
+    coupon_discount = db.Column(db.Float, nullable=False, default=0.0)
 
     @property
     def serialize(self):
+        order_items = db.session.query(orderItem).filter_by(order_id=self.order_id).all()
+        orders = []
+        for i in order_items:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            orders.append({"item": item.serialize, "order_item_quantity": i.order_item_quantity})
+
         return {
             "order_id": self.order_id,
             "buyer_id": self.buyer_id,
             "purchase_date": self.purchase_date,
-            "items": self.items}
+            "items": orders,
+            "buyer_address_index": self.buyer_address_index,
+            "shipping_method": self.shipping_method,
+            "coupon_discount": self.coupon_discount}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
@@ -199,15 +254,21 @@ class Order(db.Model):
         self.items.append(item)
         db.session.commit()
 
+    @classmethod
+    def find_by_buyer_id(cls, buyer_id):
+        return cls.query.filter_by(buyer_id=buyer_id).all()
+
 
 class Review(db.Model):
     __tablename__ = "review"
 
     review_id = db.Column(db.Integer, primary_key=True)
-    buyer_id = db.Column(db.Integer, db.ForeignKey("buyerInfo.uid"))
-    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    buyer_id = db.Column(db.Integer, db.ForeignKey('buyerInfo.uid'))
+    item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))
+    rating = db.Column(db.Integer, nullable=False)  # 1 to 5
+    reply = db.Column(db.String(512), nullable=True)  # Seller's reply to buyer's rating
     content = db.Column(db.String(512), nullable=True)
-    images = db.Column(db.String(1000))
+    images = db.Column(db.String(1000), nullable=True)
 
     @property
     def serialize(self):
@@ -215,14 +276,14 @@ class Review(db.Model):
             "review_id": self.review_id,
             "buyer_id": self.buyer_id,
             "item_id": self.item_id,
+            "rating": self.rating,
+            "reply": self.reply,
             "content": self.content,
             "images": self.images}
 
     def save_to_db(self):
         if BuyerModel.buyer_exists(self.buyer_id):
             print("No such buyer")
-        elif Order.order_exists(self.item_id):
-            print("No such item")
         else:
             db.session.add(self)
             db.session.commit()
@@ -284,3 +345,8 @@ class Item(db.Model):
             return False
         else:
             return True
+
+    @classmethod
+    def find_by_id(cls, item_id):
+        return cls.query.filter_by(item_id=item_id).first()
+
