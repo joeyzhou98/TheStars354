@@ -84,6 +84,7 @@ export default {
         .then((response) => {
           // alert(JSON.stringify(response.data))
           this.$store.commit('login', response.data)
+          this.$store.dispatch('transferCartToUser')
           this.$router.push('/')
         })
         .catch(error => {
