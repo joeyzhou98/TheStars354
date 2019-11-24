@@ -6,12 +6,12 @@
         <div>
           <b-card align="left">
             <div class="minor-title">Select a shipping address</div>
-            <b-form-radio-group stacked>
+            <b-form-group>
               <b-form-radio v-if="address1 !== null" v-model="selectedAddress" name="address1" value="1">{{address1}}</b-form-radio>
               <b-form-radio v-if="address2 !== null" v-model="selectedAddress" name="address2" value="2">{{address2}}</b-form-radio>
               <b-form-radio v-if="address3 !== null" v-model="selectedAddress" name="address3" value="3">{{address3}}</b-form-radio>
               <b-form-radio v-model="selectedAddress" name="custom" value="custom">Add or modify an address</b-form-radio>
-            </b-form-radio-group>
+            </b-form-group>
             <div v-if="addNewAddress">
               <br>
               <b-form-group
@@ -87,10 +87,10 @@
           <br>
           <b-card align="left">
             <div class="minor-title">Select a shipping method</div>
-            <b-form-radio-group>
+            <b-form-group>
               <b-form-radio v-model="selectedMethod" name="regular" value="regular">Regular</b-form-radio>
               <b-form-radio v-model="selectedMethod" name="express" value="express">Express</b-form-radio>
-            </b-form-radio-group>
+            </b-form-group>
           </b-card>
         </div>
       </b-col>
@@ -136,9 +136,9 @@ export default {
       subtotalTxt: this.$route.params.subtotalTxt,
       selectedAddress: '1',
       addressToChange: '',
-      address1: 'Fetching address...',
-      address2: 'Fetching address...',
-      address3: 'Fetching address...',
+      address1: 'Fetching addresses...',
+      address2: null,
+      address3: null,
       modifyRequest: false,
       newAddress: {
         name: '',
