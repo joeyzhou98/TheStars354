@@ -12,24 +12,33 @@
     <b-card-text>
       You can change your personal details, manage your orders, and much more.
     </b-card-text>
-    <hr class="my-4">
-    <b-card  v-for="accountCard in accountCards" :key="accountCard.id"
-    no-body class="overflow-hidden" style="width: 55rem; height: 200px; display: inline-block;">
-    <b-row no-gutters>
-      <b-col md="6">
-        <b-card-img :src="accountCard.src" class="rounded-0"></b-card-img>
-      </b-col>
-      <b-col md="6">
-        <b-card-body>
-          <b-card-title><b-button block :to='accountCard.cardLink' variant="outline-info">{{accountCard.title}}</b-button></b-card-title>
-          <b-card-text style="text-align: left;">
-            {{accountCard.text}}
-          </b-card-text>
-        </b-card-body>
-      </b-col>
-    </b-row>
+
+    <b-card no-body>
+      <div v-if="tabNo===1">
+      <b-card-header header-tag="nav">
+        <b-nav card-header tabs fill>
+          <b-nav-item @click="tabNo=1" active >Seller Profile</b-nav-item>
+          <b-nav-item @click="tabNo=2">Selling Product Information</b-nav-item>
+        </b-nav>
+      </b-card-header>
+      <Address></Address>
+      <hr class="my-4">
+      <PayingInfo></PayingInfo>
+      <hr class="my-4">
+      <PasswordReset></PasswordReset>
+      </div>
+
+      <div v-if="tabNo===2">
+        <b-card-header header-tag="nav">
+        <b-nav card-header tabs fill>
+          <b-nav-item @click="tabNo=1">Seller Profile</b-nav-item>
+          <b-nav-item @click="tabNo=2" active>Selling Product Information</b-nav-item>
+        </b-nav>
+      </b-card-header>
+        <SellingInfo></SellingInfo>
+      </div>
     </b-card>
-    <hr class="my-4">
+    <br/>
     <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
   </div>
@@ -38,30 +47,25 @@
 <script>
 import axios from 'axios'
 import App from '../App'
+import Address from '@/components/Address.vue'
+import PayingInfo from '@/components/PayingInfo.vue'
+import PasswordReset from '@/components/PasswordReset.vue'
+import SellingInfo from '@/components/SellingInfo.vue'
 
 export default {
+  components: {
+    Address,
+    PayingInfo,
+    PasswordReset,
+    SellingInfo
+  },
   data () {
     return {
       user: {
         username: '',
         email: ''
       },
-      accountCards: [
-        {
-          id: 0,
-          title: 'Seller Account',
-          src: 'https://picsum.photos/400/400/?image=20',
-          cardLink: '/account/seller',
-          text: 'You can modify and add products here'
-        },
-        {
-          id: 1,
-          title: 'Buyer Account',
-          src: 'https://picsum.photos/400/400/?image=20',
-          cardLink: '/account/buyer',
-          text: 'You can modify your personl infomation and check your order history here'
-        }
-      ]
+      tabNo: 1
     }
   },
   mounted () {

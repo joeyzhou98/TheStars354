@@ -1,10 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
-import LoginRegister from './views/LoginRegister.vue'
+import Login from './views/Login.vue'
+import Register from './views/Register.vue'
 import FAQ from './views/FAQ.vue'
 import About from './views/About.vue'
 import Account from './views/Account.vue'
+import AccountBuyer from './views/AccountBuyer.vue'
+import AccountSeller from './views/AccountSeller.vue'
 import Category from './views/Category.vue'
 import Cart from './views/Cart.vue'
 
@@ -18,10 +21,14 @@ export default new Router({
       component: Home
     },
     {
-      path: '/login-register',
-      name: 'Login & Register',
-      component: LoginRegister/* ,
-      meta: {requireVisitor: true} */
+      path: '/login',
+      name: 'Login',
+      component: Login
+    },
+    {
+      path: '/register',
+      name: 'Register',
+      component: Register
     },
     {
       path: '/faq',
@@ -36,8 +43,17 @@ export default new Router({
     {
       path: '/account',
       name: 'Account',
-      component: Account/* ,
-      meta: {requireVisitor: true} */
+      component: Account
+    },
+    {
+      path: '/account/seller',
+      name: 'Seller Account',
+      component: AccountSeller
+    },
+    {
+      path: '/account/buyer',
+      name: 'Buyer Account',
+      component: AccountBuyer
     },
     {
       path: '/cart',
@@ -236,5 +252,6 @@ export default new Router({
   ],
   scrollBehavior (to, from, savedPosition) {
     return { x: 0, y: 0 }
-  }
+  },
+  mode: 'history'
 })
