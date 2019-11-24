@@ -5,7 +5,7 @@
     <router-link to="/login">Log In</router-link><br>
     <router-link to="/">Back to Home Page</router-link>
   </div>
-  <div v-else>
+  <div>
     <b-card
     :title="welcomeMessage"
     img-src="https://picsum.photos/600/300/?image=25"
@@ -19,28 +19,27 @@
       You can change your personal details, manage your orders, and much more.
     </b-card-text>
     <hr class="my-4">
-    <b-card  v-for="accountCard in accountCards" :key="accountCard.id"
-    no-body class="overflow-hidden" style="width: 55rem; height: 200px; display: inline-block;">
-    <b-row no-gutters>
-      <b-col md="6">
-        <b-card-img :src="accountCard.src" class="rounded-0"></b-card-img>
-      </b-col>
-      <b-col md="6">
-        <b-card-body>
-          <b-card-title><b-button block :to='accountCard.cardLink' variant="outline-info">{{accountCard.title}}</b-button></b-card-title>
-          <b-card-text style="text-align: left;">
-            {{accountCard.text}}
-          </b-card-text>
-        </b-card-body>
-      </b-col>
-    </b-row>
-    </b-card>
-    <hr class="my-4">
 
     <keep-alive>
       <b-tabs lazy justified>
-        <b-tab title="Buyer Profile" v-if=!(isAdmin)> <br />Buyer Profile</b-tab>
-        <b-tab title="Seller Profile" v-if=!(isAdmin)> <br />Seller Profile</b-tab>
+        <b-tab title="Buyer Profile" v-if=!(isAdmin)>
+          <Address></Address>
+          <hr class="my-4">
+          <PayingInfo></PayingInfo>
+          <hr class="my-4">
+          <PasswordReset></PasswordReset>
+          <hr class="my-4">
+          <OrderHistory></OrderHistory>
+        </b-tab>
+        <b-tab title="Seller Profile" v-if=!(isAdmin)>
+          <Address></Address>
+          <hr class="my-4">
+          <PayingInfo></PayingInfo>
+          <hr class="my-4">
+          <PasswordReset></PasswordReset>
+          <hr class="my-4">
+          <SellingInfo></SellingInfo>
+        </b-tab>
         <b-tab title="Admin Control Center" v-if=(isAdmin)>
           <b-card-group>
             <b-card-body>
@@ -73,26 +72,22 @@
 
 <script>
 import axios from 'axios'
+import Address from '@/components/Address.vue'
+import PayingInfo from '@/components/PayingInfo.vue'
+import PasswordReset from '@/components/PasswordReset.vue'
+import OrderHistory from '@/components/OrderHistory.vue'
+import SellingInfo from '@/components/SellingInfo.vue'
 
 export default {
+  components: {
+    Address,
+    PayingInfo,
+    PasswordReset,
+    OrderHistory,
+    SellingInfo
+  },
   data () {
     return {
-      accountCards: [
-        {
-          id: 0,
-          title: 'Seller Account',
-          src: 'https://picsum.photos/400/400/?image=20',
-          cardLink: '/account/seller',
-          text: 'You can modify and add products here'
-        },
-        {
-          id: 1,
-          title: 'Buyer Account',
-          src: 'https://picsum.photos/400/400/?image=20',
-          cardLink: '/account/buyer',
-          text: 'You can modify your personl infomation and check your order history here'
-        }
-      ],
       users: {
         uid: '',
         username: '',

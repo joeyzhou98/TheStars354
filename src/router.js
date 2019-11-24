@@ -3,8 +3,6 @@ import Router from 'vue-router'
 
 import About from './views/About.vue'
 import Account from './views/Account.vue'
-import AccountBuyer from './views/AccountBuyer.vue'
-import AccountSeller from './views/AccountSeller.vue'
 import Category from './views/Category.vue'
 import Cart from './views/Cart.vue'
 import FAQ from './views/FAQ.vue'
@@ -58,16 +56,6 @@ export default new Router({
       path: '/account',
       name: 'Account',
       component: Account
-    },
-    {
-      path: '/account/seller',
-      name: 'Seller Account',
-      component: AccountSeller
-    },
-    {
-      path: '/account/buyer',
-      name: 'Buyer Account',
-      component: AccountBuyer
     },
     {
       path: '/cart',
