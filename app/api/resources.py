@@ -574,9 +574,10 @@ class ShoppingCart(Resource):
         qty = int(request.args.get('newQuantity'))
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        elif buyer is None:
+        if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        buyer.add_to_shopping_list(item, qty)
+        if not buyer.add_to_shopping_list(item, qty):
+            abort(404, "Trying to remove more items than the quantity in cart.")
         return jsonify(success=True)
 
     def delete(self, user_id, item_id):

@@ -98,6 +98,7 @@ export default {
   data () {
     return {
       cartData: [],
+      previousQtyData: {},
       couponCode: ''
     }
   },
@@ -144,6 +145,9 @@ export default {
         .get(url)
         .then((response) => {
           this.cartData = response.data
+          for (var data of this.cartData) {
+            this.previousQtyData[data.item.item_id] = data.qty
+          }
         })
         .catch(error => alert(error))
     },
@@ -191,10 +195,20 @@ export default {
     },
     updateQty (item, qty) {
       if (this.$store.state.isLoggedIn) {
-        // change qty
+        this.updateQtyInDB(item, qty)
       } else {
         this.updateQtyInCookies(item, qty)
       }
+    },
+    updateQtyInDB (item, qty) {
+      let diff = qty - this.previousQtyData[item.item_id]
+      let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id + '?newQuantity=' + diff
+      axios
+        .post(url)
+        .then(() => {
+          this.previousQtyData[item.item_id] = qty
+        })
+        .catch(error => alert(error))
     },
     updateQtyInCookies (item, qty) {
       if (localStorage.cart) {

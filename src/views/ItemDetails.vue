@@ -188,7 +188,7 @@ export default {
     },
     addToCart () {
       if (this.$store.state.isLoggedIn) {
-        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '/' + this.selectedQty
+        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '?newQuantity=' + this.selectedQty
         return axios
           .post(url)
           .catch(error => alert(error))
