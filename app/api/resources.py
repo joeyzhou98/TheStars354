@@ -635,24 +635,31 @@ class PlaceOrderInShoppingCart(Resource):
     @jwt_required
     def post(self, user_id, buyer_address_index, shipping_method):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
-        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method= shipping_method)
-        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method)
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
 
         if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        for item in items:
+
+        order.save_to_db()
+
+        for shopping_list_item in shoppingListItems:
+            item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
             if item is None:
                 abort(404, "Item with id {} not found".format(item.item_id))
             elif item.quantity - item.quantity_sold <= 0:
                 abort(403, "Not enough stock for item {}".format(item.item_id))
-
-        order.save_to_db()
-        for item in items:
             seller = SellerModel.query.filter_by(uid=item.seller_id).first()
             if seller is not None:
                 seller.add_commission(item)
             order.add_item(item)
-            item.quantity_sold += 1
+            new_quantity_sold = item.quantity_sold + shopping_list_item.quantity
+            if item.quantity - new_quantity_sold < 0:
+                abort(403, "Not enough stock for item {}".format(item.item_id))
+            item.quantity_sold += shopping_list_item.quantity
+            db.session.query(orderItem). \
+                filter_by(order_id=order.order_id, item_id=item.item_id).update({"order_item_quantity": shopping_list_item.quantity}, synchronize_session=False)
+
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
