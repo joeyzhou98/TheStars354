@@ -1,30 +1,47 @@
 <template>
   <div class="tile">
-    <div class="img-container">
-      <img :src="item.images"/>
-    </div>
-    <div id="item-title">
-      <span v-line-clamp="2" style="word-break: normal !important;">{{name}}</span>
+    <div>
+      <span v-line-clamp="2" style="word-break: normal !important;">
+        <router-link :to="{name: 'ItemDetails', params: {itemID: item.item_id, item: item, previousRoute: this.$route}}">
+          <div class="img-container">
+            <img :src="item.images"/>
+          </div>
+          <span class="item-title">{{name}}</span>
+        </router-link>
+      </span>
     </div>
     <div v-if="hasDiscount" class="item-price">
-      <span id="discount-price">{{discountPrice}}</span>
+      <span class="discount-price">{{discountPrice}}</span>
       <span v-if="hasGoodDiscount"><br/></span>
-      <span id="old-price" class="discount-info">{{regularPrice}}</span>
-      <span v-if="hasGoodDiscount" id="discount-value" class="discount-info">({{discountValue}} off)</span>
+      <span class="discount-info old-price">{{regularPrice}}</span>
+      <span v-if="hasGoodDiscount" class="discount-info">({{discountValue}} off)</span>
     </div>
     <div v-else class="item-price"> <!-- No discount -->
-      <span id="regular-price">{{regularPrice}}</span>
+      <span>{{regularPrice}}</span>
     </div>
     <div class="item-rating">
-      * * * * *
+      <star-rating :starStyle="starStyle" :rating="item.rating" :isIndicatorActive="false"></star-rating>
     </div>
   </div>
 </template>
 
 <script>
+import StarRating from 'vue-dynamic-star-rating'
+
 export default {
   name: 'ItemTile',
   props: ['item'],
+  components: {
+    StarRating
+  },
+  data () {
+    return {
+      starStyle: {
+        starWidth: 15,
+        starHeight: 15
+      }
+    }
+  },
   computed: {
     name () {
       return this.item.item_name
@@ -62,20 +79,27 @@ img {
   height: 100%;
   object-fit: scale-down;
 }
-#item-title {
+.item-title {
   font-weight: bold;
+  color: $black;
+  &:hover {
+    color: $darkblue;
+  }
 }
 .item-price > span {
   padding: 2px;
 }
-#discount-price {
+.discount-price {
   color: red;
 }
 .discount-info {
   color: $darkgray;
   font-size: smaller;
 }
-#old-price {
+.old-price {
   text-decoration: line-through;
+}
+.item-rating {
+  display: inline-flex;
 }
 </style>
