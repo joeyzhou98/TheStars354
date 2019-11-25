@@ -2,12 +2,12 @@
   <div>
     <b-card-body class="text-left">
       <h2>Your Selling Products: </h2>
-      <b-card v-if="!hasProduct">
+      <b-card v-if="!hasSellingProducts">
         You have no products...
         <br/><br/>
         <b-button variant="outline-info" v-b-modal.productModal>Add a new product</b-button>
       </b-card>
-      <b-card v-if="hasProduct">
+      <b-card v-if="hasSellingProducts">
         <div class="overflow-auto">
           <b-pagination
             size="sm"
@@ -42,7 +42,7 @@
                       <b-col>{{item.description}}</b-col>
                     </b-row>
                     <b-row>
-                      <b-col span="2"><b-link :href="item.link">Write a review</b-link></b-col>
+                      <b-col span="2"><b-link :href="item.link">Click to see details</b-link></b-col>
                     </b-row>
                   </b-card-text>
                 </b-card-body>
@@ -54,7 +54,8 @@
     </b-card-body>
 
     <b-modal id="productModal" hide-footer title="Add New Product">
-      <form ref="form" @submit="onSubmitAdd">
+      <form ref="form">
+        <b-row><b-col>
         <b-form-group
           :state="nameState"
           label="Name"
@@ -69,20 +70,23 @@
             required
           ></b-form-input>
         </b-form-group>
-        <b-form-group
-          :state="priceState"
-          label="Price"
-          label-for="price-input"
-          :invalid-feedback="invalidFeedbackPrice"
+        </b-col><b-col>
+          <b-form-group
+          :state="brandState"
+          label="Brand"
+          label-for="brand-input"
+          :invalid-feedback="invalidFeedbackBrand"
         >
           <b-form-input
-            id="price-input"
-            v-model="productInput.productInput"
-            :state="priceState"
+            id="Brand-input"
+            v-model="productInput.brandInput"
+            :state="brandState"
             trim
             required
           ></b-form-input>
         </b-form-group>
+        </b-col></b-row>
+        <b-row><b-col>
         <b-form-group
           :state="categoryState"
           label="Category"
@@ -97,6 +101,7 @@
             required
           ></b-form-input>
         </b-form-group>
+        </b-col><b-col>
         <b-form-group
           :state="subcategoryState"
           label="Subcategory"
@@ -111,16 +116,48 @@
             required
           ></b-form-input>
         </b-form-group>
+        </b-col></b-row>
+        <b-row><b-col>
         <b-form-group
-          :state="brandState"
-          label="Brand"
-          label-for="brand-input"
-          :invalid-feedback="invalidFeedbackBrand"
+          :state="priceState"
+          label="Price"
+          label-for="price-input"
+          :invalid-feedback="invalidFeedbackPrice"
         >
           <b-form-input
-            id="Brand-input"
-            v-model="productInput.brandInput"
-            :state="brandState"
+            id="price-input"
+            v-model="productInput.priceInput"
+            :state="priceState"
+            trim
+            required
+          ></b-form-input>
+        </b-form-group>
+        </b-col><b-col>
+        <b-form-group
+          :state="quantityState"
+          label="Quantity"
+          label-for="quantity-input"
+          :invalid-feedback="invalidFeedbackQuantity"
+        >
+          <b-form-input
+            id="quantity-input"
+            v-model="productInput.quantityInput"
+            :state="quantityState"
+            trim
+            required
+          ></b-form-input>
+        </b-form-group>
+        </b-col></b-row>
+        <b-form-group
+          :state="discountState"
+          label="Discount"
+          label-for="discount-input"
+          invalid-feedback="invalidFeedbackDiscount"
+        >
+          <b-form-input
+            id="discount-input"
+            v-model="productInput.discountInput"
+            :state="discountState"
             trim
             required
           ></b-form-input>
@@ -140,49 +177,23 @@
           ></b-form-input>
         </b-form-group>
         <b-form-group
-          :state="quantityState"
-          label="Quantity"
-          label-for="quantity-input"
-          :invalid-feedback="invalidFeedbackQuantity"
-        >
-          <b-form-input
-            id="quantity-input"
-            v-model="productInput.quantityInput"
-            :state="quantityState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          :state="discountState"
-          label="Discount"
-          label-for="discount-input"
-          invalid-feedback="invalidFeedbackDiscount"
-        >
-          <b-form-input
-            id="discount-input"
-            v-model="productInput.discountInput"
-            :state="discountState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
           :state="imagesState"
           label="Images"
           label-for="images-input"
-          invalid-feedback="invalidFeedbackImages"
+          :invalid-feedback="invalidFeedbackImages"
         >
-          <b-form-input
-            id="images-input"
-            v-model="productInput.imagesInput"
-            :state="imagesState"
-            trim
-            required
-          ></b-form-input>
+          <b-form-file
+          id="images-input"
+          accept=".jpg, .png, .gif"
+          v-model="productInput.imagesInput"
+          :state="imagesState"
+          placeholder="Choose a file or drop it here..."
+          drop-placeholder="Drop file here..."
+          required
+          ></b-form-file>
         </b-form-group>
       </form>
-      <b-button type="submit" variant="outline-success" block>Add New Product</b-button>
+      <b-button type="submit" variant="outline-success" @click.prevent="addProduct" block>Add New Product</b-button>
     </b-modal>
   </div>
 </template>
@@ -193,7 +204,7 @@ import axios from 'axios'
 export default {
   data () {
     return {
-      hasProduct: false,
+      hasSellingProducts: false,
       perPage: 5,
       currentPage: 1,
       productInput: {
@@ -217,35 +228,30 @@ export default {
         { name: 7, first_name: 'The Great', last_name: 'Gazzoo' },
         { name: 8, first_name: 'Rockhead', last_name: 'Slate' },
         { name: 9, first_name: 'Pearl', last_name: 'Slaghoople' }
-      ]
+      ] // test only, to be deleted
     }
   },
-  methods: {
-    onSubmitAdd (evt) {
-      evt.preventDefault()
-      this.addProduct()
-    },
+  methods: { // todo add to database and to seller list
     addProduct () {
       let itemToPost = this.productInput.nameInput + ' ' + this.productInput.priceInput + ' ' + this.productInput.categoryInput + ' ' + this.productInput.subcategoryInput + ' ' + this.productInput.brandInput + ' ' + this.productInput.descriptionInput + ' ' + this.productInput.quantityInput + ' ' + this.productInput.discountInput + ' ' + this.productInput.imagesInput
-      var url = 'api/resource/sellerInfo?item=' + encodeURIComponent(itemToPost)
+      var url = 'api/resource/item?item=' + encodeURIComponent(itemToPost)
       axios
         .post(url)
         .then(response => {
-          this.items = response.data['items']
-          this.hasAddress = true
+          this.hasSellingProducts = true
         })
         .catch(error => alert(error))
     }
   },
   mounted: {
-    getProductInfo () {
-      var url = 'api/resource/sellerInfo'
+    getUserInfo () {
+      var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
       axios
         .get(url)
         .then(response => {
-          this.product = response.data['product']
-          if (this.product !== '') {
-            this.hasProduct = true
+          this.items = response.data['offered_products']
+          if (this.items.length !== 0) {
+            this.hasSellingProducts = true
           }
         })
         .catch(error => alert(error))
@@ -256,7 +262,6 @@ export default {
       return this.items.length
     },
     itemList () {
-      // const items = this.$store.getters.loadedLists
       return this.items.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
     }
   }

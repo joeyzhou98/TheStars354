@@ -1,31 +1,35 @@
 <template>
   <div>
     <b-card-body class="text-left">
-      <h2>Your billing and shipping address</h2>
-      <b-card v-for="address in addresses" :key="address.id" no-body class="overflow-hidden">
-        <b-card-body>{{address.name}}<br/>
-          {{address.street}}<br/>
-          {{address.city}}, {{address.province}} {{address.postCode}}<br/>
-          {{address.country}}
-          <b-button variant="outline" title="edit" @click="findModal('editModal')">
-            <icon name="edit"></icon>
-          </b-button>
-          <b-button variant="outline" title="delete" @click="deleteAddress">
+      <h2>Your Billing and Shipping Address</h2>
+      <b-card v-if="hasAddress1">
+        Address#1: {{address1}}<br/>
+        <b-button variant="outline" title="delete" @click="deleteAddress(1)">
             <icon name="trash-alt"></icon>
-          </b-button>
-        </b-card-body>
+        </b-button>
       </b-card>
-
+      <b-card v-if="hasAddress2">
+        Address#2: {{address2}}<br/>
+        <b-button variant="outline" title="delete" @click="deleteAddress(2)">
+            <icon name="trash-alt"></icon>
+        </b-button>
+      </b-card>
+      <b-card v-if="hasAddress3">
+        Address#3: {{address3}}<br/>
+        <b-button variant="outline" title="delete" @click="deleteAddress(3)">
+            <icon name="trash-alt"></icon>
+        </b-button>
+      </b-card>
       <br/>
-      <b-button variant="outline-info" @click="findModal('addModal')">
+      <b-button v-if="!(hasAddress1 && hasAddress2 && hasAddress3)" variant="outline-info" @click="findModal('addressModal')">
         <icon name="plus"></icon>
       </b-button>
     </b-card-body>
 
-    <b-modal ref="editModal" hide-footer title="Edit Your Address">
-      <form ref="form" @submit="onSubmitEdit">
+    <b-modal ref="addressModal" hide-footer title="Add or Edit Address">
+      <form ref="form">
         <b-form-group
-          :state="nameState"
+          :state="stateName"
           label="Name"
           label-for="name-input"
           :invalid-feedback="invalidFeedbackName"
@@ -33,27 +37,28 @@
           <b-form-input
             id="name-input"
             v-model="addressInput.nameInput"
-            :state="nameState"
+            :state="stateName"
             trim
             required
           ></b-form-input>
         </b-form-group>
         <b-form-group
-          :state="streetState"
+          :state="stateStreet"
           label="Street"
-          label-for="steet-input"
-          :invalid-feedback="invalidFeedbackStreet"
+          label-for="street-input"
+          :invalid-feedback="invalidFeedBackStreet"
         >
           <b-form-input
             id="street-input"
             v-model="addressInput.streetInput"
-            :state="streetState"
+            :state="stateStreet"
             trim
             required
           ></b-form-input>
         </b-form-group>
+        <b-row><b-col>
         <b-form-group
-          :state="cityState"
+          :state="stateCity"
           label="City"
           label-for="city-input"
           :invalid-feedback="invalidFeedbackCity"
@@ -61,13 +66,15 @@
           <b-form-input
             id="city-input"
             v-model="addressInput.cityInput"
-            :state="cityState"
+            :state="stateCity"
             trim
             required
           ></b-form-input>
         </b-form-group>
+        </b-col>
+        <b-col>
         <b-form-group
-          :state="provinveState"
+          :state="stateProvince"
           label="Province"
           label-for="province-input"
           :invalid-feedback="invalidFeedbackProvince"
@@ -75,131 +82,48 @@
           <b-form-input
             id="provinve-input"
             v-model="addressInput.provinceInput"
-            :state="provinceState"
+            :state="stateProvince"
             trim
             required
           ></b-form-input>
         </b-form-group>
+        </b-col>
+        </b-row>
+        <b-row><b-col>
         <b-form-group
-          :state="PCState"
+          :state="statePC"
           label="Post Code"
           label-for="PC-input"
-          :invalid-feedback="invalidFeedbackPCstate"
+          :invalid-feedback="invalidFeedbackPostCode"
         >
           <b-form-input
             id="PC-input"
             v-model="addressInput.postCodeInput"
-            :state="PCState"
+            :state="statePC"
             trim
             required
           ></b-form-input>
         </b-form-group>
+        </b-col>
+        <b-col>
         <b-form-group
-          :state="countryState"
+          :state="stateCountry"
           label="Country"
           label-for="country-input"
-          invalid-feedback="invalidFeedbackCountry"
+          :invalid-feedback="invalidFeedbackCountry"
         >
           <b-form-input
             id="country-input"
             v-model="addressInput.countryInput"
-            :state="countryState"
+            :state="stateCountry"
             trim
             required
           ></b-form-input>
         </b-form-group>
+        </b-col>
+        </b-row>
       </form>
-      <b-button type="submit" variant="outline-success" block>Edit</b-button>
-    </b-modal>
-
-    <b-modal ref="addModal" hide-footer title="Add New Address">
-      <form ref="form" @submit="onSubmitAdd">
-        <b-form-group
-          :state="nameState"
-          label="Name"
-          label-for="name-input"
-          invalid-feedback="Name is required"
-        >
-          <b-form-input
-            id="name-input"
-            v-model="addressInput.nameInput"
-            :state="nameState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          :state="streetState"
-          label="Street"
-          label-for="steet-input"
-          invalid-feedback="Street is required"
-        >
-          <b-form-input
-            id="street-input"
-            v-model="addressInput.streetInput"
-            :state="streetState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          :state="cityState"
-          label="City"
-          label-for="city-input"
-          invalid-feedback="City is required"
-        >
-          <b-form-input
-            id="city-input"
-            v-model="addressInput.cityInput"
-            :state="cityState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          :state="provinveState"
-          label="Province"
-          label-for="province-input"
-          invalid-feedback="Province is required"
-        >
-          <b-form-input
-            id="provinve-input"
-            v-model="addressInput.provinceInput"
-            :state="provinceState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          :state="PCState"
-          label="Post Code"
-          label-for="PC-input"
-          invalid-feedback="Post Code is required"
-        >
-          <b-form-input
-            id="PC-input"
-            v-model="addressInput.postCodeInput"
-            :state="PCState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          :state="countryState"
-          label="Country"
-          label-for="country-input"
-          invalid-feedback="Country is required"
-        >
-          <b-form-input
-            id="country-input"
-            v-model="addressInput.countryInput"
-            :state="countryState"
-            trim
-            required
-          ></b-form-input>
-        </b-form-group>
-      </form>
-      <b-button type="submit" variant="outline-success" block>Add</b-button>
+      <b-button type="submit" variant="outline-success" @click.prevent="addAddress" block>Submit</b-button>
     </b-modal>
 
   </div>
@@ -211,7 +135,9 @@ import axios from 'axios'
 export default {
   data () {
     return {
-      hasAddress: false,
+      hasAddress1: false,
+      hasAddress2: false,
+      hasAddress3: false,
       addressInput: {
         nameInput: '',
         streetInput: '',
@@ -220,42 +146,28 @@ export default {
         postCodeInput: '',
         countryInput: ''
       },
-      addresses: [
-        {
-          id: 0,
-          name: 'MRS/Ms. XXXX XXX',
-          street: '2658 Payene Cres',
-          city: 'Saint-Laurent',
-          province: 'QC',
-          postCode: 'H7O 0A3',
-          country: 'Canada'
-        },
-        {
-          id: 1,
-          name: 'MRS/Ms. 1321',
-          street: '1234 Payene Cres',
-          city: 'Saint-Laurent',
-          province: 'QC',
-          postCode: 'H7O 0A3',
-          country: 'Canada'
-        }
-      ]
+      address1: '',
+      address2: '',
+      address3: ''
     }
   },
   mounted: {
     getUserInfo () {
-      var url = 'api/resource/buyerInfo'
+      var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
       axios
         .get(url)
         .then(response => {
-          this.name = response.data['name']
-          this.street = response.data['street']
-          this.city = response.data['city']
-          this.province = response.data['province']
-          this.postCode = response.data['postCode']
-          this.country = response.data['country']
-          if (this.response.data !== '') {
-            this.hasAddress = true
+          this.address1 = response.data['address1']
+          this.address2 = response.data['address2']
+          this.address3 = response.data['address3']
+          if (this.address1 !== 'null') {
+            this.hasAddress1 = true
+          }
+          if (this.address2 !== 'null') {
+            this.hasAddress2 = true
+          }
+          if (this.address3 !== 'null') {
+            this.hasAddress3 = true
           }
         })
         .catch(error => alert(error))
@@ -265,51 +177,58 @@ export default {
     findModal (modal) {
       this.$refs[modal].show()
     },
-    onSubmitAdd (evt) {
-      evt.preventDefault()
-      this.addAddress()
-    },
-    onSubmitEdit (evt) {
-      evt.preventDefault()
-      this.editAddress()
-    },
-    deleteAddress () {
-      let addressToPost = ' '
-      var url = 'api/resource/buyerInfo?address=' + encodeURIComponent(addressToPost)
+    deleteAddress (num) {
+      var url = 'api/resource/updateAddress/' + encodeURIComponent(this.$store.state.uid) + '/' + encodeURIComponent(num) + '?newAddress=' + encodeURIComponent('null')
       axios
-        .post(url)
+        .put(url)
         .then(response => {
-          this.name = response.data['name']
-          this.street = response.data['street']
-          this.city = response.data['city']
-          this.province = response.data['province']
-          this.postCode = response.data['postCode']
-          this.country = response.data['country']
-          if (this.response.data !== '') {
-            this.hasAddress = true
+          if (num === 1) {
+            this.address1 = response.data['address1']
+            this.hasAddress1 = false
+          }
+          if (num === 2) {
+            this.address2 = response.data['address2']
+            this.hasAddress2 = false
+          }
+          if (num === 3) {
+            this.address3 = response.data['address3']
+            this.hasAddress3 = false
           }
         })
         .catch(error => alert(error))
     },
     addAddress () {
-      let addressToPost = this.addressInput.nameInput + ' ' + this.addressInput.streetInput + ' ' + this.addressInput.cityInput + ' ' + this.addressInput.provinceInput + ' ' + this.addressInput.postCodeInput + ' ' + this.addressInput.countryInput
-      var url = 'api/resource/buyerInfo?address=' + encodeURIComponent(addressToPost)
-      axios
-        .post(url)
-        .then(response => {
-          this.name = response.data['name']
-          this.street = response.data['street']
-          this.city = response.data['city']
-          this.province = response.data['province']
-          this.postCode = response.data['postCode']
-          this.country = response.data['country']
-          this.hasAddress = true
-        })
-        .catch(error => alert(error))
-    },
-    editAddress () {
-      this.deleteAddress()
-      this.addresses()
+      var addressToPost = this.addressInput.nameInput + ' ' + this.addressInput.streetInput + ' ' + this.addressInput.cityInput + ' ' + this.addressInput.provinceInput + ' ' + this.addressInput.postCodeInput + ' ' + this.addressInput.countryInput
+      var url = ''
+      if (!this.hasAddress1) {
+        url = 'api/resource/updateAddress/' + encodeURIComponent(this.$store.state.uid) + '/' + encodeURIComponent(1) + '?newAddress=' + encodeURIComponent(addressToPost)
+        axios
+          .put(url)
+          .then(response => {
+            this.address1 = response.data['address1']
+            this.hasAddress1 = true
+          })
+          .catch(error => alert(error))
+      } else if (!this.hasAddress2) {
+        url = 'api/resource/updateAddress/' + encodeURIComponent(this.$store.state.uid) + '/' + encodeURIComponent(2) + '?newAddress=' + encodeURIComponent(addressToPost)
+        axios
+          .put(url)
+          .then(response => {
+            this.address2 = response.data['address2']
+            this.hasAddress2 = true
+          })
+          .catch(error => alert(error))
+      } else if (!this.hasAddress3) {
+        url = 'api/resource/updateAddress/' + encodeURIComponent(this.$store.state.uid) + '/' + encodeURIComponent(3) + '?newAddress=' + encodeURIComponent(addressToPost)
+        axios
+          .put(url)
+          .then(response => {
+            this.address3 = response.data['address3']
+            this.hasAddress3 = true
+          })
+          .catch(error => alert(error))
+      }
+      this.$refs['addressModal'].hide()
     }
   },
   computed: {
@@ -338,7 +257,7 @@ export default {
         return false
       }
     },
-    invalidFeedStreet () {
+    invalidFeedBackStreet () {
       if (this.addressInput.streetInput.match(/^[A-Za-z\d]{5,}$/) || this.addressInput.streetInput === '') {
         return ''
       } else {
@@ -358,7 +277,7 @@ export default {
       if (this.addressInput.cityInput.match(/^[A-Za-z-]{2,}$/) || this.addressInput.cityInput === '') {
         return ''
       } else {
-        return 'Please enter a city'
+        return 'Please enter a valid city'
       }
     },
     stateProvince () {
@@ -377,7 +296,7 @@ export default {
         return 'Please enter a valid province'
       }
     },
-    statePCstate () {
+    statePC () {
       if (this.addressInput.postCodeInput.match(/^[A-Za-z\d]{6,10}$/)) {
         return true
       } else if (this.addressInput.postCodeInput === '') {
@@ -386,7 +305,7 @@ export default {
         return false
       }
     },
-    invalidFeedbackPCstate () {
+    invalidFeedbackPostCode () {
       if (this.addressInput.postCodeInput.match(/^[A-Za-z\d]{6,10}$/) || this.addressInput.postCodeInput === '') {
         return ''
       } else {
@@ -394,7 +313,7 @@ export default {
       }
     },
     stateCountry () {
-      if (this.addressInput.countryInput.match(/^[A-Za-z\d]{5,15}$/)) {
+      if (this.addressInput.countryInput.match(/^[A-Za-z\d]{3,15}$/)) {
         return true
       } else if (this.addressInput.countryInput === '') {
         return null
@@ -403,7 +322,7 @@ export default {
       }
     },
     invalidFeedbackCountry () {
-      if (this.addressInput.countryInput.match(/^[A-Za-z\d]{5,15}$/) || this.addressInput.countryInput === '') {
+      if (this.addressInput.countryInput.match(/^[A-Za-z\d]{3,15}$/) || this.addressInput.countryInput === '') {
         return ''
       } else {
         return 'Please enter a valid country'

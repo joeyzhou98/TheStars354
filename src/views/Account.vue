@@ -32,13 +32,11 @@
           <OrderHistory></OrderHistory>
         </b-tab>
         <b-tab title="Seller Profile" v-if=!(isAdmin)>
-          <Address></Address>
-          <hr class="my-4">
-          <PayingInfo></PayingInfo>
-          <hr class="my-4">
-          <PasswordReset></PasswordReset>
+          <SellerInfo></SellerInfo>
           <hr class="my-4">
           <SellingInfo></SellingInfo>
+          <hr class="my-4">
+          <SellerOrderHistory></SellerOrderHistory>
         </b-tab>
         <b-tab title="Admin Control Center" v-if=(isAdmin)>
           <b-card-group>
@@ -77,6 +75,8 @@ import PayingInfo from '@/components/PayingInfo.vue'
 import PasswordReset from '@/components/PasswordReset.vue'
 import OrderHistory from '@/components/OrderHistory.vue'
 import SellingInfo from '@/components/SellingInfo.vue'
+import SellerInfo from '@/components/SellerInfo.vue'
+import SellerOrderHistory from '@/components/SellerOrderHistory.vue'
 
 export default {
   components: {
@@ -84,7 +84,9 @@ export default {
     PayingInfo,
     PasswordReset,
     OrderHistory,
-    SellingInfo
+    SellingInfo,
+    SellerInfo,
+    SellerOrderHistory
   },
   data () {
     return {

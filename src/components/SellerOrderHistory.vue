@@ -5,7 +5,6 @@
       <b-card v-if="!hasOrderHistroy">
         You have no order History...
         <br/>
-        <b-link href="/">Go to shopping</b-link>
       </b-card>
       <b-card v-if="hasOrderHistroy">
         <div class="overflow-auto">
@@ -37,8 +36,11 @@
                       <b-col>Purchase Date: {{item.date}}</b-col>
                     </b-row>
                     <b-row>
+                      <b-col>Review: {{item.review}}</b-col>
+                    </b-row>
+                    <b-row>
                       <b-col span="2"><b-link :href="item.link">Click to see details</b-link></b-col>
-                      <b-col span="2"><b-link @click="findModal('review')">Write a review</b-link></b-col>
+                      <b-col span="2"><b-link @click="findModal('reply')">Replay to a review</b-link></b-col>
                     </b-row>
                   </b-card-text>
                 </b-card-body>
@@ -48,25 +50,16 @@
         </div>
       </b-card>
     </b-card-body>
-    <b-modal ref="review" hide-footer title="Review">
+    <b-modal ref="reply" hide-footer title="Reply">
       <b-form-textarea
       id="textarea"
       v-model="reviewInput"
-      placeholder="Enter your review here..."
+      placeholder="Enter your reply here..."
       rows="3"
       max-rows="6"
       ></b-form-textarea>
-      <b-form-group label="Rating">
-        <b-form-radio-group>
-        <b-form-radio v-model="ratingInput" name="ratingInput" value="1">1</b-form-radio>
-        <b-form-radio v-model="ratingInput" name="ratingInput" value="2">2</b-form-radio>
-        <b-form-radio v-model="ratingInput" name="ratingInput" value="3">3</b-form-radio>
-        <b-form-radio v-model="ratingInput" name="ratingInput" value="4">4</b-form-radio>
-        <b-form-radio v-model="ratingInput" name="ratingInput" value="5">5</b-form-radio>
-        </b-form-radio-group>
-      </b-form-group>
       <br/>
-      <b-button type="submit" variant="outline-success" @click.prevent="addReview" block>Add Review</b-button>
+      <b-button type="submit" variant="outline-success" @click.prevent="addReply" block>Add Reoly</b-button>
     </b-modal>
   </div>
 </template>
@@ -101,7 +94,7 @@ export default {
       axios
         .get(url)
         .then(response => {
-          this.items = response.data['order_history']
+          this.items = response.data['orders']
           if (this.items.length !== 0) {
             this.hasOrderHistroy = true
           }
@@ -121,7 +114,7 @@ export default {
     findModal (modal) {
       this.$refs[modal].show()
     },
-    addReview () { // to be added
+    addReply () { // to be added
       var url = 'api/resource/review/' + encodeURIComponent(this.item.id) + '?content=' + encodeURIComponent(this.reviewInput) + '&rating=' + encodeURIComponent(this.ratingInput)
       axios
         .post(url)

@@ -8,7 +8,7 @@
     </b-card-body>
 
     <b-modal ref="passwordReset" hide-footer title="Password Reset">
-      <form ref="form" @submit="onSubmit">
+      <form ref="form">
         <b-form-group
       id="input-group-3"
       label="Password:"
@@ -46,7 +46,10 @@
         </b-form-input>
       </b-form-group>
       </form>
-      <b-button type="submit" variant="outline-success" block>Reset</b-button>
+      <b-button type="submit" variant="outline-success" @click.prevent="resetPassword" block>Reset</b-button>
+    </b-modal>
+    <b-modal id="notification" ref="notification">
+      <h5>Your password has been reset successfully!</h5>
     </b-modal>
   </div>
 </template>
@@ -66,23 +69,20 @@ export default {
     findModal (modal) {
       this.$refs[modal].show()
     },
-    onSubmit (evt) {
-      evt.preventDefault()
-      var url = 'api/authentication/registration?password=' + encodeURIComponent(md5(this.password))
-      this.sendAxiosRequest(url)
-    },
-    sendAxiosRequest (url) {
+    resetPassword () {
+      var url = 'api/authentication/changePassword?username=' + encodeURIComponent(this.$store.state.username) + '&password=' + encodeURIComponent(md5(this.password))
       axios
-        .post(url)
+        .put(url)
         .then((response) => {
-          alert('successful changed')
+          this.$bvModal.show('notification')
         })
         .catch(error => {
-          if (error.response.status === 400) {
+          if (error.response.status === 404) {
             console.log(JSON.stringify(error.response.data))
-            this.errors.message = error.response.data['message']
+            this.$router.push('/')
           }
         })
+      this.$refs['passwordReset'].hide()
     }
   },
   computed: {
