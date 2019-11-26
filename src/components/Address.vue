@@ -3,19 +3,19 @@
     <b-card-body class="text-left">
       <h2>Your Billing and Shipping Address</h2>
       <b-card v-if="hasAddress1">
-        Address#1: {{address1}}<br/>
+        Address #1: {{address1}}<br/>
         <b-button variant="outline" title="delete" @click="deleteAddress(1)">
             <icon name="trash-alt"></icon>
         </b-button>
       </b-card>
       <b-card v-if="hasAddress2">
-        Address#2: {{address2}}<br/>
+        Address #2: {{address2}}<br/>
         <b-button variant="outline" title="delete" @click="deleteAddress(2)">
             <icon name="trash-alt"></icon>
         </b-button>
       </b-card>
       <b-card v-if="hasAddress3">
-        Address#3: {{address3}}<br/>
+        Address #3: {{address3}}<br/>
         <b-button variant="outline" title="delete" @click="deleteAddress(3)">
             <icon name="trash-alt"></icon>
         </b-button>
@@ -151,27 +151,26 @@ export default {
       address3: ''
     }
   },
-  mounted: {
-    getUserInfo () {
-      var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
-      axios
-        .get(url)
-        .then(response => {
-          this.address1 = response.data['address1']
-          this.address2 = response.data['address2']
-          this.address3 = response.data['address3']
-          if (this.address1 !== 'null') {
-            this.hasAddress1 = true
-          }
-          if (this.address2 !== 'null') {
-            this.hasAddress2 = true
-          }
-          if (this.address3 !== 'null') {
-            this.hasAddress3 = true
-          }
-        })
-        .catch(error => alert(error))
-    }
+  mounted () {
+    var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
+    axios
+      .get(url)
+      .then(response => {
+        this.address1 = response.data['address1']
+        this.address2 = response.data['address2']
+        this.address3 = response.data['address3']
+
+        if (this.address1 !== null) {
+          this.hasAddress1 = true
+        }
+        if (this.address2 !== null) {
+          this.hasAddress2 = true
+        }
+        if (this.address3 !== null) {
+          this.hasAddress3 = true
+        }
+      })
+      .catch(error => alert(error))
   },
   methods: {
     findModal (modal) {
@@ -205,7 +204,7 @@ export default {
         axios
           .put(url)
           .then(response => {
-            this.address1 = response.data['address1']
+            this.address1 = addressToPost
             this.hasAddress1 = true
           })
           .catch(error => alert(error))
@@ -214,7 +213,7 @@ export default {
         axios
           .put(url)
           .then(response => {
-            this.address2 = response.data['address2']
+            this.address2 = addressToPost
             this.hasAddress2 = true
           })
           .catch(error => alert(error))
@@ -223,7 +222,7 @@ export default {
         axios
           .put(url)
           .then(response => {
-            this.address3 = response.data['address3']
+            this.address3 = addressToPost
             this.hasAddress3 = true
           })
           .catch(error => alert(error))
@@ -233,7 +232,7 @@ export default {
   },
   computed: {
     stateName () {
-      if (this.addressInput.nameInput.match(/^[A-Za-z]{1,25}$/)) {
+      if (this.addressInput.nameInput.match(/^[A-Za-z\s]{1,25}$/)) {
         return true
       } else if (this.addressInput.nameInput === '') {
         return null
@@ -242,14 +241,14 @@ export default {
       }
     },
     invalidFeedbackName () {
-      if (this.addressInput.nameInput.match(/^[A-Za-z]{1,25}$/) || this.addressInput.nameInput === '') {
+      if (this.addressInput.nameInput.match(/^[A-Za-z\s]{1,25}$/) || this.addressInput.nameInput === '') {
         return ''
       } else {
         return 'Please enter a valid name'
       }
     },
     stateStreet () {
-      if (this.addressInput.streetInput.match(/^[A-Za-z\d]{5,}$/)) {
+      if (this.addressInput.streetInput.match(/^[A-Za-z\d\s#]{5,}$/)) {
         return true
       } else if (this.addressInput.streetInput === '') {
         return null
@@ -258,14 +257,14 @@ export default {
       }
     },
     invalidFeedBackStreet () {
-      if (this.addressInput.streetInput.match(/^[A-Za-z\d]{5,}$/) || this.addressInput.streetInput === '') {
+      if (this.addressInput.streetInput.match(/^[A-Za-z\d\s]#{5,}$/) || this.addressInput.streetInput === '') {
         return ''
       } else {
         return 'Please enter a valid street number and name'
       }
     },
     stateCity () {
-      if (this.addressInput.cityInput.match(/^[A-Za-z-]{2,}$/)) {
+      if (this.addressInput.cityInput.match(/^[A-Za-z-\s]{2,}$/)) {
         return true
       } else if (this.addressInput.cityInput === '') {
         return null
@@ -274,7 +273,7 @@ export default {
       }
     },
     invalidFeedbackCity () {
-      if (this.addressInput.cityInput.match(/^[A-Za-z-]{2,}$/) || this.addressInput.cityInput === '') {
+      if (this.addressInput.cityInput.match(/^[A-Za-z-\s]{2,}$/) || this.addressInput.cityInput === '') {
         return ''
       } else {
         return 'Please enter a valid city'

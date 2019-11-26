@@ -30,6 +30,8 @@
           <PasswordReset></PasswordReset>
           <hr class="my-4">
           <OrderHistory></OrderHistory>
+          <hr class="my-4">
+          <ReviewHistory></ReviewHistory>
         </b-tab>
         <b-tab title="Seller Profile" v-if=!(isAdmin)>
           <SellerInfo></SellerInfo>
@@ -77,6 +79,7 @@ import OrderHistory from '@/components/OrderHistory.vue'
 import SellingInfo from '@/components/SellingInfo.vue'
 import SellerInfo from '@/components/SellerInfo.vue'
 import SellerOrderHistory from '@/components/SellerOrderHistory.vue'
+import ReviewHistory from '../components/ReviewHistory'
 
 export default {
   components: {
@@ -84,6 +87,7 @@ export default {
     PayingInfo,
     PasswordReset,
     OrderHistory,
+    ReviewHistory,
     SellingInfo,
     SellerInfo,
     SellerOrderHistory

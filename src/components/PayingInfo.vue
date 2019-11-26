@@ -53,19 +53,17 @@ export default {
       haspaypal: false
     }
   },
-  mounted: {
-    getUserInfo () {
-      var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
-      axios
-        .get(url)
-        .then(response => {
-          this.paypal = response.data['paypal']
-          if (this.paypal !== '') {
-            this.haspaypal = true
-          }
-        })
-        .catch(error => alert(error))
-    }
+  mounted () {
+    var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
+    axios
+      .get(url)
+      .then(response => {
+        this.paypal = response.data['paypal']
+        if (this.paypal !== '' && this.paypal !== null) {
+          this.haspaypal = true
+        }
+      })
+      .catch(error => alert(error))
   },
   methods: {
     paypalModal (modal) {

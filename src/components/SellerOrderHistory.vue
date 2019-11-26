@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-card-body class="text-left">
-      <h2>Your Order History: </h2>
+      <h2>Order Received: </h2>
       <b-card v-if="!hasOrderHistroy">
         You have no order History...
         <br/>

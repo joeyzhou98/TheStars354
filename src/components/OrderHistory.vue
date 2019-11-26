@@ -17,33 +17,40 @@
             :per-page="perPage"
           ></b-pagination>
 
-          <b-card v-for="item in itemList" :key="item.id" no-body class="overflow-hidden"  :per-page="perPage" :current-page="currentPage">
-            <b-row no-gutters>
-              <b-col md="3">
-                <b-img height="150px" width="150px" src="https://picsum.photos/400/400/?image=20" class="rounded-0"></b-img>
-              </b-col>
-              <b-col md="8">
-                <b-card-body>
-                  <b-card-text>
-                    <b-row>
-                      <b-col>Item Name: {{item.name}}</b-col>
-                      <b-col>Quantity: {{item.quantity}}</b-col>
-                    </b-row>
-                    <b-row>
-                      <b-col>Price: {{item.price}}</b-col>
-                      <b-col>Total Price: {{item.price*item.quantity}}</b-col>
-                    </b-row>
-                    <b-row>
-                      <b-col>Purchase Date: {{item.date}}</b-col>
-                    </b-row>
-                    <b-row>
-                      <b-col span="2"><b-link :href="item.link">Click to see details</b-link></b-col>
-                      <b-col span="2"><b-link @click="findModal('review')">Write a review</b-link></b-col>
-                    </b-row>
-                  </b-card-text>
-                </b-card-body>
-              </b-col>
-             </b-row>
+          <b-card v-for="order in orderList" :key="order.order_id" no-body class="overflow-hidden"  :per-page="perPage" :current-page="currentPage">
+            <b-card-body>
+                <b-row>
+                  <b-col>Order Number: {{order.order_id}}</b-col>
+                  <b-col>Order placed: {{order.purchase_date.substring(0,16)}}</b-col>
+                </b-row>
+                <br/>
+                <b-row>
+                  <b-col>Shipped to: {{getShippingAddress(order)}}</b-col>
+                </b-row>
+                <b-row>
+                  <b-col>Status: Shipped</b-col> #get real status from db
+                </b-row>
+                <br/>
+                <b-row v-for="item in order.items" :key="item">
+                  <b-col>
+                    <b-img height="150px" width="150px" :src="item.item.images" class="rounded-0"></b-img>
+                  </b-col>
+                  <b-col sm="4"><b-link :to="'item-details/' + item.item.item_id">{{item.item.item_name}} (x{{item.order_item_quantity}})</b-link></b-col>
+                  <b-col sm="3">${{(item.item.price*(1.0-item.item.discount)).toFixed(2)}}</b-col>
+                  <!-- Will be better to move to another page that can be used at here and on the item detail page -->
+                  <b-col span="1"><b-link @click="findModal('review')">Write a review</b-link></b-col>
+                </b-row>
+                <br/>
+                <b-row>
+                  <b-col>Subtotal: ${{subtotal(order.items)}}</b-col>
+                </b-row>
+                <b-row>
+                  <b-col>Tax: ${{(subtotal(order.items)*0.15).toFixed(2)}}</b-col>
+                </b-row>
+                <b-row>
+                  <b-col>Total: ${{(subtotal(order.items)*1.15).toFixed(2)}}</b-col>
+                </b-row>
+            </b-card-body>
            </b-card>
         </div>
       </b-card>
@@ -66,7 +73,7 @@
         </b-form-radio-group>
       </b-form-group>
       <br/>
-      <b-button type="submit" variant="outline-success" @click.prevent="addReview" block>Add Review</b-button>
+      <b-button type="submit" variant="outline-success" @click.prevent="addReview(item)" block>Add Review</b-button>
     </b-modal>
   </div>
 </template>
@@ -82,46 +89,40 @@ export default {
       currentPage: 1,
       reviewInput: '',
       ratingInput: '',
-      items: [
-        { id: 1, name: 'Fred', date: 'Flintstone' },
-        { id: 2, name: 'Wilma', date: 'Flintstone' },
-        { id: 3, name: 'Barney', date: 'Rubble' },
-        { id: 4, name: 'Betty', date: 'Rubble' },
-        { id: 5, name: 'Pebbles', date: 'Flintstone' },
-        { id: 6, name: 'Bamm Bamm', date: 'Rubble' },
-        { id: 7, name: 'The Great', date: 'Gazzoo' },
-        { id: 8, name: 'Rockhead', date: 'Slate' },
-        { id: 9, name: 'Pearl', date: 'Slaghoople' }
-      ] // for test purpose, delete
+      orders: [],
+      address1: '',
+      address2: '',
+      address3: ''
     }
   },
-  mounted: {
-    getOrderInfo () {
-      var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
-      axios
-        .get(url)
-        .then(response => {
-          this.items = response.data['order_history']
-          if (this.items.length !== 0) {
-            this.hasOrderHistroy = true
-          }
-        })
-        .catch(error => alert(error))
-    }
+  mounted () {
+    var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
+    axios
+      .get(url)
+      .then(response => {
+        this.orders = response.data['order_history']
+        if (this.orders.length !== 0) {
+          this.hasOrderHistroy = true
+        }
+        this.address1 = response.data['address1']
+        this.address2 = response.data['address2']
+        this.address3 = response.data['address3']
+      })
+      .catch(error => alert(error))
   },
   computed: {
     rows () {
-      return this.items.length
+      return this.orders.length
     },
-    itemList () {
-      return this.items.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
+    orderList () {
+      return this.orders.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
     }
   },
   methods: {
     findModal (modal) {
       this.$refs[modal].show()
     },
-    addReview () { // to be added
+    addReview (item) { // to be added
       var url = 'api/resource/review/' + encodeURIComponent(this.item.id) + '?content=' + encodeURIComponent(this.reviewInput) + '&rating=' + encodeURIComponent(this.ratingInput)
       axios
         .post(url)
@@ -129,6 +130,27 @@ export default {
         })
         .catch(error => alert(error))
       this.$refs['review'].hide()
+    },
+    subtotal (orderItems) {
+      var subtotal = 0
+      for (var data of orderItems) {
+        console.log('item', data)
+        let price = data.item.price * (1.0 - data.item.discount).toFixed(2)
+        subtotal += price * data.order_item_quantity
+      }
+      return subtotal
+    },
+    getShippingAddress (order) {
+      var addressIndex = order.buyer_address_index
+      if (addressIndex === 1) {
+        return this.address1
+      }
+      if (addressIndex === 2) {
+        return this.address2
+      }
+      if (addressIndex === 3) {
+        return this.address3
+      }
     }
   }
 }

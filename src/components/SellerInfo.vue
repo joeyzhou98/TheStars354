@@ -1,14 +1,12 @@
 <template>
-  <div>
-    <b-card-body class="text-left">
-      <b-card>
-        <b-row>Seller Name: {{membership_date}}</b-row>
-        <b-row>Membership Date: {{membership_date}}</b-row>
-        <b-row>Rating: {{membership_date}}</b-row>
-        <b-row>Total Commission: {{membership_date}}</b-row>
-      </b-card>
-    </b-card-body>
-  </div>
+    <div>
+        <b-card-body>
+            <b-card>
+                <b-row>Registered Date: {{membership_date.substring(0,16)}}</b-row>
+                <b-row>Total Commission: ${{total_commission}}</b-row>
+            </b-card>
+        </b-card-body>
+    </div>
 </template>
 
 <script>
@@ -21,20 +19,16 @@ export default {
       total_commission: '' // more info
     }
   },
-  methods: {
-
-  },
-  mounted: {
-    getUserInfo () {
-      var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
-      axios
-        .get(url)
-        .then(response => {
-          this.membership_date = response.data['membership_date']
-          this.total_commission = response.data['total_commission']
-        })
-        .catch(error => alert(error))
-    }
+  methods: {},
+  mounted () {
+    var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
+    axios
+      .get(url)
+      .then(response => {
+        this.membership_date = response.data['membership_date']
+        this.total_commission = response.data['total_commission']
+      })
+      .catch(error => alert(error))
   }
 }
 </script>
