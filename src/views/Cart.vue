@@ -27,7 +27,7 @@
                       Qty:
                       <div style="display: inline-block; width: 50px">
                         <b-select class="shadow-none" size="sm" v-model="data.qty" @input="updateQty(data.item, data.qty)">
-                          <option v-for="qty in data.item.quantity" :key="qty" :value="qty">{{qty}}</option>
+                          <option v-for="qty in getAvailableQty(data.item)" :key="qty" :value="qty">{{qty}}</option>
                         </b-select>
                       </div>
                       <b-link class="item-link small-link" @click="remove(data.item)">Delete</b-link>
@@ -79,7 +79,10 @@
               </b-input-group>
             </div>
             <hr/>
-            <b-button block variant="success">CHECKOUT</b-button>
+            <b-button block variant="success"
+              :to="checkoutLink">
+              CHECKOUT
+            </b-button>
           </div>
         </b-card>
       </b-col>
@@ -94,7 +97,8 @@ export default {
   name: 'Cart',
   data () {
     return {
-      cartData: null,
+      cartData: [],
+      previousQtyData: {},
       couponCode: ''
     }
   },
@@ -119,6 +123,12 @@ export default {
         count += data.qty
       }
       return count
+    },
+    checkoutLink () {
+      if (this.$store.state.isLoggedIn) {
+        return {name: 'PlaceOrder', params: {cartData: this.cartData, subtotal: this.subtotal, subtotalTxt: this.subtotalTxt}}
+      }
+      return '/login'
     }
   },
   methods: {
@@ -135,6 +145,9 @@ export default {
         .get(url)
         .then((response) => {
           this.cartData = response.data
+          for (var data of this.cartData) {
+            this.previousQtyData[data.item.item_id] = data.qty
+          }
         })
         .catch(error => alert(error))
     },
@@ -155,6 +168,14 @@ export default {
       var url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id
       axios
         .delete(url)
+        .then((response) => {
+          for (var i = 0; i < this.cartData.length; i++) {
+            if (this.cartData[i].item.item_id === item.item_id) {
+              this.cartData.splice(i, 1)
+              break
+            }
+          }
+        })
         .catch(error => alert(error))
     },
     removeItemFromCookies (item) {
@@ -174,10 +195,20 @@ export default {
     },
     updateQty (item, qty) {
       if (this.$store.state.isLoggedIn) {
-        // change qty
+        this.updateQtyInDB(item, qty)
       } else {
         this.updateQtyInCookies(item, qty)
       }
+    },
+    updateQtyInDB (item, qty) {
+      let diff = qty - this.previousQtyData[item.item_id]
+      let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id + '?newQuantity=' + diff
+      axios
+        .post(url)
+        .then(() => {
+          this.previousQtyData[item.item_id] = qty
+        })
+        .catch(error => alert(error))
     },
     updateQtyInCookies (item, qty) {
       if (localStorage.cart) {
@@ -199,6 +230,9 @@ export default {
     },
     itemLink (item) {
       return 'item-details/' + item.item_id
+    },
+    getAvailableQty (item) {
+      return item.quantity - item.quantity_sold
     }
   },
   created () {
