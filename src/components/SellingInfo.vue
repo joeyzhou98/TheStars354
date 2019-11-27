@@ -5,7 +5,7 @@
             <b-card v-if="!hasSellingProducts">
                 You have no products...
                 <br/><br/>
-                <b-button variant="outline-info" v-b-modal.productModal>Add a new product</b-button>
+                <b-button variant="outline-info" @click="openModal('productModal', 0)">Add a new product</b-button>
             </b-card>
             <b-card v-if="hasSellingProducts">
                 <div class="overflow-auto">
@@ -23,36 +23,36 @@
                             <b-col md="3">
                                 <b-img height="150px" width="150px" :src="item.images" class="rounded-0"></b-img>
                             </b-col>
-                            <b-col md="8">
+                            <b-col md="7">
                                 <b-card-body>
                                     <b-card-text>
-                                        <b-row>
-                                          <b-col><b-link :to="'item-details/' + item.item_id">Name: {{item.name}}</b-link></b-col>
-                                            <b-col>Brand: {{item.brand}}</b-col>
-                                        </b-row>
-                                        <b-row>
-                                            <b-col>Price: ${{item.price}}</b-col>
-                                            <b-col>Quantity: ${{item.quantity}}</b-col>
-                                            <b-col>Quantity Sold: ${{item.quantity_sold}}</b-col>
-                                        </b-row>
-                                        <b-row>
-                                            <b-col>Category: {{item.category}}</b-col>
-                                            <b-col>SubCategory: {{item.subCategory}}</b-col>
-                                        </b-row>
-                                        <b-row>
-                                            <b-col>Description:</b-col>
-                                            <b-col>{{item.description}}</b-col>
-                                        </b-row>
+                                        <b-col>
+                                            <b-row>
+                                                <b-link :to="'item-details/' + item.item_id">Name: {{item.item_name}}</b-link>
+                                            </b-row>
+                                            <b-row>Brand: {{item.brand}}</b-row>
+                                            <b-row>Price: ${{item.price}}</b-row>
+                                            <b-row>Discount: {{item.discount}}</b-row>
+                                            <b-row>Quantity: {{item.quantity}}</b-row>
+                                            <b-row>Quantity Sold: {{item.quantity_sold}}</b-row>
+                                            <b-row>Category: {{item.category}}</b-row>
+                                            <b-row>SubCategory: {{item.subcategory}}</b-row>
+                                            <b-row>Description:</b-row>
+                                            <b-row>{{item.description}}</b-row>
+                                        </b-col>
                                     </b-card-text>
                                 </b-card-body>
                             </b-col>
+                            <b-col span="1"><b-link @click="openModal('productModal', item.item_id)">Update this item</b-link></b-col>
                         </b-row>
                     </b-card>
+                    <br/><br/>
+                    <b-button variant="outline-info" @click="openModal('productModal', 0)">Add a new product</b-button>
                 </div>
             </b-card>
         </b-card-body>
 
-        <b-modal id="productModal" hide-footer title="Add New Product">
+        <b-modal ref="productModal" hide-footer title="Add New Product">
             <form ref="form">
                 <b-row>
                     <b-col>
@@ -178,11 +178,13 @@
                         label-for="images-input"
                 >
                     <b-form-file
+                            v-model="productInput.imageInput"
                             id="images-input"
                             accept=".jpg, .png, .gif"
-                            v-model="productInput.imageInput"
+                            :state="Boolean(productInput.imageInput)"
                             placeholder="Choose a file or drop it here..."
                             drop-placeholder="Drop file here..."
+                            type="file"
                             required
                     ></b-form-file>
                 </b-form-group>
@@ -213,10 +215,21 @@ export default {
         discountInput: '',
         imageInput: null
       },
-      items: []
+      items: [],
+      focusedItemId: 0
     }
   },
   methods: {
+    openModal (modal, itemId) {
+      this.setFocusItemId(itemId)
+      this.findModal(modal)
+    },
+    setFocusItemId (itemId) {
+      this.focusedItemId = itemId
+    },
+    findModal (modal) {
+      this.$refs[modal].show()
+    },
     addProduct () {
       var formData = new FormData()
       formData.append('file', this.productInput.imageInput)
@@ -230,26 +243,41 @@ export default {
         discount: this.productInput.discountInput,
         images: this.productInput.imageInput.name}
       formData.append('item', JSON.stringify(itemPayload))
-      var url = 'api/resource/item'
+      if (this.focusedItemId === 0) {
+        var url = 'api/resource/item'
+        axios
+          .post(url, formData, {headers: {'Content-Type': 'multipart/form-data'}})
+          .then(response => {
+            this.getSellingProducts()
+            this.$refs['productModal'].hide()
+          })
+          .catch(error => alert(error))
+      } else {
+        url = 'api/resource/item/' + this.focusedItemId
+        axios
+          .put(url, formData, {headers: {'Content-Type': 'multipart/form-data'}})
+          .then(response => {
+            this.getSellingProducts()
+            this.$refs['productModal'].hide()
+          })
+          .catch(error => alert(error))
+      }
+    },
+    getSellingProducts () {
+      var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
       axios
-        .post(url, formData, {headers: {'Content-Type': 'multipart/form-data'}})
+        .get(url)
         .then(response => {
-          this.hasSellingProducts = true
+          this.items = response.data['offered_products']
+          if (this.items.length !== 0) {
+            this.hasSellingProducts = true
+          }
         })
         .catch(error => alert(error))
     }
   },
   mounted () {
-    var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
-    axios
-      .get(url)
-      .then(response => {
-        this.items = response.data['offered_products']
-        if (this.items.length !== 0) {
-          this.hasSellingProducts = true
-        }
-      })
-      .catch(error => alert(error))
+    this.getSellingProducts()
   },
   computed: {
     rows () {
@@ -257,6 +285,54 @@ export default {
     },
     itemList () {
       return this.items.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
+    },
+    nameState () {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()]{1,300}$/)) {
+        return true
+      } else if (this.productInput.nameInput === '') {
+        return null
+      } else {
+        return false
+      }
+    },
+    invalidFeedbackName () {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()]{1,300}$/) || this.productInput.nameInput === '') {
+        return ''
+      } else {
+        return 'Please enter a valid user name'
+      }
+    },
+    brandState () {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()@]{1,120}$/)) {
+        return true
+      } else if (this.productInput.nameInput === '') {
+        return null
+      } else {
+        return false
+      }
+    },
+    invalidFeedbackBrand () {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()@]{1,120}$/) || this.productInput.nameInput === '') {
+        return ''
+      } else {
+        return 'Please enter a valid user name'
+      }
+    },
+    descriptionState () {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()#!?%_]{1,1000}$/)) {
+        return true
+      } else if (this.productInput.nameInput === '') {
+        return null
+      } else {
+        return false
+      }
+    },
+    invalidFeedbackDescription () {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()#!?%_]{1,1000}$/) || this.productInput.nameInput === '') {
+        return ''
+      } else {
+        return 'Please enter a valid user name'
+      }
     }
   }
 }

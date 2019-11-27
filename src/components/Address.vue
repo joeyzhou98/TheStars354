@@ -152,7 +152,7 @@ export default {
     }
   },
   mounted () {
-    var url = 'api/resource/buyerInfo?username=' + encodeURIComponent(this.$store.state.username)
+    var url = 'api/resource/buyerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
     axios
       .get(url)
       .then(response => {

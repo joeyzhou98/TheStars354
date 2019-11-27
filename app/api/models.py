@@ -73,6 +73,10 @@ class UserAuthModel(db.Model):
     def find_by_useremail(cls, email):
         return cls.query.filter_by(useremail=email).first()
 
+    @classmethod
+    def find_by_uid(cls, uid):
+        return cls.query.filter_by(uid=uid).first()
+
 
 class RevokedTokenModel(db.Model):
     __tablename__ = 'revokedTokens'
@@ -173,12 +177,20 @@ class SellerModel(db.Model):
 
     @property
     def serialize(self):
+        order_sellers = db.session.query(orderSeller).filter_by(seller_id=self.uid).all()
+        orders = []
+        for i in order_sellers:
+            order = Order.query.filter_by(order_id=i.order_id).first()
+            orders.append({"order": order.serialize})
+
+        items = Item.query.filter_by(seller_id=self.uid).all()
+
         return {
             "uid": self.uid,
             "membership_date": self.membership_date,
             "total_commission": self.total_commission,
-            "offered_products": self.offered_products,
-            "orders": self.orders}
+            "offered_products": [i.serialize for i in items],
+            "orders": orders}
 
     def save_to_db(self):
         db.session.add(self)
