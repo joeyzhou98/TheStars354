@@ -24,23 +24,22 @@
                 </b-row>
                 <br/>
                 <b-row>
-                  <b-col>Buyer: {{findBuyerName(order.order.buyer_id)}}</b-col>
+                  <b-col md="8">Buyer: {{findBuyerName(order.order.buyer_id)}}</b-col>
                 </b-row>
                 <b-row>
                   <b-col>Shipped to: {{findBuyerAddress(order.order.buyer_id,order.order.buyer_address_index)}}</b-col>
                 </b-row>
                 <b-row>
-                  <b-col>Status: Shipped</b-col> #get real status from db
+                  <b-col>Status: Shipped</b-col>
                 </b-row>
                 <br/>
                 <b-row v-for="item in order.order.items" :key="item">
-                  <b-card-group v-if="item.item.seller_id === this.$store.state.uid">
+                  <b-card-group v-if="isSeller(item.item.seller_id)">
                   <b-col>
                     <b-img height="150px" width="150px" :src="item.item.images" class="rounded-0"></b-img>
                   </b-col>
                   <b-col sm="4"><b-link :to="'item-details/' + item.item.item_id">{{item.item.item_name}} (x{{item.order_item_quantity}})</b-link></b-col>
                   <b-col sm="3">${{(item.item.price*(1.0-item.item.discount)).toFixed(2)}}</b-col>
-                  <!-- Will be better to move to another page that can be used at here and on the item detail page -->
                   </b-card-group>
                 </b-row>
             </b-card-body>
@@ -114,6 +113,7 @@ export default {
       axios
         .get(url)
         .then(response => {
+          console.log(response.data['username'])
           return response.data['username']
         })
         .catch(error => alert(error))
@@ -124,9 +124,13 @@ export default {
         .get(url)
         .then(response => {
           var addressString = 'address' + addressIndex.toString()
+          console.log(response.data[addressString])
           return response.data[addressString]
         })
         .catch(error => alert(error))
+    },
+    isSeller (itemSellerId) {
+      return itemSellerId === this.$store.state.uid
     }
   }
 }

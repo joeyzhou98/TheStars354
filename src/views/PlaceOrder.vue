@@ -205,7 +205,7 @@ export default {
   },
   methods: {
     getUserAddresses () {
-      let url = 'api/resource/buyerInfo?username=' + this.$store.state.username
+      let url = 'api/resource/buyerInfo?uid=' + this.$store.state.uid
       return axios
         .get(url)
         .then((response) => {
