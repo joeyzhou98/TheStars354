@@ -90,82 +90,71 @@
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-form-group
-                                :state="categoryState"
-                                label="Category"
-                                label-for="category-input"
-                                :invalid-feedback="invalidFeedbackCategory"
-                        >
-                            <b-form-input
-                                    id="category-input"
-                                    v-model="productInput.categoryInput"
-                                    :state="categoryState"
-                                    trim
-                                    required
-                            ></b-form-input>
+                        <b-form-group label="Category" label-for="category-input">
+                            <b-form-select id="category-input" v-model="productInput.categoryInput" required>
+                                <option value="Automotives & Electronics">Automotives & Electronics</option>
+                                <option value="Books">Books</option>
+                                <option value="Clothing, Shoes & Accessories">Clothing, Shoes & Accessories</option>
+                                <option value="Health & Beauty">Health & Beauty</option>
+                                <option value="Home Supplies">Home Supplies</option>
+                                <option value="Jewellery & Watches">Jewellery & Watches</option>
+                            </b-form-select>
                         </b-form-group>
                     </b-col>
                     <b-col>
-                        <b-form-group
-                                :state="subcategoryState"
-                                label="Subcategory"
-                                label-for="subcategory-input"
-                                :invalid-feedback="invalidFeedbackSubcategory"
-                        >
-                            <b-form-input
-                                    id="subcategory-input"
-                                    v-model="productInput.subcategoryInput"
-                                    :state="subcategoryState"
-                                    trim
-                                    required
-                            ></b-form-input>
+                        <b-form-group label="Subcategory" label-for="subcategory-input">
+                            <b-form-select id="subcategory-input" v-model="productInput.subcategoryInput" required>
+                                <option value="Cellphones, Computers & Tablets" v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Cellphones, Computers & Tablets</option>
+                                <option value="Cameras & Video Games" v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Cameras & Video Games</option>
+                                <option value="Motos & Car Supplies" v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Motos & Car Supplies</option>
+                                <option value="Books" v-if="this.productInput.categoryInput === 'Books'">Books</option>
+                                <option value="Women's Clothing" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Women's Clothing</option>
+                                <option value="Men's Clothing" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Men's Clothing</option>
+                                <option value="Children's Clothing" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Children's Clothing</option>
+                                <option value="Shoes" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Shoes</option>
+                                <option value="Bags & Accessories" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Bags & Accessories</option>
+                                <option value="Makeup" v-if="this.productInput.categoryInput === 'Health & Beauty'">Makeup</option>
+                                <option value="Creams" v-if="this.productInput.categoryInput === 'Health & Beauty'">Creams</option>
+                                <option value="Sports" v-if="this.productInput.categoryInput === 'Health & Beauty'">Sports</option>
+                                <option value="Appliances" v-if="this.productInput.categoryInput === 'Home Supplies'">Appliances</option>
+                                <option value="Furniture & Accessories" v-if="this.productInput.categoryInput === 'Home Supplies'">Furniture & Accessories</option>
+                                <option value="Garden Supplies" v-if="this.productInput.categoryInput === 'Home Supplies'">Garden Supplies</option>
+                                <option value="Pet Supplies" v-if="this.productInput.categoryInput === 'Home Supplies'">Pet Supplies</option>
+                                <option value="Men's Jewellery & Watches" v-if="this.productInput.categoryInput === 'Jewellery & Watches'">Men's Jewellery & Watches</option>
+                                <option value="Women's Jewellery & Watches" v-if="this.productInput.categoryInput === 'Jewellery & Watches'">Women's Jewellery & Watches</option>
+                            </b-form-select>
                         </b-form-group>
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-form-group
-                                :state="priceState"
-                                label="Price"
-                                label-for="price-input"
-                                :invalid-feedback="invalidFeedbackPrice"
-                        >
+                        <b-form-group label="Price" label-for="price-input">
                             <b-form-input
                                     id="price-input"
-                                    v-model="productInput.priceInput"
-                                    :state="priceState"
+                                    v-model.number="productInput.priceInput"
+                                    type="number" min="0.0" max="5000000.00"
                                     trim
                                     required
                             ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
-                        <b-form-group
-                                :state="quantityState"
-                                label="Quantity"
-                                label-for="quantity-input"
-                                :invalid-feedback="invalidFeedbackQuantity"
-                        >
+                        <b-form-group label="Quantity" label-for="quantity-input">
                             <b-form-input
                                     id="quantity-input"
-                                    v-model="productInput.quantityInput"
-                                    :state="quantityState"
+                                    v-model.number="productInput.quantityInput"
+                                    type="number" min="1" max="1000"
                                     trim
                                     required
                             ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>
-                <b-form-group
-                        :state="discountState"
-                        label="Discount"
-                        label-for="discount-input"
-                        invalid-feedback="invalidFeedbackDiscount"
-                >
+                <b-form-group label="Discount" label-for="discount-input">
                     <b-form-input
                             id="discount-input"
-                            v-model="productInput.discountInput"
-                            :state="discountState"
+                            v-model.number="productInput.discountInput"
+                            type="number" min="0.0" max="1.0"
                             trim
                             required
                     ></b-form-input>
@@ -185,16 +174,13 @@
                     ></b-form-input>
                 </b-form-group>
                 <b-form-group
-                        :state="imagesState"
                         label="Images"
                         label-for="images-input"
-                        :invalid-feedback="invalidFeedbackImages"
                 >
                     <b-form-file
                             id="images-input"
                             accept=".jpg, .png, .gif"
-                            v-model="productInput.imagesInput"
-                            :state="imagesState"
+                            v-model="productInput.imageInput"
                             placeholder="Choose a file or drop it here..."
                             drop-placeholder="Drop file here..."
                             required
@@ -225,17 +211,28 @@ export default {
         descriptionInput: '',
         quantityInput: '',
         discountInput: '',
-        imagesInput: ''
+        imageInput: null
       },
       items: []
     }
   },
-  methods: { // todo add to database and to seller list
+  methods: {
     addProduct () {
-      let itemToPost = this.productInput.nameInput + ' ' + this.productInput.priceInput + ' ' + this.productInput.categoryInput + ' ' + this.productInput.subcategoryInput + ' ' + this.productInput.brandInput + ' ' + this.productInput.descriptionInput + ' ' + this.productInput.quantityInput + ' ' + this.productInput.discountInput + ' ' + this.productInput.imagesInput
-      var url = 'api/resource/item' + encodeURIComponent(itemToPost)
+      var formData = new FormData()
+      formData.append('file', this.productInput.imageInput)
+      let itemPayload = {item_name: this.productInput.nameInput,
+        price: this.productInput.priceInput,
+        category: this.productInput.categoryInput,
+        subcategory: this.productInput.subcategoryInput,
+        brand: this.productInput.brandInput,
+        description: this.productInput.descriptionInput,
+        quantity: this.productInput.quantityInput,
+        discount: this.productInput.discountInput,
+        images: this.productInput.imageInput.name}
+      formData.append('item', JSON.stringify(itemPayload))
+      var url = 'api/resource/item'
       axios
-        .post(url)
+        .post(url, formData, {headers: {'Content-Type': 'multipart/form-data'}})
         .then(response => {
           this.hasSellingProducts = true
         })

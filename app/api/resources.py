@@ -421,11 +421,29 @@ class ItemRoutes(Resource):
 
 
 @resource.route('/item', doc={"description": "Create new item to be inserted into database"})
-@resource.expect(create_item_payload)
 class CreateItem(Resource):
     @jwt_required
     def post(self):
-        payload = request.json
+        # print(request.form['file'].filename)
+        # print(request.form['data'])
+        # print(request.files[0].filename)
+        payload = jsonify(request.form['item'])
+        print(payload['item_name'])
+        image = request.form['file']
+        image_url = ""
+        image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/itemPic/"
+        bucket_name = "comp354"
+        s3 = boto3.client('s3',
+                          aws_access_key_id=config.Config.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=config.Config.AWS_SECRET_ACCESS_KEY)
+        with tempfile.TemporaryDirectory() as tempdir:
+            if image is not None:
+                # create a temporary folder to save the review images
+                image_path = os.path.join(tempdir, image.filename)
+                image.save(image_path)
+                s3.upload_file(image_path, bucket_name, 'itemPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
+                image_url += image_prefix + image.filename
+        print(image_url)
         try:
             db.session.add(Item(item_name=payload["item_name"],
                                 price=payload["price"],
@@ -435,7 +453,7 @@ class CreateItem(Resource):
                                 description=payload["description"],
                                 quantity=payload["quantity"],
                                 discount=payload["discount"],
-                                images=payload["images"]))
+                                images=image_url))
         except KeyError as e:
             abort(400, "Missing attribute " + str(e))
         try:
