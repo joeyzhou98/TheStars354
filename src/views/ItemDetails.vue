@@ -39,8 +39,7 @@
               </div>
               <div v-else style="color: darkred; margin-bottom: 8px">Out of stock :(</div>
               <div class="buttons">
-                <b-button  v-if="seller !== null" @click="$bvModal.show('addtocart')" class="button main-btn shadow-none" variant="outline" :disabled="!isAvailable"
-                  title="Add to Cart">
+                <b-button  v-if="seller !== null" @click="$bvModal.show('addtocart')" class="button main-btn shadow-none" variant="outline" :disabled="!isAvailable">
                   <icon class="far" name="shopping-bag"></icon>
                   <span class="icon-text">ADD TO CART</span>
                 </b-button>
@@ -67,9 +66,9 @@
                   </template>
                 </b-modal>
                 <!-- End of modal section -->
-                <b-button v-if="seller !== null" class="button sec-btn shadow-none" @click="addToWishlist" variant="outline" title="Add to Wishlist">
-                  <icon class="far" name="heart"></icon>
-                  <span class="icon-text">WISHLIST</span>
+                <b-button v-if="seller !== null" class="button sec-btn shadow-none" @click="onWishlistClick" variant="outline"
+                  v-b-tooltip.hover.right :title="wishlistTooltip">
+                  <i :class="heartIconStyle" style="position: relative; top: 2px;"></i>
                 </b-button>
               </div>
               <hr />
@@ -121,7 +120,8 @@ export default {
         starWidth: 20,
         starHeight: 20
       },
-      showPage: false
+      showPage: false,
+      wishlisted: false
     }
   },
   watch: {
@@ -153,6 +153,18 @@ export default {
     },
     availableQty () {
       return parseInt(this.item.quantity - this.item.quantity_sold)
+    },
+    heartIconStyle () {
+      if (this.wishlisted) {
+        return 'fas fa-heart'
+      }
+      return 'far fa-heart'
+    },
+    wishlistTooltip () {
+      if (this.wishlisted) {
+        return 'Wishlisted!'
+      }
+      return 'Add to wishlist'
     }
   },
   methods: {
@@ -215,9 +227,14 @@ export default {
         localStorage.cart = jsonItems
       }
     },
-    addToWishlist () {
+    onWishlistClick () {
       if (this.$store.state.isLoggedIn) {
-        // add to wishlist, change button for remove
+        this.wishlisted = !this.wishlisted
+        if (this.wishlisted) {
+          this.addToWishlist()
+        } else {
+          this.removeFromWishlist()
+        }
       } else {
         this.$router.push('/login')
       }
