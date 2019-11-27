@@ -15,10 +15,10 @@
         <div class="boldTxt alignLeft">Ordered items:</div><br>
         <b-row v-for="item in order.items" :key="item.item.item_id" align-content="left">
           <b-col md="8">
-            <div class="alignLeft">{{item.item.item_name}} (x{{item.order_item_quantity}})</div>
+            <div class="alignLeft">{{item.item.item_name}} (x{{item.order_item_quantity}})</div><br>
           </b-col>
           <b-col>
-            <div>{{itemPriceTxt(item.item, item.order_item_quantity)}}</div>
+            <div>{{itemPriceTxt(item.item, item.order_item_quantity)}}</div><br>
           </b-col>
         </b-row><br>
         <div class="alignLeft">Subtotal: {{subtotal}}</div>
