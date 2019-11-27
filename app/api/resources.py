@@ -663,7 +663,7 @@ class PlaceOrderInShoppingCart(Resource):
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
-        return jsonify(success=True)
+        return jsonify(order.serialize)
 
 
 @resource.route('/wish-list/<int:user_id>/<int:item_id>',doc={"description": "Add and remove wish list"})
@@ -686,6 +686,18 @@ class WishList(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+    def get(self, user_id, item_id):
+        item = Item.find_by_id(item_id)
+        buyer = BuyerModel.find_by_uid(user_id)
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        wish_list_item = db.session.query(wishListItem).filter_by(buyer_id=user_id, item_id=item_id)
+        if wish_list_item.count() == 0:
+            return jsonify(False)
+        return jsonify(True)
+
 
 @resource.route('/wish-list/<int:user_id>',doc={"description": "Get wish list"})
 class WishList(Resource):
@@ -693,7 +705,7 @@ class WishList(Resource):
         items = db.session.query(wishListItem).filter_by(buyer_id=user_id).all()
         return jsonify([Item.query.filter_by(item_id=i.item_id).first().serialize for i in items])
 
-      
+
 @resource.route('/orders/<start_date>/<end_date>',
                 doc={"description": "Return all orders during a given period of time"})
 class AllOrders(Resource):
