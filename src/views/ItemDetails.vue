@@ -149,10 +149,10 @@ export default {
       return this.item.discount !== 0
     },
     isAvailable () {
-      return this.item.quantity > 0
+      return this.item.quantity - this.item.quantity_sold > 0
     },
     availableQty () {
-      return parseInt(this.item.quantity)
+      return parseInt(this.item.quantity - this.item.quantity_sold)
     }
   },
   methods: {
@@ -177,9 +177,9 @@ export default {
         })
         .catch(error => alert(error))
     },
-    goToCart () {
-      this.addToCart()
+    async goToCart () {
       this.$refs['addtocart'].hide()
+      await this.addToCart()
       this.$router.push('/cart')
     },
     keepShopping () {
@@ -188,8 +188,8 @@ export default {
     },
     addToCart () {
       if (this.$store.state.isLoggedIn) {
-        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '/' + this.selectedQty
-        axios
+        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '?newQuantity=' + this.selectedQty
+        return axios
           .post(url)
           .catch(error => alert(error))
       } else { // visitor: add to cookies

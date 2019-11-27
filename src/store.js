@@ -35,6 +35,21 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    transferCartToUser ({state}) {
+      if (localStorage.cart) {
+        let jsonCartCookie = localStorage.cart
+        let itemData = JSON.parse(jsonCartCookie)
+        localStorage.removeItem('cart')
+
+        let requests = []
+        for (var data of itemData) {
+          let url = 'api/resource/shopping-cart/' + state.uid + '/' + data.item.item_id + '/' + data.qty
+          requests.push(axios.post(url))
+        }
+        axios.all(requests)
+          .catch(error => { alert(error) })
+      }
+    },
     updateCookieItems ({state}) {
       if (localStorage.history) {
         let jsonViewedItemsCookie = localStorage.history

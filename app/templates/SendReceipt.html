@@ -1,0 +1,26 @@
+<div style="display: inline-block; text-align: left">
+    <div style="text-align: center;"><h4>Thanks for Shopping with 354 The Stars!</h4></div>
+    <br>
+    <div style="font-weight: bold; font-size: large">Order # {{order.order_id}}</div><br>
+    <hr />
+    <div><span style="font-weight: bold">Order placed on:</span> {{order.purchase_date}}</div><br>
+    <div><span style="font-weight: bold">Shipped to:</span> {{address}}</div><br>
+    <div><span style="font-weight: bold">Shipping method:</span> {{order.shipping_method}}</div><br>
+    <div><span style="font-weight: bold">Payment method:</span> PayPal</div>
+    <hr />
+    <div style="font-weight: bold">Ordered items:</div><br>
+    <!-- TODO: Display items dynamically with pure javascript -->
+    <!-- <b-row v-for="item in order.items" :key="item.item.item_id" align-content="left">
+    <b-col md="8">
+        <div class="alignLeft">{{item.item.item_name}} (x{{item.order_item_quantity}})</div>
+    </b-col>
+    <b-col>
+        <div>{{itemPriceTxt(item.item, item.order_item_quantity)}}</div>
+    </b-col>
+    </b-row><br> -->
+    <div class="alignLeft">Subtotal: {{subtotal}}</div>
+    <div class="alignLeft">Shipping: $0.00</div>
+    <div class="alignLeft">Taxes: {{taxes}}</div>
+    <div class="alignLeft"><span class="boldTxt">Total: {{total}}</span></div><br>
+    <div></div>
+  </div>

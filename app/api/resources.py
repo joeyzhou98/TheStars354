@@ -268,6 +268,34 @@ class BuyerInfo(Resource):
         return jsonify(buyerInfo.serialize)
 
 
+@resource.route('/updateAddress/<int:uid>/<int:address_index>', doc={"description": "Update the i-th address of the user."})
+@resource.doc(params={'newAddress': "new address for the i-th address"})
+class UpdateAddress(Resource):
+    @jwt_required
+    def put(self, uid, address_index):
+        address = 'address'+str(address_index)
+
+        db.session.query(BuyerModel) \
+            .filter(BuyerModel.uid == uid). \
+            update({address: request.args.get('newAddress')})
+
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/updatePaypal/<int:uid>', doc={"description": "Update user's paypal account"})
+@resource.doc(params={'paypal': "new paypal account"})
+class UpdatePaypal(Resource):
+    @jwt_required
+    def put(self, uid):
+        db.session.query(BuyerModel) \
+            .filter(BuyerModel.uid == uid). \
+            update({"paypal": request.args.get('paypal')})
+
+        db.session.commit()
+        return jsonify(success=True)
+
+
 @resource.route('/sellerInfo', doc={
     "description": "Search and return seller data that match the queried user uid"})
 @resource.doc(params={'uid': "uid of the seller"})
@@ -521,16 +549,14 @@ class PutAndDeleteReview(Resource):
 @resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
 class ShoppingCart(Resource):
     def get(self, user_id):
-        items = db.engine.execute(
-            db.select([Item.item_id, Item.item_name, Item.price, shoppingListItem.c.quantity]).
-                where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
-        )
-        return jsonify([{
-            "item_id": i.item_id,
-            "name": i.item_name,
-            "price": i.price,
-            "quantity": i.quantity,
-        } for i in items])
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
+        shopping_list_items = []
+        for i in shoppingListItems:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            shopping_list_items.append({"item": item.serialize,
+                                        "qty": i.quantity})
+
+        return shopping_list_items
 
     def delete(self, user_id):
         db.engine.execute(db.delete(shoppingListItem)
@@ -541,14 +567,17 @@ class ShoppingCart(Resource):
 @resource.route('/shopping-cart/<int:user_id>/<int:item_id>',
                 doc={"description": "Add and remove items in the shopping cart"})
 class ShoppingCart(Resource):
+    @resource.doc(params={'newQuantity': "new quantity"},)
     def post(self, user_id, item_id):
-        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        buyer = BuyerModel.find_by_uid(user_id)
         item = Item.query.filter_by(item_id=item_id).first()
+        qty = int(request.args.get('newQuantity'))
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        elif buyer is None:
+        if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        buyer.add_to_shopping_list(item)
+        if not buyer.add_to_shopping_list(item, qty):
+            abort(404, "Trying to remove more items than the quantity in cart.")
         return jsonify(success=True)
 
     def delete(self, user_id, item_id):
@@ -600,34 +629,41 @@ class PlaceOrder(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/place-order-in-shopping-cart/<int:user_id>',
+@resource.route('/place-order-in-shopping-cart/<int:user_id>/<int:buyer_address_index>/<string:shipping_method>',
                 doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
     @jwt_required
-    def post(self, user_id):
+    def post(self, user_id, buyer_address_index, shipping_method):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
-        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
-        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method)
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
 
         if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        for item in items:
+
+        order.save_to_db()
+
+        for shopping_list_item in shoppingListItems:
+            item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
             if item is None:
                 abort(404, "Item with id {} not found".format(item.item_id))
             elif item.quantity - item.quantity_sold <= 0:
-                abort(403, "Not enough stock for item {}".format(item.item_id))
-
-        order.save_to_db()
-        for item in items:
+                abort(403, "Not enough stock for item {} (1)".format(item.item_id))
             seller = SellerModel.query.filter_by(uid=item.seller_id).first()
             if seller is not None:
                 seller.add_commission(item)
             order.add_item(item)
-            item.quantity_sold += 1
+            new_quantity_sold = item.quantity_sold + shopping_list_item.quantity
+            if item.quantity - new_quantity_sold < 0:
+                abort(403, "Not enough stock for item {} (2)".format(item.item_id))
+            item.quantity_sold += shopping_list_item.quantity
+            db.session.query(orderItem). \
+                filter_by(order_id=order.order_id, item_id=item.item_id).update({"order_item_quantity": shopping_list_item.quantity}, synchronize_session=False)
+
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
-        return jsonify(success=True)
+        return jsonify(order.serialize)
 
 
 @resource.route('/orders/<start_date>/<end_date>',
