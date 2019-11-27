@@ -17,16 +17,40 @@
       </b-link>
     </b-carousel>
     <br/>
+    <div v-if="hasHistory">
+      <h5 class="section">Recently viewed:</h5>
+      <b-card>
+        <Recommendations :showHistory="true"></Recommendations>
+      </b-card>
+    </div>
+    <br />
+    <h5 class="section">Shop by category</h5>
     <b-card-group deck>
-      <b-card v-for="categoryCard in categoryCards" :key="categoryCard.id" :title="categoryCard.title" :img-src="categoryCard.src" img-alt="Image" img-top>
+      <b-card v-for="categoryCard in categoryCards" :key="categoryCard.id" no-body  :title="categoryCard.title">
+        <b-link :href="categoryCard.cardLink">
+          <b-card-img :src="categoryCard.src" />
+        </b-link>
+        <div style="font-size: large; margin: 10px;">{{categoryCard.title}}</div>
         <b-link :href="categoryCard.cardLink">see more products</b-link>
+        <br />
       </b-card>
     </b-card-group>
+    <br />
+    <h5 class="section">You might like:</h5>
+    <b-card>
+      <Recommendations :showHistory="false"></Recommendations>
+    </b-card>
+    <br />
   </div>
 </template>
 
 <script>
+import Recommendations from '@/components/Recommendations.vue'
+
 export default {
+  components: {
+    Recommendations
+  },
   data () {
     return {
       slides: [
@@ -85,6 +109,17 @@ export default {
         }
       ]
     }
+  },
+  computed: {
+    hasHistory () {
+      return localStorage.history
+    }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.section {
+  text-align: left;
+}
+</style>

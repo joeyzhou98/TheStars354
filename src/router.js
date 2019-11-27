@@ -5,10 +5,14 @@ import About from './views/About.vue'
 import Account from './views/Account.vue'
 import Cart from './views/Cart.vue'
 import Category from './views/Category.vue'
+import ChangePassword from './views/ChangePassword'
 import FAQ from './views/FAQ.vue'
+import ForgetPassword from './views/ForgetPassword'
 import Home from './views/Home.vue'
 import ItemDetails from './views/ItemDetails.vue'
 import Login from './views/Login.vue'
+import OrderConfirmation from './views/OrderConfirmation.vue'
+import PlaceOrder from './views/PlaceOrder.vue'
 import Register from './views/Register.vue'
 
 Vue.use(Router)
@@ -31,6 +35,16 @@ export default new Router({
       component: Register
     },
     {
+      path: '/forgetPassword',
+      name: 'ForgetPassword',
+      component: ForgetPassword
+    },
+    {
+      path: '/changePassword/:token/:username',
+      name: 'ChangePassword',
+      component: ChangePassword
+    },
+    {
       path: '/faq',
       name: 'FAQ',
       component: FAQ
@@ -49,6 +63,16 @@ export default new Router({
       path: '/cart',
       name: 'Cart',
       component: Cart
+    },
+    {
+      path: '/place-order',
+      name: 'PlaceOrder',
+      component: PlaceOrder
+    },
+    {
+      path: '/order-confirmation',
+      name: 'OrderConfirmation',
+      component: OrderConfirmation
     },
     // Item display
     {
