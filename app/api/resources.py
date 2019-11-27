@@ -538,3 +538,30 @@ class PlaceOrderInShoppingCart(Resource):
         return jsonify(success=True)
 
 
+@resource.route('/wish-list/<int:user_id>/<int:item_id>',doc={"description": "Add and remove wish list"})
+class WishList(Resource):
+    def post(self, user_id, item_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        item = Item.query.filter_by(item_id=item_id).first()
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        buyer.add_to_wish_list(item)
+        return jsonify(success=True)
+
+    def delete(self, user_id, item_id):
+        item = db.session.query(wishListItem).filter_by(buyer_id=user_id, item_id=item_id)
+        if item.count() == 0:
+            abort(404, "Item with id {} not in the shopping cart".format(item_id))
+        item.delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/wish-list/<int:user_id>',doc={"description": "Get wish list"})
+class WishList(Resource):
+    def get(self, user_id):
+        items = db.session.query(wishListItem).filter_by(buyer_id=user_id).all()
+        return jsonify([Item.query.filter_by(item_id=i.item_id).first().serialize for i in items])
+
