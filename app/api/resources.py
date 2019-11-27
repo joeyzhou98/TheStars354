@@ -564,7 +564,7 @@ class ShoppingCart(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/shopping-cart/<int:user_id>/<int:item_id>/<int:qty>',
+@resource.route('/shopping-cart/<int:user_id>/<int:item_id>',
                 doc={"description": "Add and remove items in the shopping cart"})
 class ShoppingCart(Resource):
     @resource.doc(params={'newQuantity': "new quantity"},)
