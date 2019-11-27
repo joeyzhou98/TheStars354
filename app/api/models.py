@@ -179,14 +179,13 @@ class SellerModel(db.Model):
 
     @property
     def serialize(self):
-        order_sellers = db.session.query(orderSeller).filter_by(seller_id=self.uid).all()
+        order_sellers = db.session.query(orderSeller).distinct(Order.order_id).filter_by(seller_id=self.uid).all()
         orders = []
         for i in order_sellers:
             order = Order.query.filter_by(order_id=i.order_id).first()
             orders.append({"order": order.serialize})
 
         items = Item.query.filter_by(seller_id=self.uid).all()
-
         return {
             "uid": self.uid,
             "membership_date": self.membership_date,
@@ -245,7 +244,8 @@ class Order(db.Model):
         orders = []
         for i in order_items:
             item = Item.query.filter_by(item_id=i.item_id).first()
-            orders.append({"item": item.serialize, "order_item_quantity": i.order_item_quantity})
+            if item is not None:
+                orders.append({"item": item.serialize, "order_item_quantity": i.order_item_quantity})
 
         return {
             "order_id": self.order_id,

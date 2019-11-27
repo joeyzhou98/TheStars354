@@ -257,7 +257,7 @@ class UserInfo(Resource):
         current_user = UserAuthModel.find_by_uid(uid)
         if not current_user:
             return jsonify(success=False)
-        result = {'username': current_user.username, 'email': current_user.useremail}
+        result = {'uid': uid, 'username': current_user.username, 'email': current_user.useremail}
         return result
 
 

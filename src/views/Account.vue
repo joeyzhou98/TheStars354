@@ -21,7 +21,7 @@
     <hr class="my-4">
 
     <keep-alive>
-      <b-tabs lazy justified>
+      <b-tabs justified>
         <b-tab title="Buyer Profile" v-if=!(isAdmin)>
           <Address></Address>
           <hr class="my-4">

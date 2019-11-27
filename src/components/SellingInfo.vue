@@ -20,6 +20,7 @@
                     <b-card v-for="item in itemList" :key="item.id" no-body class="overflow-hidden" :per-page="perPage"
                             :current-page="currentPage">
                         <b-row no-gutters>
+                            <b-row>
                             <b-col md="3">
                                 <b-img height="150px" width="150px" :src="item.images" class="rounded-0"></b-img>
                             </b-col>
@@ -28,7 +29,7 @@
                                     <b-card-text>
                                         <b-col>
                                             <b-row>
-                                                <b-link :to="'item-details/' + item.item_id">Name: {{item.item_name}}</b-link>
+                                                <b-link :to="'item-details/' + item.item_id">{{item.item_name}}</b-link>
                                             </b-row>
                                             <b-row>Brand: {{item.brand}}</b-row>
                                             <b-row>Price: ${{item.price}}</b-row>
@@ -43,7 +44,8 @@
                                     </b-card-text>
                                 </b-card-body>
                             </b-col>
-                            <b-col span="1"><b-link @click="openModal('productModal', item.item_id)">Update this item</b-link></b-col>
+                            </b-row>
+                            <b-row align-v="center"><b-col><b-link @click="openModal('productModal', item.item_id)">Update this item</b-link></b-col></b-row>
                         </b-row>
                     </b-card>
                     <br/><br/>
@@ -163,7 +165,7 @@
                         :state="descriptionState"
                         label="Description"
                         label-for="description-input"
-                        invalid-feedback="invalidFeedbackDescription"
+                        :invalid-feedback="invalidFeedbackDescription"
                 >
                     <b-form-input
                             id="description-input"
@@ -287,7 +289,7 @@ export default {
       return this.items.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
     },
     nameState () {
-      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()]{1,300}$/)) {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s\d*&()]{1,300}$/)) {
         return true
       } else if (this.productInput.nameInput === '') {
         return null
@@ -296,14 +298,14 @@ export default {
       }
     },
     invalidFeedbackName () {
-      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()]{1,300}$/) || this.productInput.nameInput === '') {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s\d*&()]{1,300}$/) || this.productInput.nameInput === '') {
         return ''
       } else {
-        return 'Please enter a valid user name'
+        return 'Please enter a valid product name'
       }
     },
     brandState () {
-      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()@]{1,120}$/)) {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s\d*&()@]{1,120}$/)) {
         return true
       } else if (this.productInput.nameInput === '') {
         return null
@@ -312,10 +314,10 @@ export default {
       }
     },
     invalidFeedbackBrand () {
-      if (this.productInput.nameInput.match(/^[A-Za-z\s*&()@]{1,120}$/) || this.productInput.nameInput === '') {
+      if (this.productInput.nameInput.match(/^[A-Za-z\s\d*&()@]{1,120}$/) || this.productInput.nameInput === '') {
         return ''
       } else {
-        return 'Please enter a valid user name'
+        return 'Please enter a valid brand name'
       }
     },
     descriptionState () {
@@ -331,7 +333,7 @@ export default {
       if (this.productInput.nameInput.match(/^[A-Za-z\s*&()#!?%_]{1,1000}$/) || this.productInput.nameInput === '') {
         return ''
       } else {
-        return 'Please enter a valid user name'
+        return 'Please enter a valid description'
       }
     }
   }

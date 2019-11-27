@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="showPage">
     <b-card-body class="text-left">
       <h2>Order Received: </h2>
       <b-card v-if="!hasOrderHistroy">
@@ -29,17 +29,15 @@
                 <b-row>
                   <b-col>Shipped to: {{findBuyerAddress(order.order.buyer_id,order.order.buyer_address_index)}}</b-col>
                 </b-row>
-                <b-row>
-                  <b-col>Status: Shipped</b-col>
-                </b-row>
                 <br/>
                 <b-row v-for="item in order.order.items" :key="item">
                   <b-card-group v-if="isSeller(item.item.seller_id)">
-                  <b-col>
-                    <b-img height="150px" width="150px" :src="item.item.images" class="rounded-0"></b-img>
-                  </b-col>
-                  <b-col sm="4"><b-link :to="'item-details/' + item.item.item_id">{{item.item.item_name}} (x{{item.order_item_quantity}})</b-link></b-col>
-                  <b-col sm="3">${{(item.item.price*(1.0-item.item.discount)).toFixed(2)}}</b-col>
+                      <b-col>
+                          <b-img height="150px" width="150px" :src="item.item.images" class="rounded-0"></b-img>
+                      </b-col>
+                      <b-col><b-link :to="'item-details/' + item.item.item_id">{{item.item.item_name}})</b-link></b-col>
+                      <b-col>Ordered quantity: {{item.order_item_quantity}}</b-col>
+                      <b-col><b-button variant="outline-info" title="Status">Shipped</b-button></b-col>
                   </b-card-group>
                 </b-row>
             </b-card-body>
@@ -72,20 +70,15 @@ export default {
       currentPage: 1,
       reviewInput: '',
       ratingInput: '',
-      orders: []
+      orders: [],
+      order_buyer: [],
+      order_buyer_name: [],
+      order_address: [],
+      showPage: false
     }
   },
   mounted () {
-    var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
-    axios
-      .get(url)
-      .then(response => {
-        this.orders = response.data['orders']
-        if (this.orders.length !== 0) {
-          this.hasOrderHistroy = true
-        }
-      })
-      .catch(error => alert(error))
+    this.populateAllInfo()
   },
   computed: {
     rows () {
@@ -96,6 +89,54 @@ export default {
     }
   },
   methods: {
+    async populateAllInfo () {
+      await this.getSellerInfo()
+      await this.$nextTick()
+      await this.getBuyerNames()
+      await this.$nextTick()
+      await this.getOrderAddress()
+      this.showPage = true
+    },
+    getSellerInfo () {
+      var url = 'api/resource/sellerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
+      return axios
+        .get(url)
+        .then(response => {
+          this.orders = response.data['orders']
+          if (this.orders.length !== 0) {
+            this.hasOrderHistroy = true
+          }
+        })
+        .catch(error => alert(error))
+    },
+    getBuyerNames () {
+      let requests = []
+      for (var order of this.orders) {
+        let url = 'api/resource/user/' + encodeURIComponent(order['order']['buyer_id'])
+        requests.push(axios.get(url))
+      }
+      return axios.all(requests)
+        .then(axios.spread((...responses) => {
+          for (var response of responses) {
+            this.order_buyer_name.push(response.data)
+          }
+        }))
+        .catch(error => { alert(error) })
+    },
+    getOrderAddress () {
+      let requests = []
+      for (var order of this.orders) {
+        let url = 'api/resource/buyerInfo?uid=' + encodeURIComponent(order['order']['buyer_id'])
+        requests.push(axios.get(url))
+      }
+      return axios.all(requests)
+        .then(axios.spread((...responses) => {
+          for (var response of responses) {
+            this.order_address.push(response.data)
+          }
+        }))
+        .catch(error => { alert(error) })
+    },
     findModal (modal) {
       this.$refs[modal].show()
     },
@@ -109,27 +150,22 @@ export default {
       this.$refs['review'].hide()
     },
     findBuyerName (buyerId) {
-      var url = 'api/resource/user/' + encodeURIComponent(buyerId)
-      axios
-        .get(url)
-        .then(response => {
-          console.log(response.data['username'])
-          return response.data['username']
-        })
-        .catch(error => alert(error))
+      for (var data of this.order_buyer_name) {
+        if (data.uid === buyerId) {
+          return data.username
+        }
+      }
     },
     findBuyerAddress (buyerId, addressIndex) {
-      var url = 'api/resource/buyerInfo?uid=' + encodeURIComponent(buyerId)
-      axios
-        .get(url)
-        .then(response => {
+      for (var data of this.order_address) {
+        if (data.uid === buyerId) {
           var addressString = 'address' + addressIndex.toString()
-          console.log(response.data[addressString])
-          return response.data[addressString]
-        })
-        .catch(error => alert(error))
+          return data[addressString]
+        }
+      }
     },
     isSeller (itemSellerId) {
+      console.log(itemSellerId)
       return itemSellerId === this.$store.state.uid
     }
   }
