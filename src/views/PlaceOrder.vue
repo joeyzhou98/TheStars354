@@ -116,7 +116,7 @@
               <span style="font-weight: bold;">{{totalTxt}}</span>
             </div>
             <hr/>
-            <b-button block variant="success" @click="placeOrder">PLACE ORDER</b-button>
+            <b-button block variant="success" :disabled="noValidAddress" @click="placeOrder">PLACE ORDER</b-button>
           </div>
         </b-card>
       </b-col>
@@ -139,7 +139,6 @@ export default {
       address1: 'Fetching addresses...',
       address2: null,
       address3: null,
-      modifyRequest: false,
       newAddress: {
         name: '',
         street: '',
@@ -165,7 +164,7 @@ export default {
       return '$' + this.total.toFixed(2)
     },
     addNewAddress () {
-      return this.selectedAddress === 'custom' || this.modifyRequest === true
+      return this.selectedAddress === 'custom'
     },
     hasThreeAddresses () {
       return this.address1 != null && this.address2 != null && this.address3 != null
@@ -173,6 +172,9 @@ export default {
     incompleteForm () {
       return this.addressToChange === '' || this.newAddress.name === '' || this.newAddress.street === '' || this.newAddress.city === '' ||
        this.newAddress.state === '' || this.newAddress.postalCode === '' || this.newAddress.country === ''
+    },
+    noValidAddress () {
+      return this.address1 === 'Fetching addresses...' || this.selectedAddress === 'custom' || (!this.address1 && !this.address2 && !this.address3)
     },
     newAddressString () {
       return this.newAddress.name + ', ' + this.newAddress.street + ', ' + this.newAddress.city + ', ' + this.newAddress.state +
@@ -261,7 +263,6 @@ export default {
               total: this.totalTxt
             }
           })
-          // send email
         })
         .catch(error => alert(error))
     }

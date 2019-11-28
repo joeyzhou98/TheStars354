@@ -73,6 +73,10 @@ class UserAuthModel(db.Model):
     def find_by_useremail(cls, email):
         return cls.query.filter_by(useremail=email).first()
 
+    @classmethod
+    def find_by_uid(cls, uid):
+        return cls.query.filter_by(uid=uid).first()
+
 
 class RevokedTokenModel(db.Model):
     __tablename__ = 'revokedTokens'
@@ -151,6 +155,15 @@ class BuyerModel(db.Model):
     def set_paypal(self, paypal):
         BuyerModel.query.filter_by(uid=self.uid).first().paypal = paypal
         db.session.commit()
+
+    def get_address_from_index(self, index):
+        if index == 1:
+            return self.address1
+        if index == 2:
+            return self.address2
+        if index == 3:
+            return self.address3
+        return None
 
     @classmethod
     def buyer_exists(cls, uid):
