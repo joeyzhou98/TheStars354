@@ -12,10 +12,17 @@ class ShippingMethod(str, enum.Enum):
     EXPRESS = 'express'
 
 
+class OrderItemStatus(str, enum.Enum):
+    SHIPPED = 'shipped'
+    RECEIVED = 'received'
+    REFUNDED = 'refunded'
+
+
 orderItem = db.Table(
     "orderItem",
     db.Column('order_id', db.Integer, db.ForeignKey("order.order_id")),
     db.Column("item_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("status", db.Enum(OrderItemStatus), default=OrderItemStatus.SHIPPED),
     db.Column("order_item_quantity", db.Integer, default=1)
 )
 
@@ -307,6 +314,7 @@ class Item(db.Model):
     images = db.Column(db.String(1000), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("sellerInfo.uid"), nullable=True)
     reviews = db.relationship("Review")
+    refund_policy = db.Column(db.Integer, default=0)
 
     @property
     def serialize(self):
