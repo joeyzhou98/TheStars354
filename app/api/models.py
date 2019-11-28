@@ -156,6 +156,15 @@ class BuyerModel(db.Model):
         BuyerModel.query.filter_by(uid=self.uid).first().paypal = paypal
         db.session.commit()
 
+    def get_address_from_index(self, index):
+        if index == 1:
+            return self.address1
+        if index == 2:
+            return self.address2
+        if index == 3:
+            return self.address3
+        return None
+
     @classmethod
     def buyer_exists(cls, uid):
         if cls.query.filter_by(uid=uid).count() == 0:

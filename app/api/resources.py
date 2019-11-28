@@ -675,6 +675,7 @@ class PlaceOrderInShoppingCart(Resource):
 
         order.save_to_db()
 
+        subtotal = 0
         for shopping_list_item in shoppingListItems:
             item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
             if item is None:
@@ -695,6 +696,17 @@ class PlaceOrderInShoppingCart(Resource):
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
+
+            subtotal += (item.price - (item.price * item.discount)) * shopping_list_item.quantity
+        
+        user = UserAuthModel.find_by_uid(user_id)
+        msg = Message("We've received your order! - 354TheStars.com",
+                      recipients=[user.useremail])
+        address = buyer.get_address_from_index(buyer_address_index)
+        msg.html = render_template('SendReceipt.html', \
+            order_id= order.order_id, purchase_date=order.purchase_date, address=address, \
+            shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal)
+        mail.send(msg)
         return jsonify(order.serialize)
 
 
