@@ -5,6 +5,7 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 import os
 import tempfile
+import json
 from app import config, mail
 from flask import request, jsonify, abort, render_template
 from flask_restplus import Resource, fields
@@ -172,7 +173,6 @@ class ForgetPassword(Resource):
 @authentication.route('/changePassword/<string:token>', doc={"description": "This route will check the token in url, return success if validated."})
 class CheckTokenInEmail(Resource):
     def get(self, token):
-        # TODO: validate the token, then redirect to the reset password page.
         decoded_payload = decode_token(token, 'secret', algorithm=['HS256'])
         username = decoded_payload['username']
         email = decoded_payload['useremail']
@@ -250,21 +250,27 @@ class DeleteUser(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+@resource.route('/user/<int:uid>', doc={"description": "Search and return user name and email"})
+class UserInfo(Resource):
+    @jwt_required
+    def get(self, uid):
+        current_user = UserAuthModel.find_by_uid(uid)
+        if not current_user:
+            return jsonify(success=False)
+        result = {'uid': uid, 'username': current_user.username, 'email': current_user.useremail}
+        return result
+
 
 @resource.route('/buyerInfo', doc={
     "description": "Search and return buyer data that match the queried user name, access token needed"})
-@resource.doc(params={'username': "user name of the user"})
+@resource.doc(params={'uid': "uid of the user"})
 class BuyerInfo(Resource):
     @jwt_required
     def get(self):
-        username = request.args.get('username')
-        current_user = UserAuthModel.find_by_username(username)
-        if not current_user:
-            return jsonify(success=False)
-
-        buyerInfo = BuyerModel.find_by_uid(current_user.uid)
+        uid = request.args.get('uid')
+        buyerInfo = BuyerModel.find_by_uid(uid)
         if buyerInfo is None:
-            abort(404, "Buyer info for user {} not found".format(username))
+            abort(404, "Buyer info for uid {} not found".format(uid))
         return jsonify(buyerInfo.serialize)
 
 
@@ -385,12 +391,23 @@ class ItemRoutes(Resource):
     @jwt_required
     def put(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
-        payload = request.json
-
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        if not all(k in payload.keys() for k in item_keys):
-            abort(400, "Missing attribute in payload")
+        payload = json.loads(request.form.get('item'))
+        image = request.files.get('file')
+        image_url = ""
+        image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/itemPic/"
+        bucket_name = "comp354"
+        s3 = boto3.client('s3',
+                          aws_access_key_id=config.Config.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=config.Config.AWS_SECRET_ACCESS_KEY)
+        with tempfile.TemporaryDirectory() as tempdir:
+            if image is not None:
+                # create a temporary folder to save the review images
+                image_path = os.path.join(tempdir, image.filename)
+                image.save(image_path)
+                s3.upload_file(image_path, bucket_name, 'itemPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
+                image_url += image_prefix + image.filename
 
         item.item_name = payload["item_name"]
         item.price = payload["price"]
@@ -399,14 +416,12 @@ class ItemRoutes(Resource):
         item.brand = payload["brand"]
         item.description = payload["description"]
         item.quantity = payload["quantity"]
-        item.discount = payload["discount"]
-        item.images = payload["images"]
+        item.images = image_url
 
         try:
             db.session.commit()
         except Exception as e:
             abort(400, str(e))
-
         return jsonify(success=True)
 
     @jwt_required
@@ -425,24 +440,41 @@ class ItemRoutes(Resource):
 class CreateItem(Resource):
     @jwt_required
     def post(self):
-        payload = request.json
+        current_user_id = UserAuthModel.find_by_username(get_jwt_identity()).uid
+        payload = json.loads(request.form.get('item'))
+        image = request.files.get('file')
+        image_url = ""
+        image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/itemPic/"
+        bucket_name = "comp354"
+        s3 = boto3.client('s3',
+                          aws_access_key_id=config.Config.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=config.Config.AWS_SECRET_ACCESS_KEY)
+        with tempfile.TemporaryDirectory() as tempdir:
+            if image is not None:
+                # create a temporary folder to save the review images
+                image_path = os.path.join(tempdir, image.filename)
+                image.save(image_path)
+                s3.upload_file(image_path, bucket_name, 'itemPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
+                image_url += image_prefix + image.filename
+
+        new_item = Item(item_name=payload["item_name"],
+                        price=payload["price"],
+                        category=payload["category"],
+                        subcategory=payload["subcategory"],
+                        brand=payload["brand"],
+                        description=payload["description"],
+                        quantity=payload["quantity"],
+                        quantity_sold=0,
+                        discount=payload["discount"],
+                        seller_id=current_user_id,
+                        images=image_url)
+
         try:
-            db.session.add(Item(item_name=payload["item_name"],
-                                price=payload["price"],
-                                category=payload["category"],
-                                subcategory=payload["subcategory"],
-                                brand=payload["brand"],
-                                description=payload["description"],
-                                quantity=payload["quantity"],
-                                discount=payload["discount"],
-                                images=payload["images"]))
+            new_item.save_to_db()
+            return jsonify(success=True)
+
         except KeyError as e:
             abort(400, "Missing attribute " + str(e))
-        try:
-            db.session.commit()
-        except Exception as e:
-            abort(400, str(e))
-        return jsonify(success=True)
 
 
 @resource.route('/item/best', doc={"description": "Return top 20 most sold items"})

@@ -188,12 +188,19 @@ class SellerModel(db.Model):
 
     @property
     def serialize(self):
+        order_sellers = db.session.query(orderSeller).distinct(Order.order_id).filter_by(seller_id=self.uid).all()
+        orders = []
+        for i in order_sellers:
+            order = Order.query.filter_by(order_id=i.order_id).first()
+            orders.append({"order": order.serialize})
+
+        items = Item.query.filter_by(seller_id=self.uid).all()
         return {
             "uid": self.uid,
             "membership_date": self.membership_date,
             "total_commission": self.total_commission,
-            "offered_products": self.offered_products,
-            "orders": self.orders}
+            "offered_products": [i.serialize for i in items],
+            "orders": orders}
 
     def save_to_db(self):
         db.session.add(self)
@@ -246,7 +253,8 @@ class Order(db.Model):
         orders = []
         for i in order_items:
             item = Item.query.filter_by(item_id=i.item_id).first()
-            orders.append({"item": item.serialize, "order_item_quantity": i.order_item_quantity})
+            if item is not None:
+                orders.append({"item": item.serialize, "order_item_quantity": i.order_item_quantity})
 
         return {
             "order_id": self.order_id,
@@ -323,6 +331,8 @@ class Item(db.Model):
 
     @property
     def serialize(self):
+        reviews = [i.serialize for i in Review.query.filter(Review.item_id == self.item_id).all()]
+
         return {
             "item_id": self.item_id,
             "item_name": self.item_name,
@@ -335,7 +345,8 @@ class Item(db.Model):
             "quantity_sold": self.quantity_sold,
             "discount": self.discount,
             "images": self.images,
-            "seller_id": self.seller_id
+            "seller_id": self.seller_id,
+            "reviews": reviews
         }
 
     def save_to_db(self):
