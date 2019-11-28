@@ -38,7 +38,7 @@
                   <b-col sm="4"><b-link :to="'item-details/' + item.item.item_id">{{item.item.item_name}} (x{{item.order_item_quantity}})</b-link></b-col>
                   <b-col sm="3">${{(item.item.price*(1.0-item.item.discount)).toFixed(2)}}</b-col>
                   <!-- Will be better to move to another page that can be used at here and on the item detail page -->
-                  <b-col span="1"><b-link @click="findModal('review')">Write a review</b-link></b-col>
+                  <b-col span="1" v-if="!hasPostedReview"><b-link @click="findModal('review')">Write a review</b-link></b-col>
                 </b-row>
                 <br/>
                 <b-row>

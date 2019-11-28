@@ -25,6 +25,7 @@
                 <b-row>
                     <star-rating :starStyle="starStyle" :rating="review.rating" :isIndicatorActive="false"></star-rating>
                 </b-row>
+                <br/><br/>
                 <b-row v-if = "getImages(review).length !== 0">
                     <b-row v-for = "imageUrl in getImages(review)" :key="imageUrl">
                         <b-col>
@@ -63,7 +64,11 @@ export default {
       reviews: [],
       orders: [],
       reviewItems: [],
-      showpage: false
+      showpage: false,
+      starStyle: {
+        starWidth: 20,
+        starHeight: 20
+      }
     }
   },
   mounted () {

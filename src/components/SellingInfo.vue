@@ -17,49 +17,47 @@
                             :per-page="perPage"
                     ></b-pagination>
 
-                    <b-card v-for="item in itemList" :key="item.id" no-body class="overflow-hidden" :per-page="perPage"
+                    <b-card v-for="item in itemList" :key="item.id" no-body :per-page="perPage"
                             :current-page="currentPage">
                         <b-row no-gutters>
-                            <b-row>
-                                <b-col md="3">
-                                    <b-img height="150px" width="150px" :src="item.images" class="rounded-0"></b-img>
-                                </b-col>
-                                <b-col md="5">
-                                    <b-card-body>
-                                        <b-card-text>
-                                            <b-col>
-                                                <b-row>
-                                                    <b-link :to="'item-details/' + item.item_id">{{item.item_name}}
-                                                    </b-link>
-                                                </b-row>
-                                                <b-row>Brand: {{item.brand}}</b-row>
-                                                <b-row>Price: ${{item.price}}</b-row>
-                                                <b-row>Discount: {{item.discount}}</b-row>
-                                                <b-row>Quantity: {{item.quantity}}</b-row>
-                                                <b-row>Quantity Sold: {{item.quantity_sold}}</b-row>
-                                                <b-row>Category: {{item.category}}</b-row>
-                                                <b-row>SubCategory: {{item.subcategory}}</b-row>
-                                                <b-row>Description:</b-row>
-                                                <b-row>{{item.description}}</b-row>
-                                            </b-col>
-                                        </b-card-text>
-                                    </b-card-body>
-                                </b-col>
-                                <b-col>
-                                    <b-link @click="openModal('productModal', item.item_id)">Update this item</b-link>
-                                </b-col>
-                            </b-row>
-                            <br/><br/>
-                            <b-row v-for="review in item.reviews" :key="review.review_id">
-                                <b-card class="overflow-auto">
+                            <b-col md="3">
+                                <b-img height="150px" width="150px" :src="item.images" class="rounded-0"></b-img>
+                            </b-col>
+                            <b-col md="5">
+                                <b-card-body>
+                                    <b-card-text>
+                                        <b-col>
+                                            <b-row>
+                                                <b-link :to="'item-details/' + item.item_id">{{item.item_name}}
+                                                </b-link>
+                                            </b-row>
+                                            <b-row>Brand: {{item.brand}}</b-row>
+                                            <b-row>Price: ${{item.price}}</b-row>
+                                            <b-row>Discount: {{item.discount}}</b-row>
+                                            <b-row>Quantity: {{item.quantity}}</b-row>
+                                            <b-row>Quantity Sold: {{item.quantity_sold}}</b-row>
+                                            <b-row>Category: {{item.category}}</b-row>
+                                            <b-row>SubCategory: {{item.subcategory}}</b-row>
+                                            <b-row>Description:</b-row>
+                                            <b-row>{{item.description}}</b-row>
+                                        </b-col>
+                                    </b-card-text>
+                                </b-card-body>
+                            </b-col>
+                            <b-col>
+                                <b-link @click="openModal('productModal', item.item_id)">Update this item</b-link>
+                            </b-col>
+                        </b-row>
+                        <b-card v-for="review in item.reviews" :key="review.review_id" no-body>
+                            <b-row no-gutters>
+                                <b-card-body>
                                     <b-row>
                                         <b-col>Buyer id: {{review.buyer_id}}</b-col>
                                     </b-row>
-                                    <br/>
                                     <b-row>
-                                        <star-rating :starStyle="starStyle" :rating="review.rating"
-                                                     :isIndicatorActive="false"></star-rating>
+                                        <star-rating :starStyle="starStyle" :rating="review.rating" :isIndicatorActive="false"></star-rating>
                                     </b-row>
+                                    <br/>
                                     <br/>
                                     <b-row>
                                         <b-col>{{review.content}}</b-col>
@@ -77,12 +75,15 @@
                                     </b-row>
                                     <b-row v-if="!hasReply(review)">
                                         <b-col>
-                                            <b-button variant="outline-info" @click="openReviewReply('reply', review.review_id, review.item_id)">Reply</b-button>
+                                            <b-button variant="outline-info"
+                                                      @click="openReviewReply('reply', review.review_id, review.item_id)">
+                                                Reply
+                                            </b-button>
                                         </b-col>
                                     </b-row>
-                                </b-card>
+                                </b-card-body>
                             </b-row>
-                        </b-row>
+                        </b-card>
                     </b-card>
                     <br/><br/>
                     <b-button variant="outline-info" @click="openModal('productModal', 0)">Add a new product</b-button>
@@ -275,7 +276,8 @@
             </b-button>
         </b-modal>
         <b-modal ref="reply" hide-footer title="Reply">
-            <b-form-textarea id="textarea" v-model="reviewReplyInput" placeholder="Enter your reply here..." rows="3" max-rows="6" required></b-form-textarea>
+            <b-form-textarea id="textarea" v-model="reviewReplyInput" placeholder="Enter your reply here..." rows="3"
+                             max-rows="6" required></b-form-textarea>
             <br/>
             <b-button type="submit" variant="outline-success" @click.prevent="addReply" block>Add Reply</b-button>
         </b-modal>
@@ -310,7 +312,11 @@ export default {
       focusedItemId: 0,
       focusedReviewId: 0,
       focusedReviewItemId: 0,
-      reviewReplyInput: ''
+      reviewReplyInput: '',
+      starStyle: {
+        starWidth: 20,
+        starHeight: 20
+      }
     }
   },
   methods: {
