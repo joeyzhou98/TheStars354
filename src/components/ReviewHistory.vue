@@ -19,7 +19,7 @@
           <b-card v-for="review in reviewList" :key="review.review_id" no-body class="overflow-hidden"  :per-page="perPage" :current-page="currentPage">
             <b-card-body>
                 <b-row>
-                  <b-col sm="4"><b-link :to="'item-details/' + review.item_id">{{getItemName(review.item_id)}})</b-link></b-col>
+                  <b-col sm="10"><b-link :to="'item-details/' + review.item_id">{{findItemName(review.item_id)}}</b-link></b-col>
                 </b-row>
                 <br/>
                 <b-row>
@@ -32,6 +32,12 @@
                         </b-col>
                     </b-row>
                 </b-row>
+                <b-row>
+                  <b-col>{{review.content}}</b-col>
+                </b-row>
+                <b-row v-if="hasSellerReply(review)">
+                  <b-col>Seller reply: {{review.reply}}</b-col>
+                </b-row>
                 <br/>
             </b-card-body>
            </b-card>
@@ -43,29 +49,25 @@
 
 <script>
 import axios from 'axios'
+import StarRating from 'vue-dynamic-star-rating'
 
 export default {
+  components: {
+    StarRating
+  },
   data () {
     return {
       hasReviewHistory: false,
       perPage: 5,
       currentPage: 1,
       reviews: [],
-      orders: []
+      orders: [],
+      reviewItems: [],
+      showpage: false
     }
   },
   mounted () {
-    var url = 'api/resource/buyerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
-    axios
-      .get(url)
-      .then(response => {
-        this.reviews = response.data['review_list']
-        this.orders = response.data['order_history']
-        if (this.reviews.length !== 0) {
-          this.hasReviewHistory = true
-        }
-      })
-      .catch(error => alert(error))
+    this.getAllInfo()
   },
   computed: {
     rows () {
@@ -76,19 +78,55 @@ export default {
     }
   },
   methods: {
-    getItemName (itemId) {
-      var url = 'api/resource/item/' + encodeURIComponent(itemId)
-      axios
+    async getAllInfo () {
+      await this.getBuyerInfo()
+      await this.$nextTick()
+      await this.getItemNames()
+      this.showpage = true
+    },
+    getBuyerInfo () {
+      var url = 'api/resource/buyerInfo?uid=' + encodeURIComponent(this.$store.state.uid)
+      return axios
         .get(url)
         .then(response => {
-          return response.data['item_info']['item_name']
+          this.reviews = response.data['review_list']
+          this.orders = response.data['order_history']
+          if (this.reviews.length !== 0) {
+            this.hasReviewHistory = true
+          }
         })
         .catch(error => alert(error))
     },
+    getItemNames () {
+      let requests = []
+      for (var review of this.reviews) {
+        let url = 'api/resource/item/' + encodeURIComponent(review['item_id'])
+        requests.push(axios.get(url))
+      }
+      return axios.all(requests)
+        .then(axios.spread((...responses) => {
+          for (var response of responses) {
+            this.reviewItems.push(response.data)
+          }
+        }))
+        .catch(error => { alert(error) })
+    },
     getImages (review) {
       var images = review.images
-      var imagesUrls = images.split('&')
-      return imagesUrls
+      if (images !== null && images !== '') {
+        return images.split('&')
+      }
+      return []
+    },
+    hasSellerReply (review) {
+      return review.reply !== null && review.reply !== ''
+    },
+    findItemName (itemId) {
+      for (var data of this.reviewItems) {
+        if (data['item_info']['item_id'] === itemId) {
+          return data['item_info']['item_name']
+        }
+      }
     }
   }
 }

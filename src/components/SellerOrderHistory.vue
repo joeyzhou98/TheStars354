@@ -29,6 +29,9 @@
                 <b-row>
                   <b-col>Shipped to: {{findBuyerAddress(order.order.buyer_id,order.order.buyer_address_index)}}</b-col>
                 </b-row>
+                <b-row>
+                  <b-col>Shipping method: {{order.order.shipping_method}}</b-col>
+                </b-row>
                 <br/>
                 <b-row v-for="item in order.order.items" :key="item">
                   <b-card-group v-if="isSeller(item.item.seller_id)">
@@ -45,17 +48,6 @@
         </div>
       </b-card>
     </b-card-body>
-    <b-modal ref="reply" hide-footer title="Reply">
-      <b-form-textarea
-      id="textarea"
-      v-model="reviewInput"
-      placeholder="Enter your reply here..."
-      rows="3"
-      max-rows="6"
-      ></b-form-textarea>
-      <br/>
-      <b-button type="submit" variant="outline-success" @click.prevent="addReply" block>Add Reoly</b-button>
-    </b-modal>
   </div>
 </template>
 
@@ -137,18 +129,6 @@ export default {
         }))
         .catch(error => { alert(error) })
     },
-    findModal (modal) {
-      this.$refs[modal].show()
-    },
-    addReply () { // to be added
-      var url = 'api/resource/review/' + encodeURIComponent(this.item.id) + '?content=' + encodeURIComponent(this.reviewInput) + '&rating=' + encodeURIComponent(this.ratingInput)
-      axios
-        .post(url)
-        .then(response => {
-        })
-        .catch(error => alert(error))
-      this.$refs['review'].hide()
-    },
     findBuyerName (buyerId) {
       for (var data of this.order_buyer_name) {
         if (data.uid === buyerId) {
@@ -165,7 +145,6 @@ export default {
       }
     },
     isSeller (itemSellerId) {
-      console.log(itemSellerId)
       return itemSellerId === this.$store.state.uid
     }
   }

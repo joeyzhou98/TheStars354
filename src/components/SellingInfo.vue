@@ -21,31 +21,67 @@
                             :current-page="currentPage">
                         <b-row no-gutters>
                             <b-row>
-                            <b-col md="3">
-                                <b-img height="150px" width="150px" :src="item.images" class="rounded-0"></b-img>
-                            </b-col>
-                            <b-col md="7">
-                                <b-card-body>
-                                    <b-card-text>
-                                        <b-col>
-                                            <b-row>
-                                                <b-link :to="'item-details/' + item.item_id">{{item.item_name}}</b-link>
-                                            </b-row>
-                                            <b-row>Brand: {{item.brand}}</b-row>
-                                            <b-row>Price: ${{item.price}}</b-row>
-                                            <b-row>Discount: {{item.discount}}</b-row>
-                                            <b-row>Quantity: {{item.quantity}}</b-row>
-                                            <b-row>Quantity Sold: {{item.quantity_sold}}</b-row>
-                                            <b-row>Category: {{item.category}}</b-row>
-                                            <b-row>SubCategory: {{item.subcategory}}</b-row>
-                                            <b-row>Description:</b-row>
-                                            <b-row>{{item.description}}</b-row>
-                                        </b-col>
-                                    </b-card-text>
-                                </b-card-body>
-                            </b-col>
+                                <b-col md="3">
+                                    <b-img height="150px" width="150px" :src="item.images" class="rounded-0"></b-img>
+                                </b-col>
+                                <b-col md="5">
+                                    <b-card-body>
+                                        <b-card-text>
+                                            <b-col>
+                                                <b-row>
+                                                    <b-link :to="'item-details/' + item.item_id">{{item.item_name}}
+                                                    </b-link>
+                                                </b-row>
+                                                <b-row>Brand: {{item.brand}}</b-row>
+                                                <b-row>Price: ${{item.price}}</b-row>
+                                                <b-row>Discount: {{item.discount}}</b-row>
+                                                <b-row>Quantity: {{item.quantity}}</b-row>
+                                                <b-row>Quantity Sold: {{item.quantity_sold}}</b-row>
+                                                <b-row>Category: {{item.category}}</b-row>
+                                                <b-row>SubCategory: {{item.subcategory}}</b-row>
+                                                <b-row>Description:</b-row>
+                                                <b-row>{{item.description}}</b-row>
+                                            </b-col>
+                                        </b-card-text>
+                                    </b-card-body>
+                                </b-col>
+                                <b-col>
+                                    <b-link @click="openModal('productModal', item.item_id)">Update this item</b-link>
+                                </b-col>
                             </b-row>
-                            <b-row align-v="center"><b-col><b-link @click="openModal('productModal', item.item_id)">Update this item</b-link></b-col></b-row>
+                            <br/><br/>
+                            <b-row v-for="review in item.reviews" :key="review.review_id">
+                                <b-card class="overflow-auto">
+                                    <b-row>
+                                        <b-col>Buyer id: {{review.buyer_id}}</b-col>
+                                    </b-row>
+                                    <br/>
+                                    <b-row>
+                                        <star-rating :starStyle="starStyle" :rating="review.rating"
+                                                     :isIndicatorActive="false"></star-rating>
+                                    </b-row>
+                                    <br/>
+                                    <b-row>
+                                        <b-col>{{review.content}}</b-col>
+                                    </b-row>
+                                    <br/>
+                                    <b-row>
+                                        <b-col v-if="getReviewImages(review).length>0"
+                                               v-for="imageUrl in getReviewImages(review)" :key="imageUrl">
+                                            <b-img height="150px" width="150px" :src="imageUrl"
+                                                   class="rounded-0"></b-img>
+                                        </b-col>
+                                    </b-row>
+                                    <b-row v-if="hasReply(review)">
+                                        <b-col>Your reply: {{review.reply}}</b-col>
+                                    </b-row>
+                                    <b-row v-if="!hasReply(review)">
+                                        <b-col>
+                                            <b-button variant="outline-info" @click="openReviewReply('reply', review.review_id, review.item_id)">Reply</b-button>
+                                        </b-col>
+                                    </b-row>
+                                </b-card>
+                            </b-row>
                         </b-row>
                     </b-card>
                     <br/><br/>
@@ -106,24 +142,68 @@
                     <b-col>
                         <b-form-group label="Subcategory" label-for="subcategory-input">
                             <b-form-select id="subcategory-input" v-model="productInput.subcategoryInput" required>
-                                <option value="Cellphones, Computers & Tablets" v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Cellphones, Computers & Tablets</option>
-                                <option value="Cameras & Video Games" v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Cameras & Video Games</option>
-                                <option value="Motos & Car Supplies" v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Motos & Car Supplies</option>
+                                <option value="Cellphones, Computers & Tablets"
+                                        v-if="this.productInput.categoryInput === 'Automotives & Electronics'">
+                                    Cellphones, Computers & Tablets
+                                </option>
+                                <option value="Cameras & Video Games"
+                                        v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Cameras &
+                                    Video Games
+                                </option>
+                                <option value="Motos & Car Supplies"
+                                        v-if="this.productInput.categoryInput === 'Automotives & Electronics'">Motos &
+                                    Car Supplies
+                                </option>
                                 <option value="Books" v-if="this.productInput.categoryInput === 'Books'">Books</option>
-                                <option value="Women's Clothing" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Women's Clothing</option>
-                                <option value="Men's Clothing" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Men's Clothing</option>
-                                <option value="Children's Clothing" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Children's Clothing</option>
-                                <option value="Shoes" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Shoes</option>
-                                <option value="Bags & Accessories" v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Bags & Accessories</option>
-                                <option value="Makeup" v-if="this.productInput.categoryInput === 'Health & Beauty'">Makeup</option>
-                                <option value="Creams" v-if="this.productInput.categoryInput === 'Health & Beauty'">Creams</option>
-                                <option value="Sports" v-if="this.productInput.categoryInput === 'Health & Beauty'">Sports</option>
-                                <option value="Appliances" v-if="this.productInput.categoryInput === 'Home Supplies'">Appliances</option>
-                                <option value="Furniture & Accessories" v-if="this.productInput.categoryInput === 'Home Supplies'">Furniture & Accessories</option>
-                                <option value="Garden Supplies" v-if="this.productInput.categoryInput === 'Home Supplies'">Garden Supplies</option>
-                                <option value="Pet Supplies" v-if="this.productInput.categoryInput === 'Home Supplies'">Pet Supplies</option>
-                                <option value="Men's Jewellery & Watches" v-if="this.productInput.categoryInput === 'Jewellery & Watches'">Men's Jewellery & Watches</option>
-                                <option value="Women's Jewellery & Watches" v-if="this.productInput.categoryInput === 'Jewellery & Watches'">Women's Jewellery & Watches</option>
+                                <option value="Women's Clothing"
+                                        v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">
+                                    Women's Clothing
+                                </option>
+                                <option value="Men's Clothing"
+                                        v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Men's
+                                    Clothing
+                                </option>
+                                <option value="Children's Clothing"
+                                        v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">
+                                    Children's Clothing
+                                </option>
+                                <option value="Shoes"
+                                        v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Shoes
+                                </option>
+                                <option value="Bags & Accessories"
+                                        v-if="this.productInput.categoryInput === 'Clothing, Shoes & Accessories'">Bags
+                                    & Accessories
+                                </option>
+                                <option value="Makeup" v-if="this.productInput.categoryInput === 'Health & Beauty'">
+                                    Makeup
+                                </option>
+                                <option value="Creams" v-if="this.productInput.categoryInput === 'Health & Beauty'">
+                                    Creams
+                                </option>
+                                <option value="Sports" v-if="this.productInput.categoryInput === 'Health & Beauty'">
+                                    Sports
+                                </option>
+                                <option value="Appliances" v-if="this.productInput.categoryInput === 'Home Supplies'">
+                                    Appliances
+                                </option>
+                                <option value="Furniture & Accessories"
+                                        v-if="this.productInput.categoryInput === 'Home Supplies'">Furniture &
+                                    Accessories
+                                </option>
+                                <option value="Garden Supplies"
+                                        v-if="this.productInput.categoryInput === 'Home Supplies'">Garden Supplies
+                                </option>
+                                <option value="Pet Supplies" v-if="this.productInput.categoryInput === 'Home Supplies'">
+                                    Pet Supplies
+                                </option>
+                                <option value="Men's Jewellery & Watches"
+                                        v-if="this.productInput.categoryInput === 'Jewellery & Watches'">Men's Jewellery
+                                    & Watches
+                                </option>
+                                <option value="Women's Jewellery & Watches"
+                                        v-if="this.productInput.categoryInput === 'Jewellery & Watches'">Women's
+                                    Jewellery & Watches
+                                </option>
                             </b-form-select>
                         </b-form-group>
                     </b-col>
@@ -194,13 +274,22 @@
             <b-button type="submit" variant="outline-success" @click.prevent="addProduct" block>Add New Product
             </b-button>
         </b-modal>
+        <b-modal ref="reply" hide-footer title="Reply">
+            <b-form-textarea id="textarea" v-model="reviewReplyInput" placeholder="Enter your reply here..." rows="3" max-rows="6" required></b-form-textarea>
+            <br/>
+            <b-button type="submit" variant="outline-success" @click.prevent="addReply" block>Add Reply</b-button>
+        </b-modal>
     </div>
 </template>
 
 <script>
 import axios from 'axios'
+import StarRating from 'vue-dynamic-star-rating'
 
 export default {
+  components: {
+    StarRating
+  },
   data () {
     return {
       hasSellingProducts: false,
@@ -218,12 +307,20 @@ export default {
         imageInput: null
       },
       items: [],
-      focusedItemId: 0
+      focusedItemId: 0,
+      focusedReviewId: 0,
+      focusedReviewItemId: 0,
+      reviewReplyInput: ''
     }
   },
   methods: {
     openModal (modal, itemId) {
       this.setFocusItemId(itemId)
+      this.findModal(modal)
+    },
+    openReviewReply (modal, reviewId, reviewItemId) {
+      this.focusedReviewId = reviewId
+      this.focusedReviewItemId = reviewItemId
       this.findModal(modal)
     },
     setFocusItemId (itemId) {
@@ -235,7 +332,8 @@ export default {
     addProduct () {
       var formData = new FormData()
       formData.append('file', this.productInput.imageInput)
-      let itemPayload = {item_name: this.productInput.nameInput,
+      let itemPayload = {
+        item_name: this.productInput.nameInput,
         price: this.productInput.priceInput,
         category: this.productInput.categoryInput,
         subcategory: this.productInput.subcategoryInput,
@@ -243,12 +341,13 @@ export default {
         description: this.productInput.descriptionInput,
         quantity: this.productInput.quantityInput,
         discount: this.productInput.discountInput,
-        images: this.productInput.imageInput.name}
+        images: this.productInput.imageInput.name
+      }
       formData.append('item', JSON.stringify(itemPayload))
       if (this.focusedItemId === 0) {
         var url = 'api/resource/item'
         axios
-          .post(url, formData, {headers: {'Content-Type': 'multipart/form-data'}})
+          .post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
           .then(response => {
             this.getSellingProducts()
             this.$refs['productModal'].hide()
@@ -257,10 +356,24 @@ export default {
       } else {
         url = 'api/resource/item/' + this.focusedItemId
         axios
-          .put(url, formData, {headers: {'Content-Type': 'multipart/form-data'}})
+          .put(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
           .then(response => {
             this.getSellingProducts()
             this.$refs['productModal'].hide()
+          })
+          .catch(error => alert(error))
+      }
+    },
+    addReply () {
+      if (this.focusedReviewItemId !== 0 && this.focusedReviewId !== 0) {
+        var url = 'api/resource/review/' + this.focusedReviewItemId + '/' + this.focusedReviewId + '?response=' + encodeURIComponent(this.reviewReplyInput)
+        axios
+          .put(url)
+          .then(response => {
+            this.getSellingProducts()
+            this.focusedReviewItemId = 0
+            this.focusedReviewId = 0
+            this.$refs['reply'].hide()
           })
           .catch(error => alert(error))
       }
@@ -276,6 +389,16 @@ export default {
           }
         })
         .catch(error => alert(error))
+    },
+    getReviewImages (review) {
+      var images = review.images
+      if (images !== null && images !== '') {
+        return images.split('&')
+      }
+      return []
+    },
+    hasReply (review) {
+      return review.reply !== null && review.reply !== ''
     }
   },
   mounted () {

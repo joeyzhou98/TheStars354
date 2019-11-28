@@ -322,6 +322,8 @@ class Item(db.Model):
 
     @property
     def serialize(self):
+        reviews = [i.serialize for i in Review.query.filter(Review.item_id == self.item_id).all()]
+
         return {
             "item_id": self.item_id,
             "item_name": self.item_name,
@@ -334,7 +336,8 @@ class Item(db.Model):
             "quantity_sold": self.quantity_sold,
             "discount": self.discount,
             "images": self.images,
-            "seller_id": self.seller_id
+            "seller_id": self.seller_id,
+            "reviews": reviews
         }
 
     def save_to_db(self):
