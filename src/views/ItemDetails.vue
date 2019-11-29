@@ -87,7 +87,13 @@
     <Recommendations :showHistory="false"></Recommendations>
     <hr/>
     <h5 class="section">Customer reviews</h5>
-    <Review v-for="review in reviews" v-bind:key="review.review_id" :seller_id="item.seller_id" :review="review"></Review>
+    <Review
+       v-for="(review, index) in reviews"
+       v-bind:key="review.review_id"
+       :seller_id="item.seller_id"
+       :review="review"
+       v-on:delete-review="deleteReview(index)">
+    </Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
     <hr/>
     <div v-if="hasHistory">
@@ -156,6 +162,9 @@ export default {
     }
   },
   methods: {
+    deleteReview (index) {
+      this.reviews.splice(index, 1)
+    },
     async getDataAndUpdateHistory () {
       await this.getItemData()
       await this.$nextTick()

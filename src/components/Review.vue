@@ -42,7 +42,7 @@ export default {
       axios
         .delete(url)
         .then(response => {
-          this.$router.push('/')
+          this.$emit('delete-review')
         })
         .catch(error => alert(error))
     },
