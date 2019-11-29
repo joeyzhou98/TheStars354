@@ -11,7 +11,7 @@
             <b-card-text>
               <span class="brand">{{item.brand}}</span><br>
               <span class="name">{{item.item_name}}</span><br>
-              <span class="seller">Sold by {{seller}}</span><br>
+              <span class="seller" v-if="seller !== null">Sold by {{seller}}</span><br>
               <div class="rating">
                 <star-rating :starStyle="starStyle" :rating="item.rating" :isIndicatorActive="false"></star-rating>
                 ({{this.reviews.length}})
@@ -24,7 +24,7 @@
               <div v-else class="item-price"> <!-- No discount -->
                 <span class="regular-price displayed-price">{{regularPrice}}</span>
               </div>
-              <div v-if="isAvailable" id="quantitySelect">
+              <div v-if="isAvailable && seller!== null" id="quantitySelect">
                 <b-row no-gutters>
                   <b-col>
                     <span class="icon-text">Quantity: </span>
@@ -39,7 +39,7 @@
               </div>
               <div v-else style="color: darkred; margin-bottom: 8px">Out of stock :(</div>
               <div class="buttons">
-                <b-button  @click="$bvModal.show('addtocart')" class="button main-btn shadow-none" variant="outline" :disabled="!isAvailable"
+                <b-button  v-if="seller !== null" @click="$bvModal.show('addtocart')" class="button main-btn shadow-none" variant="outline" :disabled="!isAvailable"
                   title="Add to Cart">
                   <icon class="far" name="shopping-bag"></icon>
                   <span class="icon-text">ADD TO CART</span>
@@ -67,7 +67,7 @@
                   </template>
                 </b-modal>
                 <!-- End of modal section -->
-                <b-button class="button sec-btn shadow-none" @click="addToWishlist" variant="outline" title="Add to Wishlist">
+                <b-button v-if="seller !== null" class="button sec-btn shadow-none" @click="addToWishlist" variant="outline" title="Add to Wishlist">
                   <icon class="far" name="heart"></icon>
                   <span class="icon-text">WISHLIST</span>
                 </b-button>
@@ -149,10 +149,10 @@ export default {
       return this.item.discount !== 0
     },
     isAvailable () {
-      return this.item.quantity > 0
+      return this.item.quantity - this.item.quantity_sold > 0
     },
     availableQty () {
-      return parseInt(this.item.quantity)
+      return parseInt(this.item.quantity - this.item.quantity_sold)
     }
   },
   methods: {
@@ -177,9 +177,9 @@ export default {
         })
         .catch(error => alert(error))
     },
-    goToCart () {
-      this.addToCart()
+    async goToCart () {
       this.$refs['addtocart'].hide()
+      await this.addToCart()
       this.$router.push('/cart')
     },
     keepShopping () {
@@ -188,8 +188,8 @@ export default {
     },
     addToCart () {
       if (this.$store.state.isLoggedIn) {
-        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '/' + this.selectedQty
-        axios
+        let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + this.itemID + '?newQuantity=' + this.selectedQty
+        return axios
           .post(url)
           .catch(error => alert(error))
       } else { // visitor: add to cookies

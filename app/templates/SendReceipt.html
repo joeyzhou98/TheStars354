@@ -1,0 +1,30 @@
+<div style="width: 600px; display: inline-block; text-align: left">
+    <div style="text-align: center;"><h4>Thanks for Shopping with 354 The Stars!</h4></div>
+    <br>
+    <div style="font-weight: bold; font-size: large">Order # {{order_id}}</div><br>
+    <hr />
+    <div><span style="font-weight: bold">Order placed on:</span> {{purchase_date}}</div><br>
+    <div><span style="font-weight: bold">Shipped to:</span> {{address}}</div><br>
+    <div><span style="font-weight: bold">Shipping method:</span> {{shipping_method}}</div><br>
+    <div><span style="font-weight: bold">Payment method:</span> PayPal</div>
+    <hr />
+    <div style="font-weight: bold">Ordered items:</div><br>
+    <table style="width:100%">
+    {% for item_info in items %} 
+      {% set item = item_info['item'] %}
+      <tr>
+        <td>{{item['item_name']}} (x{{item_info['order_item_quantity']}})</td>
+        {% set price = (item['price'] - (item['price'] * item['discount'])) * item_info['order_item_quantity'] %}
+        <td>{{"$%.2f"|format(price)}}</td>
+      </tr>
+    {% endfor %} 
+    </table>
+    <br>
+    <div>Subtotal: {{"$%.2f"|format(subtotal)}}</div>
+    <div>Shipping: $0.00</div>
+    {% set taxes = subtotal * 0.15 %}
+    <div>Taxes: {{"$%.2f"|format(taxes)}}</div>
+    {% set total = subtotal + taxes %}
+    <div style="font-weight: bold">Total: {{"$%.2f"|format(total)}}</div><br>
+    <div></div>
+  </div>
