@@ -261,6 +261,33 @@ class UserInfo(Resource):
         return result
 
 
+@resource.route('/user/<int:uid>/ordered/<int:item_id>', doc={"description": "Determines if user has ordered a particular item"})
+class UserInfo(Resource):
+    def get(self, uid, item_id):
+        user_id = UserAuthModel.find_by_uid(uid).uid
+        if not user_id:
+            abort(404, "User for uid {} not found".format(uid))
+        if not Item.item_exists(item_id):
+            abort(404, "Item for item id {} not found".format(item_id))
+        orders = Order.query.filter(Order.buyer_id == uid).all()
+        item_ids = []
+        for order in orders:
+            for item in order.serialize["items"]:
+                item_ids.append(item["item"]["item_id"])
+        return jsonify(True) if item_id in item_ids else jsonify(False)
+
+
+@resource.route('/user/<int:uid>/reviewed/<int:item_id>', doc={"description": "Determines if user has reviewed a particular item"})
+class UserInfo(Resource):
+    def get(self, uid, item_id):
+        if not UserAuthModel.find_by_uid(uid):
+            abort(404, "User for uid {} not found".format(uid))
+        if not Item.item_exists(item_id):
+            abort(404, "Item for item id {} not found".format(item_id))
+        count = Review.query.filter(Review.buyer_id == uid).filter(Review.item_id == item_id).count()
+        return jsonify(False) if count == 0 else jsonify(True)
+
+
 @resource.route('/buyerInfo', doc={
     "description": "Search and return buyer data that match the queried user name, access token needed"})
 @resource.doc(params={'uid': "uid of the user"})
@@ -495,7 +522,7 @@ class Deals(Resource):
         return jsonify(payload)
 
 
-@resource.route('/review/<int:item_id>', doc={"description": "1. post a new review for an item. 2. Delete all reviews for an item."})
+@resource.route('/review/<int:item_id>', doc={"description": "1. post/update a new review for an item. 2. Delete all reviews for an item."})
 class CreateAndDeleteReview(Resource):
     @resource.doc(params={'content': "content of the review", 'rating': "rating"},)
     @jwt_required
@@ -524,7 +551,7 @@ class CreateAndDeleteReview(Resource):
         for image_key in image_keys:
             if request.files.get(image_key, False):
                 images.append(request.files[image_key])
-        image_url = ""
+        images_list = []
         image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/reviewPic/"
         bucket_name = "comp354"
         s3 = boto3.client('s3',
@@ -537,12 +564,22 @@ class CreateAndDeleteReview(Resource):
                     image_path = os.path.join(tempdir, image.filename)
                     image.save(image_path)
                     s3.upload_file(image_path, bucket_name, 'reviewPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
-                    image_url += image_prefix+image.filename+"&"
+                    images_list.append(image_prefix+image.filename)
+        images = "&".join(images_list)
         content = request.args.get('content')
         rating = request.args.get('rating')
 
-        new_review = Review(buyer_id=current_user_id, item_id=item_id, content=content, rating=rating, images=image_url)
-        item.reviews.append(new_review)
+        # Check for existing review with same uid and item id
+        review = Review.query.filter(Review.buyer_id == current_user_id).filter(Review.item_id == item_id).first()
+        if review:
+            # If existing review, update content, rating and images
+            review.content = content
+            review.rating = rating
+            review.images = images
+        else:
+            # If not existing, create a new review
+            new_review = Review(buyer_id=current_user_id, item_id=item_id, content=content, rating=rating, images=images)
+            item.reviews.append(new_review)
         db.session.commit()
         return jsonify(success=True)
 
@@ -698,7 +735,7 @@ class PlaceOrderInShoppingCart(Resource):
             db.session.commit()
 
             subtotal += (item.price - (item.price * item.discount)) * shopping_list_item.quantity
-        
+
         user = UserAuthModel.find_by_uid(user_id)
         msg = Message("We've received your order! - 354TheStars.com",
                       recipients=[user.useremail])

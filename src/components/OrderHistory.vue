@@ -28,7 +28,7 @@
                   <b-col>Shipped to: {{getShippingAddress(order)}}</b-col>
                 </b-row>
                 <b-row>
-                  <b-col>Status: Shipped</b-col> #get real status from db
+                  <b-col>Status: Shipped</b-col>
                 </b-row>
                 <br/>
                 <b-row v-for="item in order.items" :key="item">
@@ -37,8 +37,7 @@
                   </b-col>
                   <b-col sm="4"><b-link :to="'item-details/' + item.item.item_id">{{item.item.item_name}} (x{{item.order_item_quantity}})</b-link></b-col>
                   <b-col sm="3">${{(item.item.price*(1.0-item.item.discount)).toFixed(2)}}</b-col>
-                  <!-- Will be better to move to another page that can be used at here and on the item detail page -->
-                  <b-col span="1" v-if="!hasPostedReview"><b-link @click="findModal('review')">Write a review</b-link></b-col>
+                  <b-col span="1" ><b-link @click="findModal('review', item.item.item_id)">Write/update review</b-link></b-col>
                 </b-row>
                 <br/>
                 <b-row>
@@ -72,8 +71,22 @@
         <b-form-radio v-model="ratingInput" name="ratingInput" value="5">5</b-form-radio>
         </b-form-radio-group>
       </b-form-group>
+      <b-form-group
+              label="Images"
+      >
+          <b-form-file
+                  v-for="(image, index) in imagesInput"
+                  :key="index"
+                  v-model="imagesInput[index]"
+                  accept=".jpg, .png, .gif"
+                  placeholder="Choose a file or drop it here..."
+                  drop-placeholder="Drop file here..."
+                  type="file"
+                  style="margin-top: 5px;"
+          ></b-form-file>
+      </b-form-group>
       <br/>
-      <b-button type="submit" variant="outline-success" @click.prevent="addReview(item)" block>Add Review</b-button>
+      <b-button type="submit" variant="outline-success" @click.prevent="addReview" block>Add Review</b-button>
     </b-modal>
   </div>
 </template>
@@ -84,6 +97,8 @@ import axios from 'axios'
 export default {
   data () {
     return {
+      imagesInput: [null, null, null, null, null],
+      modal_item_id: -1,
       hasOrderHistroy: false,
       perPage: 5,
       currentPage: 1,
@@ -119,13 +134,20 @@ export default {
     }
   },
   methods: {
-    findModal (modal) {
+    findModal (modal, id) {
+      this.reviewInput = ''
+      this.ratingInput = ''
+      this.modal_item_id = id
       this.$refs[modal].show()
     },
-    addReview (item) { // to be added
-      var url = 'api/resource/review/' + encodeURIComponent(this.item.id) + '?content=' + encodeURIComponent(this.reviewInput) + '&rating=' + encodeURIComponent(this.ratingInput)
+    addReview () {
+      var formData = new FormData()
+      for (var i = 0; i < 5; i++) {
+        formData.append('image' + (i + 1), this.imagesInput[i])
+      }
+      var url = 'api/resource/review/' + this.modal_item_id + '?content=' + encodeURIComponent(this.reviewInput) + '&rating=' + encodeURIComponent(this.ratingInput)
       axios
-        .post(url)
+        .post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
         .then(response => {
         })
         .catch(error => alert(error))

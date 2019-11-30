@@ -1,8 +1,16 @@
 <template>
   <b-card>
+    <b-container fluid>
+      <b-row>
+        <b-col v-for="(image, index) in images" :key="index" >
+          <b-img height="150px" width="150px" fluid :src="image"></b-img>
+        </b-col>
+      </b-row>
+    </b-container>
     <star-rating style="padding-bottom: 10px;" :starStyle="starStyle" :rating="review.rating" :isIndicatorActive="false"></star-rating>
     <b-card-text v-if="review.content !== null" style="display: flex;">{{review.content}}</b-card-text>
     <b-card-text v-if="review.reply !== null" style="display: flex;"><strong>Seller's reply:</strong>{{review.reply}}</b-card-text>
+    <b-button v-if="isReviewBuyer" size="sm" variant="primary" style="float: left; margin-right: 10px;" @click="editReview">Edit</b-button>
     <b-button v-if="isReviewBuyer" size="sm" variant="danger" style="float: left; margin-right: 10px;" @click="deleteReview">Delete</b-button>
     <b-button v-if="sellerItem" size="sm" variant="primary" style="float: left;" @click="$bvModal.show(review.review_id)">Reply</b-button>
     <b-modal @ok="submitReply" :id="review.review_id" title="Reply to review">
@@ -33,10 +41,17 @@ export default {
         starWidth: 20,
         starHeight: 20
       },
-      text: ''
+      text: '',
+      images: []
     }
   },
+  mounted () {
+    this.images = this.review.images.split('&')
+  },
   methods: {
+    editReview () {
+      this.$emit('edit-review')
+    },
     deleteReview () {
       let url = 'api/resource/review/' + this.review.item_id + '/' + this.review.review_id
       axios
