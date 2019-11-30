@@ -276,6 +276,14 @@ export default {
         this.cartData = cookie
       }
     },
+    isInWishlist (item) {
+      for (var i = 0; i < this.wishlistData.length; i++) {
+        if (this.wishlistData[i].item_id === item.item_id) {
+          return true
+        }
+      }
+      return false
+    },
     addToWishlist (item) {
       let url = 'api/resource/wish-list/' + this.$store.state.uid + '/' + item.item_id
       return axios
@@ -315,7 +323,9 @@ export default {
     },
     moveToWishlist (item) {
       if (this.$store.state.isLoggedIn) {
-        this.addToWishlist(item)
+        if (this.isInWishlist(item) === false) {
+          this.addToWishlist(item)
+        }
         this.removeItemFromDB(item)
       } else {
         this.$router.push('/login')
