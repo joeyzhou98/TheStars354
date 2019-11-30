@@ -68,7 +68,7 @@
                 <!-- End of modal section -->
                 <b-button v-if="seller !== null" class="button sec-btn shadow-none" @click="onWishlistClick" variant="outline"
                   v-b-tooltip.hover.right :title="wishlistTooltip">
-                  <i :class="heartIconStyle" style="position: relative; top: 2px;"></i>
+                  <i :class="heartIconStyle" style="position: relative; top: 2px; color: red"></i>
                 </b-button>
               </div>
               <hr />
@@ -162,7 +162,7 @@ export default {
     },
     wishlistTooltip () {
       if (this.wishlisted) {
-        return 'Wishlisted!'
+        return 'Wishlisted'
       }
       return 'Add to wishlist'
     }
@@ -172,6 +172,9 @@ export default {
       await this.getItemData()
       await this.$nextTick()
       this.updateVisitedItems()
+      if (this.$store.state.isLoggedIn) {
+        this.isItemInWishlist()
+      }
       this.showPage = true
     },
     hasHistory () {
@@ -186,6 +189,15 @@ export default {
           this.seller = data.seller_name
           this.reviews = data.reviews
           this.item = data.item_info
+        })
+        .catch(error => alert(error))
+    },
+    isItemInWishlist () {
+      let url = 'api/resource/wish-list/' + this.$store.state.uid + '/' + this.itemID
+      return axios
+        .get(url)
+        .then((response) => {
+          this.wishlisted = response.data
         })
         .catch(error => alert(error))
     },
@@ -238,6 +250,24 @@ export default {
       } else {
         this.$router.push('/login')
       }
+    },
+    addToWishlist () {
+      let url = 'api/resource/wish-list/' + this.$store.state.uid + '/' + this.itemID
+      return axios
+        .post(url)
+        .then((response) => {
+          this.wishlisted = true
+        })
+        .catch(error => alert(error))
+    },
+    removeFromWishlist () {
+      let url = 'api/resource/wish-list/' + this.$store.state.uid + '/' + this.itemID
+      return axios
+        .delete(url)
+        .then((response) => {
+          this.wishlisted = false
+        })
+        .catch(error => alert(error))
     },
     updateVisitedItems () {
       if (this.item === null) {
