@@ -1,10 +1,14 @@
 import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
+// import User from './user'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+  modules: {
+    // user: User
+  },
   state: {
     // User login
     isLoggedIn: false,
@@ -43,7 +47,7 @@ export default new Vuex.Store({
 
         let requests = []
         for (var data of itemData) {
-          let url = 'api/resource/shopping-cart/' + state.uid + '/' + data.item.item_id + '/' + data.qty
+          let url = 'api/resource/shopping-cart/' + state.uid + '/' + data.item.item_id + '?newQuantity=' + data.qty
           requests.push(axios.post(url))
         }
         axios.all(requests)

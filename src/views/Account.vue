@@ -5,7 +5,7 @@
     <router-link to="/login">Log In</router-link><br>
     <router-link to="/">Back to Home Page</router-link>
   </div>
-  <div v-else>
+  <div>
     <b-card
     :title="welcomeMessage"
     img-src="https://picsum.photos/600/300/?image=25"
@@ -18,11 +18,28 @@
     <b-card-text>
       You can change your personal details, manage your orders, and much more.
     </b-card-text>
+    <hr class="my-4">
 
     <keep-alive>
       <b-tabs lazy justified>
-        <b-tab title="Buyer Profile" v-if=!(isAdmin)> <br />Buyer Profile</b-tab>
-        <b-tab title="Seller Profile" v-if=!(isAdmin)> <br />Seller Profile</b-tab>
+        <b-tab title="Buyer Profile" v-if=!(isAdmin)>
+          <Address></Address>
+          <hr class="my-4">
+          <PayingInfo></PayingInfo>
+          <hr class="my-4">
+          <PasswordReset></PasswordReset>
+          <hr class="my-4">
+          <OrderHistory></OrderHistory>
+          <hr class="my-4">
+          <ReviewHistory></ReviewHistory>
+        </b-tab>
+        <b-tab title="Seller Profile" v-if=!(isAdmin)>
+          <SellerInfo></SellerInfo>
+          <hr class="my-4">
+          <SellingInfo></SellingInfo>
+          <hr class="my-4">
+          <SellerOrderHistory></SellerOrderHistory>
+        </b-tab>
         <b-tab title="Admin Control Center" v-if=(isAdmin)>
           <b-card-group>
             <b-card-body>
@@ -55,8 +72,26 @@
 
 <script>
 import axios from 'axios'
+import Address from '@/components/Address.vue'
+import PayingInfo from '@/components/PayingInfo.vue'
+import PasswordReset from '@/components/PasswordReset.vue'
+import OrderHistory from '@/components/OrderHistory.vue'
+import SellingInfo from '@/components/SellingInfo.vue'
+import SellerInfo from '@/components/SellerInfo.vue'
+import SellerOrderHistory from '@/components/SellerOrderHistory.vue'
+import ReviewHistory from '../components/ReviewHistory'
 
 export default {
+  components: {
+    Address,
+    PayingInfo,
+    PasswordReset,
+    OrderHistory,
+    ReviewHistory,
+    SellingInfo,
+    SellerInfo,
+    SellerOrderHistory
+  },
   data () {
     return {
       users: {
