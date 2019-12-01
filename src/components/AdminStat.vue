@@ -56,7 +56,7 @@
             </b-card-body>
            </b-card>
         </div>
-            <b-card-text>Commission made during this time is : {{getCommission()}}</b-card-text>
+            <b-card-text v-if="showResult">Commission made during this time is : {{getCommission()}}</b-card-text>
       </b-card>
     </b-card-body>
   </div>

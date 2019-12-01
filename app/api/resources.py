@@ -674,12 +674,12 @@ class PlaceOrderInShoppingCart(Resource):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method)
         shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
+        seller_emails = []
 
         if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
 
         order.save_to_db()
-        seller_emails = []
 
         subtotal = 0
         for shopping_list_item in shoppingListItems:
@@ -691,8 +691,6 @@ class PlaceOrderInShoppingCart(Resource):
             seller = SellerModel.query.filter_by(uid=item.seller_id).first()
             if seller is not None:
                 seller.add_commission(item)
-            user = UserAuthModel.find_by_uid(item.seller_id)
-            seller_emails.append(user.useremail)
             order.add_item(item)
             new_quantity_sold = item.quantity_sold + shopping_list_item.quantity
             if item.quantity - new_quantity_sold < 0:
@@ -707,21 +705,24 @@ class PlaceOrderInShoppingCart(Resource):
 
             subtotal += (item.price - (item.price * item.discount)) * shopping_list_item.quantity
 
-        print(seller_emails)
-
         user = UserAuthModel.find_by_uid(user_id)
         msg = Message("We've received your order! - 354TheStars.com",
                       recipients=[user.useremail])
         address = buyer.get_address_from_index(buyer_address_index)
         msg.html = render_template('SendReceipt.html', \
-            order_id= order.order_id, purchase_date=order.purchase_date, address=address, \
+            order_id=order.order_id, purchase_date=order.purchase_date, address=address, \
             shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal)
         mail.send(msg)
 
-        # msg2 = Message("You got a new order! - 354TheStars.com",
-        #                recipients=seller_emails)
-        # msg2.html = render_template('NotificationToSeller.html')
-        # mail.send(msg2)
+        for shopping_list_item in shoppingListItems:
+            item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
+            user = UserAuthModel.find_by_uid(item.seller_id)
+            seller_emails.append(user.useremail)
+
+        if len(seller_emails) != 0:
+            msg2 = Message("You got a new order! - 354TheStars.com", recipients=seller_emails)
+            msg2.html = render_template('NotificationToSeller.html')
+            mail.send(msg2)
         return jsonify(order.serialize)
 
 
