@@ -59,6 +59,7 @@ class UserRegistration(Resource):
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
+
         try:
             new_user.save_to_db()
             access_token = create_access_token(identity=username, user_claims={'role': new_user.role.value})
@@ -71,6 +72,10 @@ class UserRegistration(Resource):
                 "role": new_user.role.value})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
+            msg = Message("Your account is created! - 354TheStars.com",
+                          recipients=[email])
+            msg.html = render_template('AccountCreation.html', username=username)
+            mail.send(msg)
             return resp
         except:
             return jsonify(success=False), 500
@@ -249,6 +254,7 @@ class DeleteUser(Resource):
         db.session.delete(user)
         db.session.commit()
         return jsonify(success=True)
+
 
 @resource.route('/user/<int:uid>', doc={"description": "Search and return user name and email"})
 class UserInfo(Resource):
@@ -593,6 +599,7 @@ class CreateAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+
 @resource.route('/review/<int:item_id>/<int:review_id>', doc={"description": "Manipulate (put, delete) a review for an item."})
 class PutAndDeleteReview(Resource):
     @resource.doc(params={'response': "seller's response for the review"})
@@ -617,6 +624,7 @@ class PutAndDeleteReview(Resource):
 
 @resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
 class ShoppingCart(Resource):
+    @jwt_required
     def get(self, user_id):
         shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
         shopping_list_items = []
@@ -627,6 +635,7 @@ class ShoppingCart(Resource):
 
         return shopping_list_items
 
+    @jwt_required
     def delete(self, user_id):
         db.engine.execute(db.delete(shoppingListItem)
                           .where(shoppingListItem.c.buyer_id == user_id))
@@ -637,6 +646,7 @@ class ShoppingCart(Resource):
                 doc={"description": "Add and remove items in the shopping cart"})
 class ShoppingCart(Resource):
     @resource.doc(params={'newQuantity': "new quantity"},)
+    @jwt_required
     def post(self, user_id, item_id):
         buyer = BuyerModel.find_by_uid(user_id)
         item = Item.query.filter_by(item_id=item_id).first()
@@ -649,6 +659,7 @@ class ShoppingCart(Resource):
             abort(404, "Trying to remove more items than the quantity in cart.")
         return jsonify(success=True)
 
+    @jwt_required
     def delete(self, user_id, item_id):
         items = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item_id)
         if items.count() == 0:
@@ -706,6 +717,7 @@ class PlaceOrderInShoppingCart(Resource):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method)
         shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
+        seller_emails = []
 
         if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
@@ -741,14 +753,25 @@ class PlaceOrderInShoppingCart(Resource):
                       recipients=[user.useremail])
         address = buyer.get_address_from_index(buyer_address_index)
         msg.html = render_template('SendReceipt.html', \
-            order_id= order.order_id, purchase_date=order.purchase_date, address=address, \
+            order_id=order.order_id, purchase_date=order.purchase_date, address=address, \
             shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal)
         mail.send(msg)
+
+        for shopping_list_item in shoppingListItems:
+            item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
+            user = UserAuthModel.find_by_uid(item.seller_id)
+            seller_emails.append(user.useremail)
+
+        if len(seller_emails) != 0:
+            msg2 = Message("You got a new order! - 354TheStars.com", recipients=seller_emails)
+            msg2.html = render_template('NotificationToSeller.html')
+            mail.send(msg2)
         return jsonify(order.serialize)
 
 
 @resource.route('/wish-list/<int:user_id>/<int:item_id>',doc={"description": "Add and remove wish list"})
 class WishList(Resource):
+    @jwt_required
     def post(self, user_id, item_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         item = Item.query.filter_by(item_id=item_id).first()
@@ -759,6 +782,7 @@ class WishList(Resource):
         buyer.add_to_wish_list(item)
         return jsonify(success=True)
 
+    @jwt_required
     def delete(self, user_id, item_id):
         item = db.session.query(wishListItem).filter_by(buyer_id=user_id, item_id=item_id)
         if item.count() == 0:
@@ -767,6 +791,7 @@ class WishList(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+    @jwt_required
     def get(self, user_id, item_id):
         item = Item.find_by_id(item_id)
         buyer = BuyerModel.find_by_uid(user_id)
@@ -782,6 +807,7 @@ class WishList(Resource):
 
 @resource.route('/wish-list/<int:user_id>',doc={"description": "Get wish list"})
 class WishList(Resource):
+    @jwt_required
     def get(self, user_id):
         items = db.session.query(wishListItem).filter_by(buyer_id=user_id).all()
         return jsonify([Item.query.filter_by(item_id=i.item_id).first().serialize for i in items])
@@ -790,6 +816,7 @@ class WishList(Resource):
 @resource.route('/orders/<start_date>/<end_date>',
                 doc={"description": "Return all orders during a given period of time"})
 class AllOrders(Resource):
+    @admin_required
     def get(self, start_date, end_date):
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -805,6 +832,7 @@ class AllOrders(Resource):
 @resource.route('/commission/<start_date>/<end_date>',
                 doc={"description": "Return total commission during a given period of time"})
 class TotalCommission(Resource):
+    @admin_required
     def get(self, start_date, end_date):
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
