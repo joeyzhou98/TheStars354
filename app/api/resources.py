@@ -59,6 +59,7 @@ class UserRegistration(Resource):
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
+
         try:
             new_user.save_to_db()
             access_token = create_access_token(identity=username, user_claims={'role': new_user.role.value})
@@ -71,6 +72,10 @@ class UserRegistration(Resource):
                 "role": new_user.role.value})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
+            msg = Message("Your account is created! - 354TheStars.com",
+                          recipients=[email])
+            msg.html = render_template('AccountCreation.html', username=username)
+            mail.send(msg)
             return resp
         except:
             return jsonify(success=False), 500
@@ -674,6 +679,7 @@ class PlaceOrderInShoppingCart(Resource):
             abort(404, "Buyer with id {} not found".format(user_id))
 
         order.save_to_db()
+        seller_emails = []
 
         subtotal = 0
         for shopping_list_item in shoppingListItems:
@@ -685,6 +691,8 @@ class PlaceOrderInShoppingCart(Resource):
             seller = SellerModel.query.filter_by(uid=item.seller_id).first()
             if seller is not None:
                 seller.add_commission(item)
+            user = UserAuthModel.find_by_uid(item.seller_id)
+            seller_emails.append(user.useremail)
             order.add_item(item)
             new_quantity_sold = item.quantity_sold + shopping_list_item.quantity
             if item.quantity - new_quantity_sold < 0:
@@ -698,7 +706,9 @@ class PlaceOrderInShoppingCart(Resource):
             db.session.commit()
 
             subtotal += (item.price - (item.price * item.discount)) * shopping_list_item.quantity
-        
+
+        print(seller_emails)
+
         user = UserAuthModel.find_by_uid(user_id)
         msg = Message("We've received your order! - 354TheStars.com",
                       recipients=[user.useremail])
@@ -707,6 +717,11 @@ class PlaceOrderInShoppingCart(Resource):
             order_id= order.order_id, purchase_date=order.purchase_date, address=address, \
             shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal)
         mail.send(msg)
+
+        # msg2 = Message("You got a new order! - 354TheStars.com",
+        #                recipients=seller_emails)
+        # msg2.html = render_template('NotificationToSeller.html')
+        # mail.send(msg2)
         return jsonify(order.serialize)
 
 

@@ -41,25 +41,9 @@
           <SellerOrderHistory></SellerOrderHistory>
         </b-tab>
         <b-tab title="Admin Control Center" v-if=(isAdmin)>
-          <b-card-group>
-            <b-card-body>
-              <p>All users registered in the database:</p>
-              <b-row v-for="user in this.users" :key="user">
-                <b-col>
-                  <p>{{user.uid}}</p>
-                </b-col>
-                <b-col>
-                  <p>{{user.username}}</p>
-                </b-col>
-                <b-col>
-                  <p>{{user.useremail}}</p>
-                </b-col>
-                <b-col>
-                  <b-button v-if="user.role !== 'admin'" type="submit" variant="dark" @click="deleteUser(user.username)">Delete this user</b-button>
-                </b-col>
-              </b-row>
-          </b-card-body>
-          </b-card-group>
+          <AllUser></AllUser>
+          <hr class="my-4">
+          <AdminStat></AdminStat>
         </b-tab>
       </b-tabs>
     </keep-alive>
@@ -80,9 +64,12 @@ import SellingInfo from '@/components/SellingInfo.vue'
 import SellerInfo from '@/components/SellerInfo.vue'
 import SellerOrderHistory from '@/components/SellerOrderHistory.vue'
 import ReviewHistory from '../components/ReviewHistory'
+import AllUser from '../components/AllUser'
+import AdminStat from '../components/AdminStat'
 
 export default {
   components: {
+    AllUser,
     Address,
     PayingInfo,
     PasswordReset,
@@ -90,7 +77,8 @@ export default {
     ReviewHistory,
     SellingInfo,
     SellerInfo,
-    SellerOrderHistory
+    SellerOrderHistory,
+    AdminStat
   },
   data () {
     return {
@@ -113,11 +101,6 @@ export default {
       return this.$store.state.role === 'admin'
     }
   },
-  mounted: function mounted () {
-    if (this.isAdmin) {
-      this.getAllUser()
-    }
-  },
   methods: {
     userLogout () {
       let url1 = 'api/authentication/logout/access'
@@ -137,25 +120,6 @@ export default {
       this.$store.commit('logout')
       console.log('isLoggedIn', this.isLoggedIn)
       this.$router.push('/')
-    },
-    getAllUser () {
-      let url = 'api/authentication/allUser'
-      axios
-        .get(url)
-        .then(response => {
-          this.users = response.data
-          console.log(this.users)
-        })
-        .catch(error => alert(error))
-    },
-    deleteUser (uid) {
-      let url = 'api/authentication/deleteUser/' + uid
-      axios
-        .delete(url)
-        .then(response => {
-          this.getAllUser()
-        })
-        .catch(error => alert(error))
     }
   }
 }
