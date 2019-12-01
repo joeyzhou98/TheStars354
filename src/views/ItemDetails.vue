@@ -86,9 +86,46 @@
     <h5 class="section">You might also like:</h5>
     <Recommendations :showHistory="false"></Recommendations>
     <hr/>
-    <h5 class="section">Customer reviews</h5>
-    <Review v-for="review in reviews" v-bind:key="review.review_id" :review="review"></Review>
+    <h5 class="section">Customer reviews:</h5>
+    <b-btn @click="showModal('review-modal')" variant="primary" style="display: flex; margin-bottom: 10px;" v-if="canReview">Add review</b-btn>
+    <Review
+       v-for="(review, index) in reviews"
+       v-bind:key="review.review_id"
+       :seller_id="item.seller_id"
+       :review="review"
+       v-on:delete-review="deleteReview(index)"
+       v-on:edit-review="editReview(index)">
+    </Review>
     <span style="display: flex" v-if="reviews.length === 0">No reviews yet</span>
+    <b-modal ref="review-modal" hide-footer title="Review">
+      <b-form-textarea
+      id="textarea"
+      v-model="reviewInput"
+      placeholder="Enter your review here..."
+      rows="3"
+      max-rows="6"
+      ></b-form-textarea>
+      <b-form-group label="Rating">
+        <b-form-radio-group v-model="ratingInput" :options="ratingOptions">
+        </b-form-radio-group>
+      </b-form-group>
+      <b-form-group
+              label="Images"
+      >
+          <b-form-file
+                  v-for="(image, index) in imagesInput"
+                  :key="index"
+                  v-model="imagesInput[index]"
+                  accept=".jpg, .png, .gif"
+                  placeholder="Choose a file or drop it here..."
+                  drop-placeholder="Drop file here..."
+                  type="file"
+                  style="margin-top: 5px;"
+          ></b-form-file>
+      </b-form-group>
+      <br/>
+      <b-button type="submit" variant="outline-success" @click.prevent="addReview" block>Add Review</b-button>
+    </b-modal>
     <hr/>
     <div v-if="hasHistory">
       <h5 class="section">History:</h5>
@@ -112,6 +149,16 @@ export default {
   },
   data () {
     return {
+      ratingOptions: [
+        { text: '1', value: '1' },
+        { text: '2', value: '2' },
+        { text: '3', value: '3' },
+        { text: '4', value: '4' },
+        { text: '5', value: '5' }
+      ],
+      imagesInput: [null, null, null, null, null],
+      reviewInput: '',
+      ratingInput: '',
       item: this.$route.params.item,
       itemID: this.$route.params.itemID,
       seller: 'Seller',
@@ -121,7 +168,8 @@ export default {
         starWidth: 20,
         starHeight: 20
       },
-      showPage: false
+      showPage: false,
+      hasOrdered: false
     }
   },
   watch: {
@@ -136,6 +184,17 @@ export default {
     }
   },
   computed: {
+    canReview () {
+      if (this.hasOrdered) {
+        for (const review of this.reviews) {
+          if (parseInt(this.$store.state.uid) === parseInt(review.buyer_id)) {
+            return false
+          }
+        }
+        return true
+      }
+      return false
+    },
     regularPrice () {
       return '$' + this.item.price.toFixed(2)
     },
@@ -156,14 +215,56 @@ export default {
     }
   },
   methods: {
+    showModal (modal) {
+      this.reviewInput = ''
+      this.ratingInput = ''
+      this.imageInput = [null, null, null, null, null]
+      this.$refs[modal].show()
+    },
+    addReview () {
+      this.reviews = []
+      var formData = new FormData()
+      for (var i = 0; i < 5; i++) {
+        formData.append('image' + (i + 1), this.imagesInput[i])
+      }
+      var url = 'api/resource/review/' + this.itemID + '?content=' + encodeURIComponent(this.reviewInput) + '&rating=' + encodeURIComponent(this.ratingInput)
+      axios
+        .post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        .then(response => {
+          this.getItemData()
+        })
+        .catch(error => alert(error))
+      this.$refs['review-modal'].hide()
+    },
+    deleteReview (index) {
+      this.reviews.splice(index, 1)
+    },
+    editReview (index) {
+      this.reviewInput = this.reviews[index].content
+      this.ratingInput = this.reviews[index].rating
+      this.imageInput = [null, null, null, null, null]
+      this.$refs['review-modal'].show()
+    },
     async getDataAndUpdateHistory () {
       await this.getItemData()
       await this.$nextTick()
+      await this.getHasOrdered()
       this.updateVisitedItems()
       this.showPage = true
     },
     hasHistory () {
       return localStorage.history
+    },
+    getHasOrdered () {
+      if (this.$store.state.isLoggedIn) {
+        let url = 'api/resource/user/' + this.$store.state.uid + '/ordered/' + this.itemID
+        return axios
+          .get(url)
+          .then((response) => {
+            this.hasOrdered = response.data
+          })
+          .catch(error => alert(error))
+      }
     },
     getItemData () {
       let url = 'api/resource/item/' + this.itemID
@@ -231,8 +332,6 @@ export default {
         let jsonViewedItemsCookie = localStorage.history
         itemQueue = JSON.parse(jsonViewedItemsCookie)
         itemQueue = itemQueue.filter(item => item !== null)
-        console.log('itemID: ' + this.itemID + ' | item_id: ' + this.item.item_id)
-        console.log(itemQueue.length)
         for (var i = 0; i < itemQueue.length; i++) {
           if (itemQueue[i].item_id === this.itemID) {
             itemQueue.splice(i, 1) // remove so we can put back at beginning of queue
@@ -354,7 +453,6 @@ img {
   object-fit: scale-down;
 }
 .section {
-  display: flex;
   padding-bottom: 20px;
 }
 </style>
