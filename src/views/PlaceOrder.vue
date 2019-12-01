@@ -102,6 +102,10 @@
               <span>Subtotal:</span>
               <span style="font-weight: bold">{{subtotalTxt}}</span>
             </div>
+            <div class="d-flex justify-content-between" v-if="hasCouponDiscount">
+              <span>Discount:</span>
+              <span style="font-weight: bold">{{discountTxt}}</span>
+            </div>
             <div class="d-flex justify-content-between">
               <span>Shipping:</span>
               <span style="font-weight: bold">$0.00</span>
@@ -134,6 +138,7 @@ export default {
       cartData: this.$route.params.cartData,
       subtotal: this.$route.params.subtotal,
       subtotalTxt: this.$route.params.subtotalTxt,
+      couponDiscount: this.$route.params.couponDiscount,
       selectedAddress: '1',
       addressToChange: '',
       address1: 'Fetching addresses...',
@@ -152,16 +157,22 @@ export default {
   },
   computed: {
     taxes () {
-      return this.subtotal * 0.15
+      return this.subtotal * (1.0 - this.couponDiscount) * 0.15
     },
     taxesTxt () {
       return '$' + this.taxes.toFixed(2)
     },
+    discountTxt () {
+      return '$ -' + (this.subtotal * this.couponDiscount).toFixed(2)
+    },
     total () {
-      return this.subtotal + this.taxes
+      return this.subtotal * (1.0 - this.couponDiscount) + this.taxes
     },
     totalTxt () {
       return '$' + this.total.toFixed(2)
+    },
+    hasCouponDiscount () {
+      return this.couponDiscount !== 0
     },
     addNewAddress () {
       return this.selectedAddress === 'custom'
@@ -250,7 +261,7 @@ export default {
       this.postOrder()
     },
     postOrder () {
-      let url = 'api/resource/place-order-in-shopping-cart/' + this.$store.state.uid + '/' + this.selectedAddress + '/' + this.selectedMethod
+      let url = 'api/resource/place-order-in-shopping-cart/' + this.$store.state.uid + '/' + this.selectedAddress + '/' + this.selectedMethod + '/' + this.couponDiscount
       return axios
         .post(url)
         .then((response) => {
@@ -260,6 +271,7 @@ export default {
               address: this.selectedAddressString,
               subtotal: this.subtotalTxt,
               taxes: this.taxesTxt,
+              couponDiscount: this.discountTxt,
               total: this.totalTxt
             }
           })

@@ -42,13 +42,16 @@
                 </b-row>
                 <br/>
                 <b-row>
-                  <b-col>Subtotal: ${{subtotal(order.items)}}</b-col>
+                  <b-col>Subtotal: {{subtotalTxt(order.items)}}</b-col>
+                </b-row>
+                <b-row v-if="hasCouponDiscount(order)">
+                  <b-col>Discount: {{discountTxt(order)}}</b-col>
                 </b-row>
                 <b-row>
-                  <b-col>Tax: ${{(subtotal(order.items)*0.15).toFixed(2)}}</b-col>
+                  <b-col>Tax: {{taxTxt(order)}}</b-col>
                 </b-row>
                 <b-row>
-                  <b-col>Total: ${{(subtotal(order.items)*1.15).toFixed(2)}}</b-col>
+                  <b-col>Total: {{totalTxt(order)}}</b-col>
                 </b-row>
             </b-card-body>
            </b-card>
@@ -134,10 +137,25 @@ export default {
     subtotal (orderItems) {
       var subtotal = 0
       for (var data of orderItems) {
-        let price = data.item.price * (1.0 - data.item.discount).toFixed(2)
+        let price = data.item.price * (1.0 - data.item.discount)
         subtotal += price * data.order_item_quantity
       }
       return subtotal
+    },
+    subtotalTxt (orderItems) {
+      return '$' + this.subtotal(orderItems).toFixed(2)
+    },
+    hasCouponDiscount (order) {
+      return order.coupon_discount !== 0.0
+    },
+    discountTxt (order) {
+      return '$ -' + (this.subtotal(order.items) * order.coupon_discount).toFixed(2)
+    },
+    taxTxt (order) {
+      return '$' + (this.subtotal(order.items) * (1.0 - order.coupon_discount) * 0.15).toFixed(2)
+    },
+    totalTxt (order) {
+      return '$' + (this.subtotal(order.items) * (1.0 - order.coupon_discount) * 1.15).toFixed(2)
     },
     getShippingAddress (order) {
       var addressIndex = order.buyer_address_index

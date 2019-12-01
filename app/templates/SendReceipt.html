@@ -10,21 +10,22 @@
     <hr />
     <div style="font-weight: bold">Ordered items:</div><br>
     <table style="width:100%">
-    {% for item_info in items %} 
+    {% for item_info in items %}
       {% set item = item_info['item'] %}
       <tr>
         <td>{{item['item_name']}} (x{{item_info['order_item_quantity']}})</td>
         {% set price = (item['price'] - (item['price'] * item['discount'])) * item_info['order_item_quantity'] %}
         <td>{{"$%.2f"|format(price)}}</td>
       </tr>
-    {% endfor %} 
+    {% endfor %}
     </table>
     <br>
     <div>Subtotal: {{"$%.2f"|format(subtotal)}}</div>
+    <div>Discount: {{"- $%.2f"|format(subtotal * discount)}}</div>
     <div>Shipping: $0.00</div>
-    {% set taxes = subtotal * 0.15 %}
+    {% set taxes = subtotal * (1.0-discount) * 0.15 %}
     <div>Taxes: {{"$%.2f"|format(taxes)}}</div>
-    {% set total = subtotal + taxes %}
+    {% set total = subtotal * (1.0-discount) + taxes %}
     <div style="font-weight: bold">Total: {{"$%.2f"|format(total)}}</div><br>
     <div></div>
   </div>
