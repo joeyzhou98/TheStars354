@@ -135,7 +135,6 @@ export default {
         })
         .catch(error => alert(error))
       this.$store.commit('logout')
-      console.log('isLoggedIn', this.isLoggedIn)
       this.$router.push('/')
     },
     getAllUser () {
