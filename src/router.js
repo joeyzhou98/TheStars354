@@ -9,6 +9,7 @@ import ChangePassword from './views/ChangePassword'
 import FAQ from './views/FAQ.vue'
 import ForgetPassword from './views/ForgetPassword'
 import Home from './views/Home.vue'
+import CustomerService from './views/CustomerService.vue'
 import ItemDetails from './views/ItemDetails.vue'
 import Login from './views/Login.vue'
 import OrderConfirmation from './views/OrderConfirmation.vue'
@@ -53,6 +54,11 @@ export default new Router({
       path: '/about',
       name: 'About',
       component: About
+    },
+    {
+      path: '/customerService',
+      name: 'CustomerService',
+      component: CustomerService
     },
     {
       path: '/account',
