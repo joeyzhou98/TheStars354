@@ -1,16 +1,21 @@
 import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
+// import User from './user'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+  modules: {
+    // user: User
+  },
   state: {
     // User login
     isLoggedIn: false,
     uid: null,
     username: null,
     email: null,
+    role: null,
 
     // Cookie related (recommendations)
     cookieItems: [],
@@ -23,15 +28,32 @@ export default new Vuex.Store({
       state.uid = data.id
       state.username = data.username
       state.email = data.email
+      state.role = data.role
     },
     logout (state) {
       state.isLoggedIn = false
       state.uid = null
       state.username = null
       state.email = null
+      state.role = null
     }
   },
   actions: {
+    transferCartToUser ({state}) {
+      if (localStorage.cart) {
+        let jsonCartCookie = localStorage.cart
+        let itemData = JSON.parse(jsonCartCookie)
+        localStorage.removeItem('cart')
+
+        let requests = []
+        for (var data of itemData) {
+          let url = 'api/resource/shopping-cart/' + state.uid + '/' + data.item.item_id + '?newQuantity=' + data.qty
+          requests.push(axios.post(url))
+        }
+        axios.all(requests)
+          .catch(error => { alert(error) })
+      }
+    },
     updateCookieItems ({state}) {
       if (localStorage.history) {
         let jsonViewedItemsCookie = localStorage.history

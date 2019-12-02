@@ -5,6 +5,7 @@ http://flask-restplus.readthedocs.io
 from datetime import datetime
 import os
 import tempfile
+import json
 from app import config, mail
 from flask import request, jsonify, abort, render_template
 from flask_restplus import Resource, fields
@@ -15,10 +16,10 @@ from flask_jwt_extended import (jwt_required, create_access_token,
                                 jwt_refresh_token_required, create_refresh_token,
                                 get_jwt_identity, set_access_cookies,
                                 set_refresh_cookies, get_raw_jwt, unset_access_cookies,
-                                unset_refresh_cookies)
+                                unset_refresh_cookies, get_jwt_claims)
 
 from app import jwt
-from .security import generate_encoded_token, decode_token
+from .security import generate_encoded_token, decode_token, admin_required
 from . import api_rest
 from .models import *
 
@@ -58,17 +59,23 @@ class UserRegistration(Resource):
 
         new_user = UserAuthModel(username=username, useremail=email, password=password)
 
+
         try:
             new_user.save_to_db()
-            access_token = create_access_token(identity=username)
+            access_token = create_access_token(identity=username, user_claims={'role': new_user.role.value})
             refresh_token = create_refresh_token(identity=username)
             resp = jsonify({
                 "success": True,
-                "id": current_user.uid,
-                "username": current_user.username,
-                "email": current_user.useremail})
+                "id": new_user.uid,
+                "username": new_user.username,
+                "email": new_user.useremail,
+                "role": new_user.role.value})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
+            msg = Message("Your account is created! - 354TheStars.com",
+                          recipients=[email])
+            msg.html = render_template('AccountCreation.html', username=username)
+            mail.send(msg)
             return resp
         except:
             return jsonify(success=False), 500
@@ -88,15 +95,17 @@ class UserLogin(Resource):
             abort(404, "User with username {} not found".format(username))
 
         if current_user.password == password:
-            access_token = create_access_token(identity=username)
+            access_token = create_access_token(identity=username, user_claims={'role': current_user.role.value})
             refresh_token = create_refresh_token(identity=username)
             resp = jsonify({
                 "success": True,
                 "id": current_user.uid,
                 "username": current_user.username,
-                "email": current_user.useremail})
+                "email": current_user.useremail,
+                "role": current_user.role.value})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
+
             return resp
         abort(404, "Password for user {} is not correct".format(username))
 
@@ -139,7 +148,8 @@ class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
-        access_token = create_access_token(identity=current_user)
+        user = UserAuthModel.find_by_username(current_user)
+        access_token = create_access_token(identity=current_user, user_claims={'role': user.role.value})
 
         resp = jsonify(success=True)
         set_access_cookies(resp, access_token)
@@ -157,7 +167,7 @@ class ForgetPassword(Resource):
         payload = {"username": user.username, "useremail": user.useremail}
         encoded_token = generate_encoded_token(payload, 'secret', algorithm='HS256')
         # print(encoded_token)
-        password_reset_url = 'http://localhost:8080/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
+        password_reset_url = 'https://thestars354.herokuapp.com/#/changePassword/'+encoded_token.decode("utf-8")+'/'+user.username
         msg = Message("Reset password - 354TheStars.com",
                       recipients=[email])
         msg.html = render_template('ResetPasswordEmail.html', username=user.username, link=password_reset_url)
@@ -168,7 +178,6 @@ class ForgetPassword(Resource):
 @authentication.route('/changePassword/<string:token>', doc={"description": "This route will check the token in url, return success if validated."})
 class CheckTokenInEmail(Resource):
     def get(self, token):
-        # TODO: validate the token, then redirect to the reset password page.
         decoded_payload = decode_token(token, 'secret', algorithm=['HS256'])
         username = decoded_payload['username']
         email = decoded_payload['useremail']
@@ -196,36 +205,134 @@ class ResetPassword(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/user', doc={"description": "Get the user name and email"})
+@authentication.route('/allUser', doc={"description": "Get the all users info in db, needs admin status"})
+class AllUserInfo(Resource):
+    @admin_required
+    def get(self):
+        users = UserAuthModel.query.all()
+        return [i.serialize for i in users]
+
+
+@authentication.route('/deleteUser/<string:username>', doc={"description": "This route will delete a user from the datebase, admin status needed"})
+class DeleteUser(Resource):
+    @admin_required
+    def delete(self, username):
+        user = UserAuthModel.find_by_username(username)
+        if user is None:
+            abort(404, "User with username {} not found".format(username))
+        uid = user.uid
+        buyer_info = BuyerModel.find_by_uid(uid)
+        seller_info = SellerModel.find_by_uid(uid)
+        if buyer_info is None or seller_info is None:
+            abort(404, "Seller info or buyer info with uid {} not found".format(uid))
+        orders = Order.find_by_buyer_id(buyer_info.uid)
+        # clean up the database that relate to the user's buyer status
+        db.session.query(wishListItem).\
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        db.session.query(shoppingListItem). \
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        for order in orders:
+            db.session.query(orderItem).\
+                filter_by(order_id=order.order_id).delete(synchronize_session=False)
+            db.session.query(orderSeller).\
+                filter_by(order_id=order.order_id).delete(synchronize_session=False)
+        db.session.query(Review).\
+            filter_by(buyer_id=buyer_info.uid).update({"buyer_id": None}, synchronize_session=False)
+
+        # clean up the database that relate to the user's seller status
+        db.session.query(orderSeller). \
+            filter_by(seller_id=seller_info.uid).update({"seller_id": None}, synchronize_session=False)
+        db.session.query(Item).\
+            filter_by(seller_id=seller_info.uid).update({"seller_id": None}, synchronize_session=False)
+
+        db.session.query(Order). \
+            filter_by(buyer_id=buyer_info.uid).delete(synchronize_session=False)
+        db.session.query(BuyerModel). \
+            filter_by(uid=uid).delete(synchronize_session=False)
+        db.session.query(SellerModel). \
+            filter_by(uid=uid).delete(synchronize_session=False)
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/user/<int:uid>', doc={"description": "Search and return user name and email"})
 class UserInfo(Resource):
     @jwt_required
-    def get(self):
-        current_user = get_jwt_identity()
-        if current_user is not None:
-            userAuth = UserAuthModel.query.filter_by(username=current_user).first()
-            if userAuth is None:
-                abort(404, "User with username {} not found".format(current_user))
-            email = userAuth.useremail
-            return {'username': current_user,
-                    'email': email}
-        abort(400, "Cannot retrieve username from access token.")
+    def get(self, uid):
+        current_user = UserAuthModel.find_by_uid(uid)
+        if not current_user:
+            return jsonify(success=False)
+        result = {'uid': uid, 'username': current_user.username, 'email': current_user.useremail}
+        return result
+
+
+@resource.route('/user/<int:uid>/ordered/<int:item_id>', doc={"description": "Determines if user has ordered a particular item"})
+class UserInfo(Resource):
+    def get(self, uid, item_id):
+        user_id = UserAuthModel.find_by_uid(uid).uid
+        if not user_id:
+            abort(404, "User for uid {} not found".format(uid))
+        if not Item.item_exists(item_id):
+            abort(404, "Item for item id {} not found".format(item_id))
+        orders = Order.query.filter(Order.buyer_id == uid).all()
+        item_ids = []
+        for order in orders:
+            for item in order.serialize["items"]:
+                item_ids.append(item["item"]["item_id"])
+        return jsonify(True) if item_id in item_ids else jsonify(False)
+
+
+@resource.route('/user/<int:uid>/reviewed/<int:item_id>', doc={"description": "Determines if user has reviewed a particular item"})
+class UserInfo(Resource):
+    def get(self, uid, item_id):
+        if not UserAuthModel.find_by_uid(uid):
+            abort(404, "User for uid {} not found".format(uid))
+        if not Item.item_exists(item_id):
+            abort(404, "Item for item id {} not found".format(item_id))
+        count = Review.query.filter(Review.buyer_id == uid).filter(Review.item_id == item_id).count()
+        return jsonify(False) if count == 0 else jsonify(True)
 
 
 @resource.route('/buyerInfo', doc={
     "description": "Search and return buyer data that match the queried user name, access token needed"})
-@resource.doc(params={'username': "user name of the user"})
+@resource.doc(params={'uid': "uid of the user"})
 class BuyerInfo(Resource):
     @jwt_required
     def get(self):
-        username = request.args.get('username')
-        current_user = UserAuthModel.find_by_username(username)
-        if not current_user:
-            return jsonify(success=False)
-
-        buyerInfo = BuyerModel.find_by_uid(current_user.uid)
+        uid = request.args.get('uid')
+        buyerInfo = BuyerModel.find_by_uid(uid)
         if buyerInfo is None:
-            abort(404, "Buyer info for user {} not found".format(username))
+            abort(404, "Buyer info for uid {} not found".format(uid))
         return jsonify(buyerInfo.serialize)
+
+
+@resource.route('/updateAddress/<int:uid>/<int:address_index>', doc={"description": "Update the i-th address of the user."})
+@resource.doc(params={'newAddress': "new address for the i-th address"})
+class UpdateAddress(Resource):
+    @jwt_required
+    def put(self, uid, address_index):
+        address = 'address'+str(address_index)
+
+        db.session.query(BuyerModel) \
+            .filter(BuyerModel.uid == uid). \
+            update({address: request.args.get('newAddress')})
+
+        db.session.commit()
+        return jsonify(success=True)
+
+
+@resource.route('/updatePaypal/<int:uid>', doc={"description": "Update user's paypal account"})
+@resource.doc(params={'paypal': "new paypal account"})
+class UpdatePaypal(Resource):
+    @jwt_required
+    def put(self, uid):
+        db.session.query(BuyerModel) \
+            .filter(BuyerModel.uid == uid). \
+            update({"paypal": request.args.get('paypal')})
+
+        db.session.commit()
+        return jsonify(success=True)
 
 
 @resource.route('/sellerInfo', doc={
@@ -303,14 +410,12 @@ class ItemRoutes(Resource):
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
         seller_auth_info = UserAuthModel.query.filter_by(uid=item.seller_id).first()
-        if seller_auth_info is None:
-            abort(404, "User with id {} not found".format(item.seller_id))
         reviews = [i.serialize for i in Review.query.filter(Review.item_id == item_id).all()]
         ratings = list(map(lambda x: x["rating"], reviews))
         ratings_avg = sum(ratings) / len(ratings) if len(ratings) != 0 else None
         item = item.serialize
         item.update({"rating": ratings_avg})
-        result = {"seller_name": seller_auth_info.username,
+        result = {"seller_name": seller_auth_info.username if seller_auth_info is not None else None,
                   "item_info": item,
                   "reviews": reviews}
         return result
@@ -319,12 +424,23 @@ class ItemRoutes(Resource):
     @jwt_required
     def put(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
-        payload = request.json
-
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        if not all(k in payload.keys() for k in item_keys):
-            abort(400, "Missing attribute in payload")
+        payload = json.loads(request.form.get('item'))
+        image = request.files.get('file')
+        image_url = ""
+        image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/itemPic/"
+        bucket_name = "comp354"
+        s3 = boto3.client('s3',
+                          aws_access_key_id=config.Config.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=config.Config.AWS_SECRET_ACCESS_KEY)
+        with tempfile.TemporaryDirectory() as tempdir:
+            if image is not None:
+                # create a temporary folder to save the review images
+                image_path = os.path.join(tempdir, image.filename)
+                image.save(image_path)
+                s3.upload_file(image_path, bucket_name, 'itemPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
+                image_url += image_prefix + image.filename
 
         item.item_name = payload["item_name"]
         item.price = payload["price"]
@@ -333,14 +449,12 @@ class ItemRoutes(Resource):
         item.brand = payload["brand"]
         item.description = payload["description"]
         item.quantity = payload["quantity"]
-        item.discount = payload["discount"]
-        item.images = payload["images"]
+        item.images = image_url
 
         try:
             db.session.commit()
         except Exception as e:
             abort(400, str(e))
-
         return jsonify(success=True)
 
     @jwt_required
@@ -359,24 +473,41 @@ class ItemRoutes(Resource):
 class CreateItem(Resource):
     @jwt_required
     def post(self):
-        payload = request.json
+        current_user_id = UserAuthModel.find_by_username(get_jwt_identity()).uid
+        payload = json.loads(request.form.get('item'))
+        image = request.files.get('file')
+        image_url = ""
+        image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/itemPic/"
+        bucket_name = "comp354"
+        s3 = boto3.client('s3',
+                          aws_access_key_id=config.Config.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=config.Config.AWS_SECRET_ACCESS_KEY)
+        with tempfile.TemporaryDirectory() as tempdir:
+            if image is not None:
+                # create a temporary folder to save the review images
+                image_path = os.path.join(tempdir, image.filename)
+                image.save(image_path)
+                s3.upload_file(image_path, bucket_name, 'itemPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
+                image_url += image_prefix + image.filename
+
+        new_item = Item(item_name=payload["item_name"],
+                        price=payload["price"],
+                        category=payload["category"],
+                        subcategory=payload["subcategory"],
+                        brand=payload["brand"],
+                        description=payload["description"],
+                        quantity=payload["quantity"],
+                        quantity_sold=0,
+                        discount=payload["discount"],
+                        seller_id=current_user_id,
+                        images=image_url)
+
         try:
-            db.session.add(Item(item_name=payload["item_name"],
-                                price=payload["price"],
-                                category=payload["category"],
-                                subcategory=payload["subcategory"],
-                                brand=payload["brand"],
-                                description=payload["description"],
-                                quantity=payload["quantity"],
-                                discount=payload["discount"],
-                                images=payload["images"]))
+            new_item.save_to_db()
+            return jsonify(success=True)
+
         except KeyError as e:
             abort(400, "Missing attribute " + str(e))
-        try:
-            db.session.commit()
-        except Exception as e:
-            abort(400, str(e))
-        return jsonify(success=True)
 
 
 @resource.route('/item/best', doc={"description": "Return top 20 most sold items"})
@@ -397,7 +528,7 @@ class Deals(Resource):
         return jsonify(payload)
 
 
-@resource.route('/review/<int:item_id>', doc={"description": "1. post a new review for an item. 2. Delete all reviews for an item."})
+@resource.route('/review/<int:item_id>', doc={"description": "1. post/update a new review for an item. 2. Delete all reviews for an item."})
 class CreateAndDeleteReview(Resource):
     @resource.doc(params={'content': "content of the review", 'rating': "rating"},)
     @jwt_required
@@ -426,7 +557,7 @@ class CreateAndDeleteReview(Resource):
         for image_key in image_keys:
             if request.files.get(image_key, False):
                 images.append(request.files[image_key])
-        image_url = ""
+        images_list = []
         image_prefix = "https://comp354.s3.us-east-2.amazonaws.com/reviewPic/"
         bucket_name = "comp354"
         s3 = boto3.client('s3',
@@ -439,16 +570,26 @@ class CreateAndDeleteReview(Resource):
                     image_path = os.path.join(tempdir, image.filename)
                     image.save(image_path)
                     s3.upload_file(image_path, bucket_name, 'reviewPic/{}'.format(image.filename), ExtraArgs={'ACL': 'public-read'})
-                    image_url += image_prefix+image.filename+"&"
+                    images_list.append(image_prefix+image.filename)
+        images = "&".join(images_list)
         content = request.args.get('content')
         rating = request.args.get('rating')
 
-        new_review = Review(buyer_id=current_user_id, item_id=item_id, content=content, rating=rating, images=image_url)
-        item.reviews.append(new_review)
+        # Check for existing review with same uid and item id
+        review = Review.query.filter(Review.buyer_id == current_user_id).filter(Review.item_id == item_id).first()
+        if review:
+            # If existing review, update content, rating and images
+            review.content = content
+            review.rating = rating
+            review.images = images
+        else:
+            # If not existing, create a new review
+            new_review = Review(buyer_id=current_user_id, item_id=item_id, content=content, rating=rating, images=images)
+            item.reviews.append(new_review)
         db.session.commit()
         return jsonify(success=True)
 
-    # TODO: add admin constrain
+    @jwt_required
     def delete(self, item_id):
         item = Item.query.filter(Item.item_id == item_id).first()
         if item is None:
@@ -458,9 +599,11 @@ class CreateAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+
 @resource.route('/review/<int:item_id>/<int:review_id>', doc={"description": "Manipulate (put, delete) a review for an item."})
 class PutAndDeleteReview(Resource):
     @resource.doc(params={'response': "seller's response for the review"})
+    @jwt_required
     def put(self, item_id, review_id):
         db.session.query(Review)\
             .filter(Review.review_id == review_id and Review.item_id == item_id).\
@@ -468,6 +611,7 @@ class PutAndDeleteReview(Resource):
         db.session.commit()
         return jsonify(success=True)
 
+    @jwt_required
     def delete(self, item_id, review_id):
         review = db.session.query(Review) \
             .filter(Review.review_id == review_id and Review.item_id == item_id)
@@ -480,18 +624,18 @@ class PutAndDeleteReview(Resource):
 
 @resource.route('/shopping-cart/<int:user_id>', doc={"description": "Get and empty items in the shopping cart"})
 class ShoppingCart(Resource):
+    @jwt_required
     def get(self, user_id):
-        items = db.engine.execute(
-            db.select([Item.item_id, Item.item_name, Item.price, shoppingListItem.c.quantity]).
-                where(shoppingListItem.c.item_id == Item.item_id and shoppingListItem.c.buyer_id == user_id)
-        )
-        return jsonify([{
-            "item_id": i.item_id,
-            "name": i.item_name,
-            "price": i.price,
-            "quantity": i.quantity,
-        } for i in items])
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
+        shopping_list_items = []
+        for i in shoppingListItems:
+            item = Item.query.filter_by(item_id=i.item_id).first()
+            shopping_list_items.append({"item": item.serialize,
+                                        "qty": i.quantity})
 
+        return shopping_list_items
+
+    @jwt_required
     def delete(self, user_id):
         db.engine.execute(db.delete(shoppingListItem)
                           .where(shoppingListItem.c.buyer_id == user_id))
@@ -501,16 +645,21 @@ class ShoppingCart(Resource):
 @resource.route('/shopping-cart/<int:user_id>/<int:item_id>',
                 doc={"description": "Add and remove items in the shopping cart"})
 class ShoppingCart(Resource):
+    @resource.doc(params={'newQuantity': "new quantity"},)
+    @jwt_required
     def post(self, user_id, item_id):
-        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        buyer = BuyerModel.find_by_uid(user_id)
         item = Item.query.filter_by(item_id=item_id).first()
+        qty = int(request.args.get('newQuantity'))
         if item is None:
             abort(404, "Item with id {} not found".format(item_id))
-        elif buyer is None:
+        if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        buyer.add_to_shopping_list(item)
+        if not buyer.add_to_shopping_list(item, qty):
+            abort(404, "Trying to remove more items than the quantity in cart.")
         return jsonify(success=True)
 
+    @jwt_required
     def delete(self, user_id, item_id):
         items = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item_id)
         if items.count() == 0:
@@ -536,6 +685,7 @@ def add_avg_rating(items):
 
 @resource.route('/place-order/<int:user_id>/<int:item_id>', doc={"description": "Place order for a single item"})
 class PlaceOrder(Resource):
+    @jwt_required
     def post(self, user_id, item_id):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
         item = Item.query.filter_by(item_id=item_id).first()
@@ -559,38 +709,114 @@ class PlaceOrder(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/place-order-in-shopping-cart/<int:user_id>',
+@resource.route('/place-order-in-shopping-cart/<int:user_id>/<int:buyer_address_index>/<string:shipping_method>',
                 doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
-    def post(self, user_id):
+    @jwt_required
+    def post(self, user_id, buyer_address_index, shipping_method):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
-        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date())
-        items = Item.query.join(shoppingListItem.join(BuyerModel, BuyerModel.uid == user_id))
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method)
+        shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
+        seller_emails = []
 
         if buyer is None:
             abort(404, "Buyer with id {} not found".format(user_id))
-        for item in items:
+
+        order.save_to_db()
+
+        subtotal = 0
+        for shopping_list_item in shoppingListItems:
+            item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
             if item is None:
                 abort(404, "Item with id {} not found".format(item.item_id))
             elif item.quantity - item.quantity_sold <= 0:
-                abort(403, "Not enough stock for item {}".format(item.item_id))
-
-        order.save_to_db()
-        for item in items:
+                abort(403, "Not enough stock for item {} (1)".format(item.item_id))
             seller = SellerModel.query.filter_by(uid=item.seller_id).first()
             if seller is not None:
                 seller.add_commission(item)
             order.add_item(item)
-            item.quantity_sold += 1
+            new_quantity_sold = item.quantity_sold + shopping_list_item.quantity
+            if item.quantity - new_quantity_sold < 0:
+                abort(403, "Not enough stock for item {} (2)".format(item.item_id))
+            item.quantity_sold += shopping_list_item.quantity
+            db.session.query(orderItem). \
+                filter_by(order_id=order.order_id, item_id=item.item_id).update({"order_item_quantity": shopping_list_item.quantity}, synchronize_session=False)
+
             list_item = db.session.query(shoppingListItem).filter_by(buyer_id=user_id, item_id=item.item_id)
             list_item.delete(synchronize_session=False)
             db.session.commit()
+
+            subtotal += (item.price - (item.price * item.discount)) * shopping_list_item.quantity
+
+        user = UserAuthModel.find_by_uid(user_id)
+        msg = Message("We've received your order! - 354TheStars.com",
+                      recipients=[user.useremail])
+        address = buyer.get_address_from_index(buyer_address_index)
+        msg.html = render_template('SendReceipt.html', \
+            order_id=order.order_id, purchase_date=order.purchase_date, address=address, \
+            shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal)
+        mail.send(msg)
+
+        for shopping_list_item in shoppingListItems:
+            item = Item.query.filter_by(item_id=shopping_list_item.item_id).first()
+            user = UserAuthModel.find_by_uid(item.seller_id)
+            seller_emails.append(user.useremail)
+
+        if len(seller_emails) != 0:
+            msg2 = Message("You got a new order! - 354TheStars.com", recipients=seller_emails)
+            msg2.html = render_template('NotificationToSeller.html')
+            mail.send(msg2)
+        return jsonify(order.serialize)
+
+
+@resource.route('/wish-list/<int:user_id>/<int:item_id>',doc={"description": "Add and remove wish list"})
+class WishList(Resource):
+    @jwt_required
+    def post(self, user_id, item_id):
+        buyer = BuyerModel.query.filter_by(uid=user_id).first()
+        item = Item.query.filter_by(item_id=item_id).first()
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        buyer.add_to_wish_list(item)
         return jsonify(success=True)
+
+    @jwt_required
+    def delete(self, user_id, item_id):
+        item = db.session.query(wishListItem).filter_by(buyer_id=user_id, item_id=item_id)
+        if item.count() == 0:
+            abort(404, "Item with id {} not in the shopping cart".format(item_id))
+        item.delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify(success=True)
+
+    @jwt_required
+    def get(self, user_id, item_id):
+        item = Item.find_by_id(item_id)
+        buyer = BuyerModel.find_by_uid(user_id)
+        if item is None:
+            abort(404, "Item with id {} not found".format(item_id))
+        elif buyer is None:
+            abort(404, "Buyer with id {} not found".format(user_id))
+        wish_list_item = db.session.query(wishListItem).filter_by(buyer_id=user_id, item_id=item_id)
+        if wish_list_item.count() == 0:
+            return jsonify(False)
+        return jsonify(True)
+
+
+@resource.route('/wish-list/<int:user_id>',doc={"description": "Get wish list"})
+class WishList(Resource):
+    @jwt_required
+    def get(self, user_id):
+        items = db.session.query(wishListItem).filter_by(buyer_id=user_id).all()
+        return jsonify([Item.query.filter_by(item_id=i.item_id).first().serialize for i in items])
 
 
 @resource.route('/orders/<start_date>/<end_date>',
                 doc={"description": "Return all orders during a given period of time"})
 class AllOrders(Resource):
+    @admin_required
     def get(self, start_date, end_date):
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -606,6 +832,7 @@ class AllOrders(Resource):
 @resource.route('/commission/<start_date>/<end_date>',
                 doc={"description": "Return total commission during a given period of time"})
 class TotalCommission(Resource):
+    @admin_required
     def get(self, start_date, end_date):
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
