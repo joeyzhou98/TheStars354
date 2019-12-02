@@ -11,7 +11,11 @@
             <b-card-text>
               <span class="brand">{{item.brand}}</span><br>
               <span class="name">{{item.item_name}}</span><br>
-              <span class="seller" v-if="seller !== null">Sold by {{seller}}</span><br>
+              <span class="seller" v-if="seller !== null">Sold by
+                <router-link :to="{name: 'SellerDetails', params: {sellerID: item.seller_id}}">
+                  {{seller}}
+                </router-link>
+              </span>
               <div class="rating">
                 <star-rating :starStyle="starStyle" :rating="item.rating" :isIndicatorActive="false"></star-rating>
                 ({{this.reviews.length}})
