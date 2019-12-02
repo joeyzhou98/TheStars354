@@ -376,3 +376,22 @@ class Item(db.Model):
     def find_by_id(cls, item_id):
         return cls.query.filter_by(item_id=item_id).first()
 
+
+class Coupon(db.Model):
+    __tablename__ = 'coupon'
+
+    coupon_id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(300), unique=True, nullable=False)
+    discount = db.Column(db.Float, nullable=False, default=0.0)
+
+    @property
+    def serialize(self):
+        return {
+            "coupon_id": self.coupon_id,
+            "code": self.code,
+            "discount": self.discount}
+
+    @classmethod
+    def find_by_code(cls, code):
+        return cls.query.filter_by(code=code).first()
+

@@ -22,6 +22,7 @@
           </b-col>
         </b-row><br>
         <div class="alignLeft">Subtotal: {{subtotal}}</div>
+        <div class="alignLeft">Discount: {{couponDiscount}}</div>
         <div class="alignLeft">Shipping: $0.00</div>
         <div class="alignLeft">Taxes: {{taxes}}</div>
         <div class="alignLeft"><span class="boldTxt">Total: {{total}}</span></div><br>
@@ -41,7 +42,8 @@ export default {
       order: this.$route.params.order,
       subtotal: this.$route.params.subtotal,
       taxes: this.$route.params.taxes,
-      total: this.$route.params.total
+      total: this.$route.params.total,
+      couponDiscount: this.$route.params.couponDiscount
     }
   },
   computed: {

@@ -709,13 +709,13 @@ class PlaceOrder(Resource):
         return jsonify(success=True)
 
 
-@resource.route('/place-order-in-shopping-cart/<int:user_id>/<int:buyer_address_index>/<string:shipping_method>',
+@resource.route('/place-order-in-shopping-cart/<int:user_id>/<int:buyer_address_index>/<string:shipping_method>/<float:coupon_discount>',
                 doc={"description": "Place order for entire shopping cart"})
 class PlaceOrderInShoppingCart(Resource):
     @jwt_required
-    def post(self, user_id, buyer_address_index, shipping_method):
+    def post(self, user_id, buyer_address_index, shipping_method, coupon_discount):
         buyer = BuyerModel.query.filter_by(uid=user_id).first()
-        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method)
+        order = Order(buyer_id=buyer.uid, purchase_date=db.func.current_date(), buyer_address_index=buyer_address_index, shipping_method=shipping_method, coupon_discount=coupon_discount)
         shoppingListItems = db.session.query(shoppingListItem).filter_by(buyer_id=user_id).all()
         seller_emails = []
 
@@ -753,8 +753,8 @@ class PlaceOrderInShoppingCart(Resource):
                       recipients=[user.useremail])
         address = buyer.get_address_from_index(buyer_address_index)
         msg.html = render_template('SendReceipt.html', \
-            order_id=order.order_id, purchase_date=order.purchase_date, address=address, \
-            shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal)
+            order_id= order.order_id, purchase_date=order.purchase_date, address=address, \
+            shipping_method=order.shipping_method, items=order.serialize['items'], subtotal=subtotal, discount=order.coupon_discount)
         mail.send(msg)
 
         for shopping_list_item in shoppingListItems:
@@ -858,3 +858,14 @@ class TotalCommission(Resource):
                             else:
                                 commission += item.price * (1 - item.discount) * 0.08
         return jsonify(commission)
+
+
+@resource.route('/coupon/<string:code>', doc={"description":"return the discount assiciated with the code, return 0 if coupon not found"})
+class GetCoupon(Resource):
+    @jwt_required
+    def get(self, code):
+        coupon = Coupon.find_by_code(code)
+        if coupon is None:
+            return 0.0
+        return coupon.discount
+
