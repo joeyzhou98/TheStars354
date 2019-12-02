@@ -46,7 +46,9 @@ export default {
     }
   },
   mounted () {
-    this.images = this.review.images.split('&')
+    if (this.review.images !== null) {
+      this.images = this.review.images.split('&')
+    }
   },
   methods: {
     editReview () {

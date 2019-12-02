@@ -336,10 +336,13 @@ class SellerInfo(Resource):
     def get(self):
         uid = request.args.get('uid')
 
+        sellerName = UserAuthModel.find_by_uid(uid).serialize["username"]
         sellerInfo = SellerModel.find_by_uid(uid)
         if sellerInfo is None:
             abort(404, "Seller info for id {} not found".format(uid))
-        return jsonify(sellerInfo.serialize)
+        sellerInfo = sellerInfo.serialize
+        sellerInfo.update({"seller_name": sellerName})
+        return jsonify(sellerInfo)
 
 
 @resource.route('/search', doc={
