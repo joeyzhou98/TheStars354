@@ -95,6 +95,10 @@
               <span>Subtotal:</span>
               <span style="font-weight: bold">{{subtotalTxt}}</span>
             </div>
+            <div class="d-flex justify-content-between" v-if="hasCouponDiscount">
+              <span>Discount:</span>
+              <span style="font-weight: bold">{{discountTxt}}</span>
+            </div>
             <div class="d-flex justify-content-between">
               <span>Shipping:</span>
               <small class="small-bold">FREE</small>
@@ -106,7 +110,7 @@
             <hr/>
             <div class="d-flex justify-content-between">
               <span>Estimated Total:</span>
-              <span style="font-weight: bold;">{{subtotalTxt}}</span>
+              <span style="font-weight: bold;">{{estimateTotalTxt}}</span>
             </div>
             <small class="text-muted">Taxes calculated during checkout</small>
             <hr/>
@@ -115,9 +119,10 @@
               <b-input-group>
                 <b-form-input class="shadow-none" v-model="couponCode"></b-form-input>
                 <b-input-group-append>
-                  <b-button class="shadow-none" size="sm" text="Apply">Apply</b-button>
+                  <b-button class="shadow-none" size="sm" text="Apply" @click="findCouponCode">Apply</b-button>
                 </b-input-group-append>
               </b-input-group>
+              <p class="error" v-if="errors.message">{{ errors.message }}</p>
             </div>
             <hr/>
             <b-button block variant="success"
@@ -141,7 +146,11 @@ export default {
       cartData: [],
       wishlistData: [],
       previousQtyData: {},
-      couponCode: ''
+      couponCode: '',
+      errors: {
+        message: ''
+      },
+      couponDiscount: 0.0
     }
   },
   computed: {
@@ -159,6 +168,18 @@ export default {
     subtotalTxt () {
       return '$' + this.subtotal.toFixed(2)
     },
+    hasCouponDiscount () {
+      return this.couponDiscount !== 0
+    },
+    discountTxt () {
+      return '$ -' + (this.subtotal * this.couponDiscount).toFixed(2)
+    },
+    estimateTotal () {
+      return (this.subtotal * (1.0 - this.couponDiscount))
+    },
+    estimateTotalTxt () {
+      return '$' + (this.subtotal * (1.0 - this.couponDiscount)).toFixed(2)
+    },
     itemCount () {
       var count = 0
       for (var data of this.cartData) {
@@ -168,7 +189,7 @@ export default {
     },
     checkoutLink () {
       if (this.$store.state.isLoggedIn) {
-        return {name: 'PlaceOrder', params: {cartData: this.cartData, subtotal: this.subtotal, subtotalTxt: this.subtotalTxt}}
+        return {name: 'PlaceOrder', params: {cartData: this.cartData, subtotal: this.subtotal, subtotalTxt: this.subtotalTxt, couponDiscount: this.couponDiscount}}
       }
       return '/login'
     }
@@ -339,6 +360,19 @@ export default {
     },
     getAvailableQty (item) {
       return item.quantity - item.quantity_sold
+    },
+    findCouponCode () {
+      let url = 'api/resource/coupon/' + encodeURIComponent(this.couponCode)
+      axios
+        .get(url)
+        .then(response => {
+          if (response.data === 0.0) {
+            this.errors.message = 'Invalid coupon code'
+          } else {
+            this.couponDiscount = response.data
+          }
+        })
+        .catch(error => alert(error))
     }
   },
   created () {
@@ -368,5 +402,8 @@ img {
 .small-bold {
   font-weight: bold;
   margin-top: 3px
+}
+.error {
+    color: red;
 }
 </style>

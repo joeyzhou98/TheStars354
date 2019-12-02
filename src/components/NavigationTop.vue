@@ -64,7 +64,6 @@ export default {
   },
   methods: {
     VerifyLoginStatus () {
-      console.log('isLoggedIn', this.isLoggedIn)
       if (this.isLoggedIn) {
         this.$router.push('/account')
       } else {

@@ -10,6 +10,7 @@ import FAQ from './views/FAQ.vue'
 import ForgetPassword from './views/ForgetPassword'
 import Home from './views/Home.vue'
 import ItemDetails from './views/ItemDetails.vue'
+import SellerDetails from './views/SellerDetails.vue'
 import Login from './views/Login.vue'
 import OrderConfirmation from './views/OrderConfirmation.vue'
 import PlaceOrder from './views/PlaceOrder.vue'
@@ -79,6 +80,11 @@ export default new Router({
       path: '/item-details/:itemID',
       name: 'ItemDetails',
       component: ItemDetails
+    },
+    {
+      path: '/seller-details/:sellerID',
+      name: 'SellerDetails',
+      component: SellerDetails
     },
     {
       path: '/bestsellers',
