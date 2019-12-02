@@ -1,0 +1,20 @@
+<div style="width: 600px; display: inline-block; text-align: left">
+    <div style="text-align: center;"><h4>Thanks for using 354 The Stars!</h4></div>
+    <br>
+    <div style="font-weight: bold; font-size: large">{{count}} of your items were sold</div><br>
+    <hr />
+    <div style="font-weight: bold">Items you sold:</div><br>
+    <table style="width:100%">
+    {% for item_info in items %} 
+      {% set item = item_info['item'] %}
+      <tr>
+        <td>{{item['item_name']}} (x{{item_info['order_item_quantity']}})</td>
+        {% set price = (item['price'] - (item['price'] * item['discount'])) * item_info['order_item_quantity'] %}
+        <td>{{"$%.2f"|format(price)}}</td>
+      </tr>
+    {% endfor %} 
+    </table>
+    <br>
+    Please visit <a href="http://thestars354.herokuapp.com/#/login">your profile</a> for details.
+    <div></div>
+  </div>

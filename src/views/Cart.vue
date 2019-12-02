@@ -1,8 +1,9 @@
 <template>
   <b-container fluid>
-    <br><h4>My Shopping Cart</h4><br>
+    <br>
     <b-row>
       <b-col md="9">
+        <h4>My Shopping Cart</h4><br>
         <b-card v-if="isEmpty" class="text-center">
           <div>
             Your shopping cart is empty.
@@ -30,8 +31,8 @@
                           <option v-for="qty in getAvailableQty(data.item)" :key="qty" :value="qty">{{qty}}</option>
                         </b-select>
                       </div>
-                      <b-link class="item-link small-link" @click="remove(data.item)">Delete</b-link>
-                      <b-link class="item-link small-link">Move to Wishlist</b-link>
+                      <b-link class="item-link small-link" @click="removeFromCart(data.item)">Remove</b-link>
+                      <b-link class="item-link small-link" @click="moveToWishlist(data.item)">Move to Wishlist</b-link>
                     </small>
                   </div>
                 </div>
@@ -45,8 +46,48 @@
         <div style="text-align: right; margin: 10px">
           Items in cart: {{itemCount}}
         </div>
+        <div v-if="$store.state.isLoggedIn">
+          <br>
+          <hr />
+          <br><h4>My Wishlist</h4><br>
+          <b-card v-if="wishlistData.length === 0" class="text-center">
+            <div>
+              Your wishlist is empty.
+            </div>
+          </b-card>
+          <b-list-group v-else>
+            <b-list-group-item class="flex-column align-items-start"
+              v-for="item in wishlistData" :key="item.item_id">
+              <b-row>
+                <b-col md="2">
+                  <div class="img-container">
+                    <img :src="item.images"/>
+                  </div>
+                </b-col>
+                <b-col md="8">
+                  <div class="d-flex align-items-start flex-column">
+                    <div style="text-align: left;">
+                      <b-link :to="itemLink(item)"><span class="item-link">{{item.item_name}}</span></b-link>
+                    </div><br>
+                    <div class="mb-auto">
+                      <small>
+                        <b-link class="item-link small-link" @click="removeFromWishlist(item)">Remove</b-link>
+                        <b-link v-if="getAvailableQty(item) > 0" class="item-link small-link" @click="moveToCart(item)">Move to Cart</b-link>
+                        <span v-else class="small-link" style="color: darkred;">Currently out of stock :(</span>
+                      </small>
+                    </div>
+                  </div>
+                </b-col>
+                <b-col align-self="center">
+                  <span style="font-weight: bold">{{discountPrice(item)}}</span>
+                </b-col>
+              </b-row>
+            </b-list-group-item>
+          </b-list-group>
+        </div>
       </b-col>
       <b-col>
+        <br><h4></h4><br>
         <b-card align="left">
           <div>
             <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">Order Summary</div>
@@ -103,6 +144,7 @@ export default {
   data () {
     return {
       cartData: [],
+      wishlistData: [],
       previousQtyData: {},
       couponCode: '',
       errors: {
@@ -153,6 +195,15 @@ export default {
     }
   },
   methods: {
+    getWishlist () {
+      var url = 'api/resource/wish-list/' + this.$store.state.uid
+      axios
+        .get(url)
+        .then((response) => {
+          this.wishlistData = response.data
+        })
+        .catch(error => alert(error))
+    },
     getCartItems () {
       if (this.$store.state.isLoggedIn) {
         this.getItemsFromDB()
@@ -178,7 +229,7 @@ export default {
         this.cartData = JSON.parse(jsonCartCookie)
       }
     },
-    remove (item) {
+    removeFromCart (item) {
       if (this.$store.state.isLoggedIn) {
         this.removeItemFromDB(item)
       } else {
@@ -246,6 +297,61 @@ export default {
         this.cartData = cookie
       }
     },
+    isInWishlist (item) {
+      for (var i = 0; i < this.wishlistData.length; i++) {
+        if (this.wishlistData[i].item_id === item.item_id) {
+          return true
+        }
+      }
+      return false
+    },
+    addToWishlist (item) {
+      let url = 'api/resource/wish-list/' + this.$store.state.uid + '/' + item.item_id
+      return axios
+        .post(url)
+        .then((response) => {
+          this.wishlistData.push(item)
+        })
+        .catch(error => alert(error))
+    },
+    removeFromWishlist (item) {
+      let url = 'api/resource/wish-list/' + this.$store.state.uid + '/' + item.item_id
+      return axios
+        .delete(url)
+        .then((response) => {
+          for (var i = 0; i < this.wishlistData.length; i++) {
+            if (this.wishlistData[i].item_id === item.item_id) {
+              this.wishlistData.splice(i, 1)
+              break
+            }
+          }
+        })
+        .catch(error => alert(error))
+    },
+    moveToCart (item) {
+      let url = 'api/resource/shopping-cart/' + this.$store.state.uid + '/' + item.item_id + '?newQuantity=' + 1
+      axios
+        .post(url)
+        .then((response) => {
+          this.cartData.push({
+            'item': item,
+            'qty': 1
+          })
+          this.previousQtyData[item.item_id] = 1
+        })
+        .catch(error => alert(error))
+      this.removeFromWishlist(item)
+    },
+    moveToWishlist (item) {
+      if (this.$store.state.isLoggedIn) {
+        if (this.isInWishlist(item) === false) {
+          this.addToWishlist(item)
+        }
+        this.removeItemFromDB(item)
+      } else {
+        this.$router.push('/login')
+      }
+    },
     discountPrice (item) {
       return '$' + (item.price - (item.price * item.discount)).toFixed(2)
     },
@@ -271,13 +377,16 @@ export default {
   },
   created () {
     this.getCartItems()
+    if (this.$store.state.isLoggedIn) {
+      this.getWishlist()
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .img-container {
-  width: 100%;
+  width: 90%;
 }
 img {
   width: 100%;
