@@ -22,6 +22,11 @@ export default {
           id: 1,
           text: 'About Us',
           page: '/about'
+        },
+        {
+          id: 2,
+          text: 'Customer Service',
+          page: '/customerService'
         }
       ]
     }
