@@ -172,7 +172,7 @@ export default {
         starHeight: 20
       },
       showPage: false,
-      wishlisted: false
+      wishlisted: false,
       hasOrdered: false
     }
   },
