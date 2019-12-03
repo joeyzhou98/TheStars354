@@ -1,20 +1,9 @@
 <template>
     <section class="mb-4">
-    <br><br><br><h2>Contact Us</h2><br>
+    <br><h2>Contact Us</h2><br>
     <div class="block">
-        <p class="text-center w-responsive mx-auto mb-5" ><em>For any questions or concerns do not hesitate to contact us directly</em></p>
-        <form id="contact-form" name="contact-form" action="mail.php" method="POST">
-            <label for="name" class=""><b>Your name</b></label>
-            <input type="text" id="name" name="name" class="form-control">
-            <label for="email" class=""><b>Your email</b></label>
-            <input type="text" id="email" name="email" class="form-control">
-            <label for="subject" class=""><b>Subject</b></label>
-            <input type="text" id="subject" name="subject" class="form-control">
-            <label for="message"><b>Your message</b></label>
-            <textarea type="text" id="message" name="message" rows="2" class="form-control md-textarea"></textarea>
-        </form><br><br>
-        <a class="btn btn-primary" onclick="document.getElementById('contact-form').submit();">Submit</a>
-    </div><br><br><br>
+        <p class="text-center w-responsive mx-auto mb-5" ><em>For any questions or concerns do not hesitate to contact us directly.</em></p>
+        <br><br>
         <ul class="list-unstyled mb-0">
             <li><i class="fas fa-map-marker-alt fa-2x"></i>
                 <p>Montreal, Canada</p>
@@ -23,9 +12,10 @@
                 <p>438-888-0000</p>
             </li>
             <li><i class="fas fa-envelope mt-4 fa-2x"></i>
-                <p>354thestars@shop.com</p>
+                <p><a href="mailto:customerservice354thestars@gmail.com">customerservice354thestars@gmail.com</a></p>
             </li>
         </ul>
+    </div>
     </section>
 </template>
 
