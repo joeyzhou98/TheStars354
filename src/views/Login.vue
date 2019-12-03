@@ -44,7 +44,7 @@
       </b-form-group>
       <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
-      <b-link href="#/findPassword">Forget your password?</b-link>
+      <b-link href="#/forgetPassword">Forgot your password?</b-link>
       <br/><br/>
       <b-link href="#/register">Create an account</b-link>
       <br/><br/>
@@ -58,7 +58,6 @@
 <script>
 import axios from 'axios'
 import md5 from 'js-md5'
-import App from '../App'
 
 export default {
   data () {
@@ -84,7 +83,8 @@ export default {
         .post(url)
         .then((response) => {
           // alert(JSON.stringify(response.data))
-          App.loginStatus.setLoginStatus(true)
+          this.$store.commit('login', response.data)
+          this.$store.dispatch('transferCartToUser')
           this.$router.push('/')
         })
         .catch(error => {

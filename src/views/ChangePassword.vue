@@ -8,83 +8,54 @@
     >
     <b-form @submit="onSubmit">
       <b-form-group
-        id="input-group-1"
-        label="User name:"
-        label-for="input-1"
-        align="left"
-        :invalid-feedback="invalidFeedbackUserName"
-      >
-        <b-form-input
-          id="input-1"
-          v-model="form.userName"
-          :state="stateUserName"
-          trim
-          required
-          placeholder="Enter user name"
-        >
-        </b-form-input>
-        <small class="text-muted">between 5 to 15 characters using numbers and letters only</small>
-      </b-form-group>
-
-      <b-form-group
-        id="input-group-2"
-        label="Email address:"
-        label-for="input-2"
-        align="left"
-        :invalid-feedback="invalidFeedbackEmail"
-      >
-        <b-form-input
-          id="input-2"
-          v-model="form.email"
-          :state="stateEmail"
-          trim
-          type="email"
-          required
-          placeholder="Enter email"
-        >
-        </b-form-input>
-      </b-form-group>
-
-      <b-form-group
-      id="input-group-3"
-      label="Password:"
-      label-for="input-3"
+      id="input-group-1"
+      label="Enter your new password:"
+      label-for="input-1"
       align="left"
       :invalid-feedback="invalidFeedbackPassword"
       >
         <b-form-input
-          id="input-3"
+          id="input-1"
           v-model="form.password"
           :state="statePassword"
           type="password"
           required
-          placeholder="Enter password"
+          placeholder="Enter new password"
         >
         </b-form-input>
         <small class="text-muted">Minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character</small>
       </b-form-group>
 
       <b-form-group
-      id="input-group-4"
-      label="Password again:"
-      label-for="input-4"
+      id="input-group-2"
+      label="Your new password again:"
+      label-for="input-2"
       align="left"
       :invalid-feedback="invalidFeedbackPasswordAgain"
       >
         <b-form-input
-          id="input-4"
+          id="input-2"
           v-model="form.passwordAgain"
           :state="statePasswordAgain"
           type="password"
           required
-          placeholder="Enter password again"
+          placeholder="Enter your new password again"
         >
         </b-form-input>
       </b-form-group>
-      <p class="error" v-if="errors.message">{{ errors.message }}</p>
 
-      <b-button type="submit" variant="dark">Register</b-button>
+      <b-button type="submit" variant="dark">Continue</b-button>
     </b-form>
+      <div class="Popup">
+        <!-- Start of modal section -->
+        <b-modal id="notification" ref="notification">
+          <h5 class="notification_text">Your password has been reset successfully, please use your new password to login again.</h5>
+          <template slot="modal-footer">
+            <b-button class="continue-btn" @click="GoToLoginPage">Continue</b-button>
+          </template>
+        </b-modal>
+        <!-- End of modal section -->
+      </div>
   </b-card>
   </div>
 </template>
@@ -97,38 +68,51 @@ export default {
   data () {
     return {
       form: {
-        userName: '',
-        email: '',
         password: '',
         passwordAgain: ''
       },
-      errors: {
-        message: ''
-      }
+      username: ''
     }
   },
   methods: {
     onSubmit (evt) {
       evt.preventDefault()
-      // alert(JSON.stringify(this.form))
-      var url = 'api/authentication/registration?username=' + encodeURIComponent(this.form.userName) + '&email=' + encodeURIComponent(this.form.email) + '&password=' + encodeURIComponent(md5(this.form.password))
-      this.sendAxiosRequest(url)
+      var url = 'api/authentication/changePassword?username=' + this.username + '&password=' + encodeURIComponent(md5(this.form.password))
+      this.resetPassword(url)
     },
-    sendAxiosRequest (url) {
+    resetPassword (url) {
       axios
-        .post(url)
+        .put(url)
         .then((response) => {
           // alert(JSON.stringify(response.data))
-          this.$store.commit('login', response.data)
-          this.$router.push('/')
+          this.$bvModal.show('notification')
         })
         .catch(error => {
-          if (error.response.status === 400) {
+          if (error.response.status === 404) {
             console.log(JSON.stringify(error.response.data))
-            this.errors.message = error.response.data['message']
+            this.$router.push('/')
           }
         })
+    },
+    GoToLoginPage () {
+      this.$router.push('/login')
     }
+  },
+  mounted () {
+    var token = this.$route.params.token
+    var url = 'api/authentication/changePassword/' + token
+    this.username = this.$route.params.username
+    // alert(url)
+    axios
+      .get(url)
+      .then((response) => {
+        // alert(JSON.stringify(response.data))
+      })
+      .catch(error => {
+        if (error.response.status === 404) {
+          console.log(JSON.stringify(error.response.data))
+        }
+      })
   },
   computed: {
     stateUserName () {
@@ -203,4 +187,22 @@ export default {
 .error {
     color: red;
 }
+.continue-btn {
+  background: none;
+  color: $darkblue;
+  border-color: $darkblue;
+  &:hover {
+    color: $mainblue;
+    background: none;
+    border-color: $mainblue;
+  }
+  &:active {
+    position:relative;
+    top:1px;
+  }
+}
+h5.notification_text{
+  color: $darkgray;
+  font-size: larger;
+ }
 </style>

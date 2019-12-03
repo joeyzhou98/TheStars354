@@ -9,31 +9,23 @@
 </template>
 
 <script>
+import store from '@/store.js'
 import NavigationTop from '@/components/NavigationTop.vue'
 import NavigationBottom from '@/components/NavigationBottom.vue'
 
 export default {
   name: 'App',
+  store,
   components: {
     'NavigationTop': NavigationTop,
     'NavigationBottom': NavigationBottom
-  },
-  loginStatus: {
-    debug: true,
-    state: {
-      login: false
-    },
-    setLoginStatus (newValue) {
-      if (this.debug) console.log('setMessageAction triggered with', newValue)
-      this.state.login = newValue
-    }
   }
 }
 </script>
 
 <style scoped lang="scss">
 #content {
-  padding: 70px 25px;
+  padding: 100px 25px;
 }
 </style>
 

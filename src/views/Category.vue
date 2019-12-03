@@ -12,6 +12,9 @@
         <b-row>
           <FilterNav :items="itemData" :isSubcategory="isSubcategory"></FilterNav>
         </b-row>
+        <br>
+        <br>
+        <Advertisement :random="advertisement"></Advertisement>
       </b-col>
       <b-col cols="10">
         <b-row id="page-title" class="text-center">
@@ -49,6 +52,7 @@
 </template>
 
 <script>
+import Advertisement from '@/components/Advertisement.vue'
 import ItemGrid from '@/components/ItemGrid.vue'
 import Pagination from '@/components/Pagination.vue'
 import FilterNav from '@/components/FilterNav.vue'
@@ -58,6 +62,7 @@ import { bus } from '../main'
 export default {
   name: 'Category',
   components: {
+    Advertisement,
     ItemGrid,
     Pagination,
     FilterNav
@@ -75,7 +80,8 @@ export default {
       ],
       itemData: [], // items fetched from the API request
       filteredData: null, // items filtered by FilterNav component
-      noItemsMsg: 'Sorry, there are no products to display here :('
+      noItemsMsg: 'Sorry, there are no products to display here :(',
+      advertisement: 0
     }
   },
   watch: {
@@ -83,6 +89,7 @@ export default {
     $route (to, from) {
       if (to !== from) {
         this.getItemData()
+        this.advertisement = Math.floor(Math.random() * 8)
       }
     }
   },
@@ -204,6 +211,8 @@ export default {
       this.pageNumber = 0
       this.filteredData = filteredData
     })
+
+    this.advertisement = Math.floor(Math.random() * 8)
   }
 }
 </script>

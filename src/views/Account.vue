@@ -1,4 +1,10 @@
 <template>
+<div>
+  <div v-if="!isLoggedIn" style="margin: 20px">
+    Oops! You are not supposed to be here.<br>
+    <router-link to="/login">Log In</router-link><br>
+    <router-link to="/">Back to Home Page</router-link>
+  </div>
   <div>
     <b-card
     :title="welcomeMessage"
@@ -12,49 +18,90 @@
     <b-card-text>
       You can change your personal details, manage your orders, and much more.
     </b-card-text>
+    <hr class="my-4">
 
-    <b-nav tabs justified>
-      <b-nav-item active href="#/login/">PROFILE</b-nav-item>
-      <b-nav-item active href="#/login/">ORDER HISTORY</b-nav-item>
-      <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
-      <b-nav-item active href="#/login/">XXXXXX</b-nav-item>
-    </b-nav>
+    <keep-alive>
+      <b-tabs lazy justified>
+        <b-tab title="Buyer Profile" v-if=!(isAdmin)>
+          <Address></Address>
+          <hr class="my-4">
+          <PayingInfo></PayingInfo>
+          <hr class="my-4">
+          <PasswordReset></PasswordReset>
+          <hr class="my-4">
+          <OrderHistory></OrderHistory>
+          <hr class="my-4">
+          <ReviewHistory></ReviewHistory>
+        </b-tab>
+        <b-tab title="Seller Profile" v-if=!(isAdmin)>
+          <SellerInfo></SellerInfo>
+          <hr class="my-4">
+          <SellingInfo></SellingInfo>
+          <hr class="my-4">
+          <SellerOrderHistory></SellerOrderHistory>
+        </b-tab>
+        <b-tab title="Admin Control Center" v-if=(isAdmin)>
+          <AllUser></AllUser>
+          <hr class="my-4">
+          <AdminStat></AdminStat>
+        </b-tab>
+      </b-tabs>
+    </keep-alive>
     <br/>
     <b-button type="submit" variant="dark" @click="userLogout">Logout</b-button>
     </b-card>
   </div>
+</div>
 </template>
 
 <script>
 import axios from 'axios'
-import App from '../App'
+import Address from '@/components/Address.vue'
+import PayingInfo from '@/components/PayingInfo.vue'
+import PasswordReset from '@/components/PasswordReset.vue'
+import OrderHistory from '@/components/OrderHistory.vue'
+import SellingInfo from '@/components/SellingInfo.vue'
+import SellerInfo from '@/components/SellerInfo.vue'
+import SellerOrderHistory from '@/components/SellerOrderHistory.vue'
+import ReviewHistory from '../components/ReviewHistory'
+import AllUser from '../components/AllUser'
+import AdminStat from '../components/AdminStat'
 
 export default {
+  components: {
+    AllUser,
+    Address,
+    PayingInfo,
+    PasswordReset,
+    OrderHistory,
+    ReviewHistory,
+    SellingInfo,
+    SellerInfo,
+    SellerOrderHistory,
+    AdminStat
+  },
   data () {
     return {
-      username: '',
-      email: ''
+      users: {
+        uid: '',
+        username: '',
+        useremail: '',
+        role: ''
+      }
     }
   },
-  mounted () {
-    this.getUserAuthInfo()
-  },
   computed: {
+    isLoggedIn () {
+      return this.$store.state.isLoggedIn
+    },
     welcomeMessage () {
-      return 'Welcome ' + this.username
+      return 'Welcome ' + this.$store.state.username
+    },
+    isAdmin () {
+      return this.$store.state.role === 'admin'
     }
   },
   methods: {
-    getUserAuthInfo () {
-      var url = 'api/resource/user'
-      this.sendAxiosRequest(url)
-    },
-    sendAxiosRequest (url) {
-      axios
-        .get(url)
-        .then(response => { this.username = response.data['username'] })
-        .catch(error => alert(error))
-    },
     userLogout () {
       let url1 = 'api/authentication/logout/access'
       let url2 = 'api/authentication/logout/refresh'
@@ -70,8 +117,7 @@ export default {
           console.log('refresh token revoke', response.data)
         })
         .catch(error => alert(error))
-      App.loginStatus.setLoginStatus(false)
-      console.log('loginStatus', App.loginStatus.state)
+      this.$store.commit('logout')
       this.$router.push('/')
     }
   }

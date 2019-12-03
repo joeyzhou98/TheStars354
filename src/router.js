@@ -3,12 +3,17 @@ import Router from 'vue-router'
 
 import About from './views/About.vue'
 import Account from './views/Account.vue'
-import Cart from './views/Cart.vue'
 import Category from './views/Category.vue'
+import Cart from './views/Cart.vue'
+import ChangePassword from './views/ChangePassword'
 import FAQ from './views/FAQ.vue'
+import ForgetPassword from './views/ForgetPassword'
 import Home from './views/Home.vue'
 import ItemDetails from './views/ItemDetails.vue'
+import SellerDetails from './views/SellerDetails.vue'
 import Login from './views/Login.vue'
+import OrderConfirmation from './views/OrderConfirmation.vue'
+import PlaceOrder from './views/PlaceOrder.vue'
 import Register from './views/Register.vue'
 
 Vue.use(Router)
@@ -31,6 +36,16 @@ export default new Router({
       component: Register
     },
     {
+      path: '/forgetPassword',
+      name: 'ForgetPassword',
+      component: ForgetPassword
+    },
+    {
+      path: '/changePassword/:token/:username',
+      name: 'ChangePassword',
+      component: ChangePassword
+    },
+    {
       path: '/faq',
       name: 'FAQ',
       component: FAQ
@@ -50,11 +65,26 @@ export default new Router({
       name: 'Cart',
       component: Cart
     },
+    {
+      path: '/place-order',
+      name: 'PlaceOrder',
+      component: PlaceOrder
+    },
+    {
+      path: '/order-confirmation',
+      name: 'OrderConfirmation',
+      component: OrderConfirmation
+    },
     // Item display
     {
       path: '/item-details/:itemID',
       name: 'ItemDetails',
       component: ItemDetails
+    },
+    {
+      path: '/seller-details/:sellerID',
+      name: 'SellerDetails',
+      component: SellerDetails
     },
     {
       path: '/bestsellers',
