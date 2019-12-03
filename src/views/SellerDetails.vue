@@ -42,7 +42,7 @@
     </b-card>
 
   </b-container>
-  <b-spinner v-else style="width: 3rem; height: 3rem;" label="Large Spinner"></b-spinner>
+  <b-spinner v-else style="width: 3rem; height: 3rem;" label="Large Spinner" variant="primary"></b-spinner>
 </template>
 
 <script>
