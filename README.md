@@ -1,6 +1,6 @@
 # TheStars354 🌶️✌
 
-E-Commerce website
+E-Commerce website, deployed on https://thestars354.herokuapp.com/
 
 ### Application Structure
 
